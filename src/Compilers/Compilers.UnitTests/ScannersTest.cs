@@ -1,0 +1,114 @@
+﻿using VBF.Compilers.Scanners;
+using RE = VBF.Compilers.Scanners.RegularExpression;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using VBF.Compilers.Scanners.Generator;
+
+namespace Compilers.UnitTests
+{
+
+
+    /// <summary>
+    ///This is a test class for RegularExpressionTest and is intended
+    ///to contain all RegularExpressionTest Unit Tests
+    ///</summary>
+    [TestClass()]
+    public class ScannersTest
+    {
+
+
+        private TestContext testContextInstance;
+
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext
+        {
+            get
+            {
+                return testContextInstance;
+            }
+            set
+            {
+                testContextInstance = value;
+            }
+        }
+
+        #region Additional test attributes
+        // 
+        //You can use the following additional attributes as you write your tests:
+        //
+        //Use ClassInitialize to run code before running the first test in the class
+        //[ClassInitialize()]
+        //public static void MyClassInitialize(TestContext testContext)
+        //{
+        //}
+        //
+        //Use ClassCleanup to run code after all tests in a class have run
+        //[ClassCleanup()]
+        //public static void MyClassCleanup()
+        //{
+        //}
+        //
+        //Use TestInitialize to run code before running each test
+        //[TestInitialize()]
+        //public void MyTestInitialize()
+        //{
+        //}
+        //
+        //Use TestCleanup to run code after each test has run
+        //[TestCleanup()]
+        //public void MyTestCleanup()
+        //{
+        //}
+        //
+        #endregion
+
+
+        /// <summary>
+        ///A test for Many
+        ///</summary>
+        [TestMethod()]
+        public void RegExToDFATest()
+        {
+            //var RE_IF = RE.Literal("if");
+            //var RE_ELSE = RE.Literal("else");
+            var RE_ID = RE.Range('a', 'z').Sequence(
+                (RE.Range('a', 'z') | RE.Range('0', '9')).Many());
+            //var RE_NUM = RE.Range('0', '9').Many1();
+            //var RE_ERROR = RE.Range(Char.MinValue, (char)255);
+
+
+            NFAConverter nfaConverter = new NFAConverter();
+
+            NFAModel N_ID = nfaConverter.Convert(RE_ID);
+            DFAModel D_ID = DFAModel.FromNFA(N_ID);
+
+            //verify state 0
+            var state0 = D_ID.States[0];
+
+            Assert.AreEqual(36, state0.OutEdges.Count);
+            foreach (var edge in state0.OutEdges)
+            {
+                Assert.AreEqual(0, edge.TargetState.Index);
+            }
+
+            //verify initialization state
+            var state1 = D_ID.States[1];
+
+            foreach (var edge in state1.OutEdges)
+            {
+                if (edge.Symbol >= 'a' && edge.Symbol <= 'z')
+                {
+                    Assert.IsTrue(edge.TargetState.Index > 0);
+                }
+                else
+                {
+                    Assert.AreEqual(0, edge.TargetState.Index);
+                }
+            }
+
+        }
+    }
+}

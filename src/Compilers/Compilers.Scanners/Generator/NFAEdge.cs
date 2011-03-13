@@ -27,7 +27,7 @@ namespace VBF.Compilers.Scanners.Generator
         {
             get
             {
-                return Symbol.HasValue;
+                return !Symbol.HasValue;
             }
         }
 

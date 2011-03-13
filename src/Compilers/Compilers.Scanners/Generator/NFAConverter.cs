@@ -96,13 +96,8 @@ namespace VBF.Compilers.Scanners.Generator
 
             foreach (var symbol in exp.CharSet)
             {
-                var symbolState = new NFAState();
-                var symbolEdge = new NFAEdge(symbol, symbolState);
-
+                var symbolEdge = new NFAEdge(symbol, tail);
                 head.AddEdge(symbolEdge);
-                symbolState.AddEmptyEdgeTo(tail);
-
-                charSetNfa.AddState(symbolState);
             }
 
             charSetNfa.AddState(tail);

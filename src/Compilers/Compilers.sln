@@ -3,7 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.Scanners", "Compilers.Scanners\Compilers.Scanners.csproj", "{F8ECBF53-C1B2-412B-8322-9E3D6AAC66ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.UnitTests", "Compilers.UnitTests\Compilers.UnitTests.csproj", "{BEF0BC9A-3CEF-4054-A496-2AE38FCC6F29}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8D133213-6F20-438A-872E-4CA9BF105C87}"
+	ProjectSection(SolutionItems) = preProject
+		Compilers.vsmdi = Compilers.vsmdi
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Compilers.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -13,6 +25,10 @@ Global
 		{F8ECBF53-C1B2-412B-8322-9E3D6AAC66ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8ECBF53-C1B2-412B-8322-9E3D6AAC66ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8ECBF53-C1B2-412B-8322-9E3D6AAC66ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEF0BC9A-3CEF-4054-A496-2AE38FCC6F29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEF0BC9A-3CEF-4054-A496-2AE38FCC6F29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEF0BC9A-3CEF-4054-A496-2AE38FCC6F29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEF0BC9A-3CEF-4054-A496-2AE38FCC6F29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
