@@ -53,12 +53,15 @@
     <Compile Include="Generator\NFAModel.cs" />
     <Compile Include="Generator\NFAState.cs" />
     <Compile Include="KleeneStarExpression.cs" />
+    <Compile Include="LexerState.cs" />
+    <Compile Include="Lexicon.cs" />
     <Compile Include="RegularExpressionType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegularExpression.cs" />
     <Compile Include="RegularExpressionConverter.cs" />
     <Compile Include="StringLiteralExpression.cs" />
     <Compile Include="SymbolExpression.cs" />
+    <Compile Include="TokenIdentity.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

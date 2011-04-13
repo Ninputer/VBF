@@ -16,7 +16,7 @@ namespace VBF.Compilers.Scanners
             m_charSet = new List<char>(charset);
         }
 
-        public ReadOnlyCollection<char> CharSet
+        public new ReadOnlyCollection<char> CharSet
         {
             get
             {

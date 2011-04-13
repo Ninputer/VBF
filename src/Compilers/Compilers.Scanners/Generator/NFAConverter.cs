@@ -7,6 +7,19 @@ namespace VBF.Compilers.Scanners.Generator
 {
     public class NFAConverter : RegularExpressionConverter<NFAModel>
     {
+        private class DefaultInstanceHolder
+        {
+            internal static NFAConverter s_Instance = new NFAConverter();
+        }
+
+        public static NFAConverter Default
+        {
+            get
+            {
+                return DefaultInstanceHolder.s_Instance;
+            }
+        }
+
         public override NFAModel ConvertAlternation(AlternationExpression exp)
         {
             var nfa1 = Convert(exp.Expression1);

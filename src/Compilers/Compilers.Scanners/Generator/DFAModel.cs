@@ -36,6 +36,17 @@ namespace VBF.Compilers.Scanners.Generator
         {
             m_states.Add(state);
             state.Index = m_states.Count - 1;
+
+            //check accept states
+            var acceptIndices = (from i in state.NFAStateSet
+                                 where m_baseNfa.States[i].TokenIdentityIndex >= 0
+                                 orderby m_baseNfa.States[i].TokenIdentityIndex
+                                 select m_baseNfa.States[i].TokenIdentityIndex).ToArray();
+
+            if (acceptIndices != null && acceptIndices.Length > 0)
+            {
+                state.TokenIdentityIndex = acceptIndices[0];
+            }
         }
 
         public static DFAModel FromNFA(NFAModel nfa)

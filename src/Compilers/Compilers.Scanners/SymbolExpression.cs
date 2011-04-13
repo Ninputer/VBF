@@ -10,7 +10,7 @@ namespace VBF.Compilers.Scanners
     /// </summary>
     public class SymbolExpression : RegularExpression
     {
-        public char Symbol { get; private set; }
+        public new char Symbol { get; private set; }
 
         public SymbolExpression(char symbol)
             : base(RegularExpressionType.Symbol)
