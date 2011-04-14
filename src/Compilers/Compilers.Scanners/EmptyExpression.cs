@@ -13,5 +13,10 @@ namespace VBF.Compilers.Scanners
         private EmptyExpression() : base(RegularExpressionType.Empty) { }
 
         public static readonly EmptyExpression Instance = new EmptyExpression();
+
+        public override string ToString()
+        {
+            return "ε";
+        }
     }
 }

@@ -22,5 +22,10 @@ namespace VBF.Compilers.Scanners
             Left = left;
             Right = right;
         }
+
+        public override string ToString()
+        {
+            return Left.ToString() + Right.ToString();
+        }
     }
 }

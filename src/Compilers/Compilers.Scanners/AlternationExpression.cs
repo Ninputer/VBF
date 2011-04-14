@@ -22,5 +22,10 @@ namespace VBF.Compilers.Scanners
             Expression1 = expression1;
             Expression2 = expression2;
         }
+
+        public override string ToString()
+        {
+            return '(' + Expression1.ToString() + '|' + Expression2.ToString() +')';
+        }
     }
 }

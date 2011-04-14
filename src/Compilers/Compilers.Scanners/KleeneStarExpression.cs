@@ -16,5 +16,10 @@ namespace VBF.Compilers.Scanners
 
             InnerExpression = innerExp;
         }
+
+        public override string ToString()
+        {
+            return '(' + InnerExpression.ToString() + ")*";
+        }
     }
 }

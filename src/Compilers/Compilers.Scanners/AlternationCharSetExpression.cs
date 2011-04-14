@@ -24,5 +24,15 @@ namespace VBF.Compilers.Scanners
             }
         }
 
+        public override string ToString()
+        {
+            if (m_charSet.Count == 0)
+            {
+                return String.Empty;
+            }
+
+            return '[' + new String(m_charSet.ToArray()) + ']';
+        }
+
     }
 }

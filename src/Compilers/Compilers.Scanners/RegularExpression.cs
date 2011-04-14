@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
     /// <summary>
     /// The base class of regular expressions. Provides methods to build a regular expression
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public abstract class RegularExpression
     {
         public RegularExpressionType ExpressionType { get; private set; }

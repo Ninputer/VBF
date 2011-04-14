@@ -14,5 +14,10 @@ namespace VBF.Compilers.Scanners
         {
             Literal = literal;
         }
+
+        public override string ToString()
+        {
+            return Literal;
+        }
     }
 }

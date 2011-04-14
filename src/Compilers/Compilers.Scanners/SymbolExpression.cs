@@ -17,5 +17,10 @@ namespace VBF.Compilers.Scanners
         {
             Symbol = symbol;
         }
+
+        public override string ToString()
+        {
+            return Symbol.ToString();
+        }
     }
 }
