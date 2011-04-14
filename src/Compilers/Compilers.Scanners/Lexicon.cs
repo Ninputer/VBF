@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VBF.Compilers.Scanners.Generator;
+using System.Collections.ObjectModel;
 
 namespace VBF.Compilers.Scanners
 {
@@ -35,6 +36,32 @@ namespace VBF.Compilers.Scanners
             get
             {
                 return m_defaultState;
+            }
+        }
+
+        public ReadOnlyCollection<LexerState> GetLexerStates()
+        {
+            return m_lexerStates.AsReadOnly();
+        }
+
+        public ReadOnlyCollection<TokenIdentity> GetTokens()
+        {
+            return m_tokenList.AsReadOnly();
+        }
+
+        public int LexerStateCount
+        {
+            get
+            {
+                return m_lexerStates.Count;
+            }
+        }
+
+        public int TokenCount
+        {
+            get
+            {
+                return m_tokenList.Count;
             }
         }
 

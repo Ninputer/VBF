@@ -1,0 +1,248 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Diagnostics;
+
+namespace VBF.Compilers.Scanners.Generator
+{
+    public class LexerBuilder
+    {
+        private Lexicon m_lexicon;
+        private List<int>[] m_acceptTable;
+        private DFAModel m_dfa;
+        private NFAModel m_nfa;
+        private HashSet<char> m_alphabet;
+        private IComparer<char> m_charComparer;
+        private List<DFAState> m_dfaStates;
+
+        public LexerBuilder(Lexicon lexicon)
+        {
+            CodeContract.RequiresArgumentNotNull(lexicon, "lexicon");
+
+            m_lexicon = lexicon;
+            int stateCount = lexicon.LexerStateCount;
+
+            //DFA conversion lists
+            m_dfaStates = new List<DFAState>();
+            m_alphabet = new HashSet<char>();
+
+            //initialize accept table
+            m_acceptTable = new List<int>[stateCount];
+            for (int i = 0; i < stateCount; i++)
+            {
+                m_acceptTable[i] = new List<int>();
+            }
+
+            //TODO
+            m_charComparer = Comparer<char>.Default;
+        }
+
+        public void SetAcceptState(int lexerStateIndex, int dfaStateIndex, int tokenIdentityIndex)
+        {
+            m_acceptTable[lexerStateIndex][dfaStateIndex] = tokenIdentityIndex;
+        }
+
+        public NFAModel ConvertLexcionToNFA()
+        {
+            NFAState entryState = new NFAState();
+            NFAModel lexerNFA = new NFAModel();
+
+            lexerNFA.AddState(entryState);
+            foreach (var token in m_lexicon.GetTokens())
+            {
+                NFAModel tokenNFA = token.CreateFiniteAutomatonModel();
+
+                entryState.AddEdge(tokenNFA.EntryEdge);
+                lexerNFA.AddStates(tokenNFA.States);
+            }
+
+            lexerNFA.EntryEdge = new NFAEdge(entryState);
+
+            m_nfa = lexerNFA;
+
+            return lexerNFA;
+        }
+
+        private void AddDFAState(DFAState state)
+        {
+            m_dfaStates.Add(state);
+            state.Index = m_dfaStates.Count - 1;
+
+            for (int i = 0; i < m_acceptTable.Length; i++)
+            {
+                m_acceptTable[i].Add(-1);
+            }
+
+            var tokens = m_lexicon.GetTokens();
+            var lexerStates = m_lexicon.GetLexerStates();
+            //check accept states
+            var acceptStates = (from i in state.NFAStateSet
+                                let tokenIndex = m_nfa.States[i].TokenIdentityIndex
+                                where tokenIndex >= 0
+                                let token = tokens[tokenIndex]
+                                orderby token.IndexInState
+                                group token by token.State.Index into lexerState
+                                orderby lexerStates[lexerState.Key].Level
+                                select lexerState).ToArray();
+
+
+            if (acceptStates != null && acceptStates.Length > 0)
+            {
+                foreach (var acceptState in acceptStates)
+                {
+
+
+                    int acceptTokenIdentityIndex = acceptState.First().Index;
+
+                    SetAcceptState(acceptState.Key, state.Index, acceptTokenIdentityIndex);
+
+                    
+                    //set all children lexer state's accept token to current lexer state
+                    var childrenStates = from child in lexerStates
+                                         where child.BaseState != null && child.BaseState.Index == acceptState.Key
+                                         select child.Index;
+                    foreach (var childStateIndex in childrenStates)
+                    {
+                        SetAcceptState(childStateIndex, state.Index, acceptTokenIdentityIndex);
+                    }
+                }
+            }
+        }
+
+        public DFAModel ConvertNFAToDFA()
+        {
+            if (m_nfa == null) return null;
+
+
+            var nfaStates = m_nfa.States;
+
+            //get alphabet from all edge symbols
+            foreach (var s in nfaStates)
+            {
+                foreach (var edge in s.OutEdges)
+                {
+                    if (!edge.IsEmpty)
+                    {
+                        m_alphabet.Add(edge.Symbol.Value);
+                    }
+                }
+            }
+
+            //state 0 is an empty state. All invalid inputs go to state 0
+            DFAState state0 = new DFAState();
+            AddDFAState(state0);
+
+            //state 1 is closure(nfaState[0])
+            DFAState pre_state1 = new DFAState();
+            int nfaStartIndex = m_nfa.EntryEdge.TargetState.Index;
+
+            Debug.Assert(nfaStartIndex >= 0);
+
+            pre_state1.NFAStateSet.Add(nfaStartIndex);
+
+            DFAState state1 = GetClosure(pre_state1);
+            AddDFAState(state1);
+
+            //begin algorithm
+            int p = 1, j = 0;
+            while (j <= p)
+            {
+                foreach (var symbol in m_alphabet)
+                {
+                    DFAState e = GetDFAState(m_dfaStates[j], symbol);
+
+                    bool isSetExist = false;
+                    for (int i = 0; i <= p; i++)
+                    {
+                        if (e.NFAStateSet.SetEquals(m_dfaStates[i].NFAStateSet))
+                        {
+                            //an existing dfa state
+
+                            DFAEdge newEdge = new DFAEdge(symbol, m_dfaStates[i]);
+                            m_dfaStates[j].AddEdge(newEdge);
+
+                            isSetExist = true;
+                        }
+                    }
+
+                    if (!isSetExist)
+                    {
+                        //a new set of nfa states (a new dfa state)
+                        p += 1;
+                        AddDFAState(e);
+
+                        DFAEdge newEdge = new DFAEdge(symbol, e);
+                        m_dfaStates[j].AddEdge(newEdge);
+                    }
+                }
+
+                j += 1;
+            }
+
+            return m_dfa;
+        }
+
+        private DFAState GetDFAState(DFAState start, char symbol)
+        {
+            DFAState target = new DFAState();
+            var nfaStates = m_nfa.States;
+
+            foreach (var nfaStateIndex in start.NFAStateSet)
+            {
+                NFAState nfaState = nfaStates[nfaStateIndex];
+
+                foreach (var edge in nfaState.OutEdges)
+                {
+                    if (!edge.IsEmpty && m_charComparer.Compare(symbol, edge.Symbol.Value) == 0)
+                    {
+                        int targetIndex = edge.TargetState.Index;
+                        Debug.Assert(targetIndex >= 0);
+
+                        target.NFAStateSet.Add(targetIndex);
+                    }
+                }
+            }
+
+            return GetClosure(target);
+        }
+
+        private DFAState GetClosure(DFAState state)
+        {
+            DFAState closure = new DFAState();
+
+            var nfaStates = m_nfa.States;
+
+            closure.NFAStateSet.UnionWith(state.NFAStateSet);
+            bool changed = true;
+
+            while (changed)
+            {
+                changed = false;
+
+                List<int> lastStateSet = closure.NFAStateSet.ToList();
+
+                foreach (var stateIndex in lastStateSet)
+                {
+                    NFAState nfaState = nfaStates[stateIndex];
+                    foreach (var edge in nfaState.OutEdges)
+                    {
+                        if (edge.IsEmpty)
+                        {
+                            NFAState target = edge.TargetState;
+
+                            //check whether in set
+                            int targetIndex = target.Index;
+
+                            Debug.Assert(targetIndex >= 0);
+
+                            changed = closure.NFAStateSet.Add(targetIndex) || changed;
+                        }
+                    }
+                }
+            }
+
+            return closure;
+        }
+    }
+}

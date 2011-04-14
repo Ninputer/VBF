@@ -48,6 +48,7 @@
     <Compile Include="Generator\DFAEdge.cs" />
     <Compile Include="Generator\DFAModel.cs" />
     <Compile Include="Generator\DFAState.cs" />
+    <Compile Include="Generator\LexerBuilder.cs" />
     <Compile Include="Generator\NFAConverter.cs" />
     <Compile Include="Generator\NFAEdge.cs" />
     <Compile Include="Generator\NFAModel.cs" />

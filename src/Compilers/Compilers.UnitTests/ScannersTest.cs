@@ -113,17 +113,23 @@ namespace Compilers.UnitTests
         {
             Lexicon lexicon = new Lexicon();
             LexerState global = lexicon.DefaultState;
+            LexerState keywords = lexicon.DefineState(global);
 
-            var IF = global.DefineToken(RE.Literal("if"));
-            var ELSE = global.DefineToken(RE.Literal("else"));
+            var IF = keywords.DefineToken(RE.Literal("if"));
+            var ELSE = keywords.DefineToken(RE.Literal("else"));
+            
             var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
             var NUM = global.DefineToken(RE.Range('0', '9').Many1());
             var ERROR = global.DefineToken(RE.Range(Char.MinValue, (char)255));
 
 
-            NFAModel nfa = lexicon.CreateFiniteAutomatonModel();
-            DFAModel dfa = DFAModel.FromNFA(nfa);
+            //NFAModel nfa = lexicon.CreateFiniteAutomatonModel();
+            //DFAModel dfa = DFAModel.FromNFA(nfa);
+
+            LexerBuilder lb = new LexerBuilder(lexicon);
+            lb.ConvertLexcionToNFA();
+            lb.ConvertNFAToDFA();
 
             ;
         }
