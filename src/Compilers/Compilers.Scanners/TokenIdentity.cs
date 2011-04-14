@@ -10,18 +10,18 @@ namespace VBF.Compilers.Scanners
     public class TokenIdentity : IEquatable<TokenIdentity>
     {
         public int Index { get; private set; }
-        internal int IndexInState { get; private set; }
+        //internal int IndexInState { get; private set; }
         public Lexicon Lexicon { get; private set; }
         public LexerState State { get; private set; }
         public RegularExpression Definition { get; private set; }
 
-        internal TokenIdentity(RegularExpression definition, Lexicon lexicon, int index, LexerState state, int indexInState)
+        internal TokenIdentity(RegularExpression definition, Lexicon lexicon, int index, LexerState state)
         {
             Lexicon = lexicon;
             Index = index;
             Definition = definition;
             State = state;
-            IndexInState = indexInState;
+            //IndexInState = indexInState;
         }
 
         public bool Equals(TokenIdentity other)

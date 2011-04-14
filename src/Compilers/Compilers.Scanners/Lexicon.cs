@@ -25,7 +25,7 @@ namespace VBF.Compilers.Scanners
         internal TokenIdentity AddToken(RegularExpression definition, LexerState state, int indexInState)
         {
             int index = m_tokenList.Count;
-            TokenIdentity token = new TokenIdentity(definition, this, index, state, indexInState);
+            TokenIdentity token = new TokenIdentity(definition, this, index, state);
             m_tokenList.Add(token);
 
             return token;
@@ -69,7 +69,7 @@ namespace VBF.Compilers.Scanners
         /// Creates a lexer state with all tokens
         /// </summary>
         /// <returns></returns>
-        public LexerState DefineState()
+        public LexerState DefineLexerState()
         {
             int index = m_lexerStates.Count;
             LexerState newState = new LexerState(this, index);
@@ -78,7 +78,7 @@ namespace VBF.Compilers.Scanners
             return newState;
         }
 
-        public LexerState DefineState(LexerState baseState)
+        public LexerState DefineLexerState(LexerState baseState)
         {
             int index = m_lexerStates.Count;
             LexerState newState = new LexerState(this, index, baseState);

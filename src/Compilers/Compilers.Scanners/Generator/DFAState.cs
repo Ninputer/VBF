@@ -11,13 +11,11 @@ namespace VBF.Compilers.Scanners.Generator
         private List<DFAEdge> m_outEdges;
         private SortedSet<int> m_nfaStateSet;
         public int Index { get; internal set; }
-        internal int TokenIdentityIndex { get; set; }
 
         internal DFAState()
         {
             m_outEdges = new List<DFAEdge>();
             m_nfaStateSet = new SortedSet<int>();
-            TokenIdentityIndex = -1;
         }
 
         public ReadOnlyCollection<DFAEdge> OutEdges
