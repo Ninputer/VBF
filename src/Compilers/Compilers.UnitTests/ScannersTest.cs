@@ -1,6 +1,6 @@
 ﻿using VBF.Compilers.Scanners;
 using RE = VBF.Compilers.Scanners.RegularExpression;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using System;
 using VBF.Compilers.Scanners.Generator;
 
@@ -12,61 +12,11 @@ namespace Compilers.UnitTests
     ///This is a test class for RegularExpressionTest and is intended
     ///to contain all RegularExpressionTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestFixture]
     public class ScannersTest
     {
 
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        #region Additional test attributes
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
-        //Use ClassInitialize to run code before running the first test in the class
-        //[ClassInitialize()]
-        //public static void MyClassInitialize(TestContext testContext)
-        //{
-        //}
-        //
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
-        #endregion
-
-
-        [TestMethod()]
+        [Test]
         public void RegExToDFATest()
         {
             //var RE_IF = RE.Literal("if");
@@ -108,7 +58,7 @@ namespace Compilers.UnitTests
 
         }
 
-        [TestMethod()]
+        [Test]
         public void LexerStateToDFATest()
         {
             Lexicon lexicon = new Lexicon();
@@ -124,7 +74,7 @@ namespace Compilers.UnitTests
             var IF = keywords.DefineToken(RE.Literal("if"));
             var ELSE = keywords.DefineToken(RE.Literal("else"));
 
-            var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
+            //var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
             //NFAModel nfa = lexicon.CreateFiniteAutomatonModel();
             //DFAModel dfa = DFAModel.FromNFA(nfa);
 
