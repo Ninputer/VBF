@@ -130,6 +130,8 @@ namespace Compilers.UnitTests
 
             DFAModel dfa = DFAModel.Create(lexicon);
 
+            CompressedTransitionTable tc = CompressedTransitionTable.Compress(dfa);
+            
             ;
         }
     }

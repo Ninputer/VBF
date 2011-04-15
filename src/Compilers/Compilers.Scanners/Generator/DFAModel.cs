@@ -42,6 +42,11 @@ namespace VBF.Compilers.Scanners.Generator
             }
         }
 
+        public ISet<char> Alphabet
+        {
+            get { return m_alphabet; }
+        }
+
         public static DFAModel Create(Lexicon lexicon)
         {
             if (lexicon == null)
