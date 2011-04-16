@@ -12,7 +12,7 @@ namespace VBF.Compilers.Scanners.Generator
         private NFAModel m_nfa;
         private List<DFAState> m_dfaStates;
         private HashSet<char> m_alphabet;
-        private List<int>[] m_acceptTable;
+        private List<int>[] m_acceptTables;
         private Lexicon m_lexicon;
         private IComparer<char> m_charComparer;
 
@@ -24,10 +24,10 @@ namespace VBF.Compilers.Scanners.Generator
 
             //initialize accept table
             int stateCount = lexicon.LexerStateCount;
-            m_acceptTable = new List<int>[stateCount];
+            m_acceptTables = new List<int>[stateCount];
             for (int i = 0; i < stateCount; i++)
             {
-                m_acceptTable[i] = new List<int>();
+                m_acceptTables[i] = new List<int>();
             }
 
             //TODO
@@ -45,6 +45,11 @@ namespace VBF.Compilers.Scanners.Generator
         public ISet<char> Alphabet
         {
             get { return m_alphabet; }
+        }
+
+        public int[][] GetAcceptTables()
+        {
+            return (from t in m_acceptTables select t.ToArray()).ToArray();
         }
 
         public static DFAModel Create(Lexicon lexicon)
@@ -82,7 +87,7 @@ namespace VBF.Compilers.Scanners.Generator
 
         private void SetAcceptState(int lexerStateIndex, int dfaStateIndex, int tokenIdentityIndex)
         {
-            m_acceptTable[lexerStateIndex][dfaStateIndex] = tokenIdentityIndex;
+            m_acceptTables[lexerStateIndex][dfaStateIndex] = tokenIdentityIndex;
         }
 
         private void AddDFAState(DFAState state)
@@ -90,9 +95,9 @@ namespace VBF.Compilers.Scanners.Generator
             m_dfaStates.Add(state);
             state.Index = m_dfaStates.Count - 1;
 
-            for (int i = 0; i < m_acceptTable.Length; i++)
+            for (int i = 0; i < m_acceptTables.Length; i++)
             {
-                m_acceptTable[i].Add(-1);
+                m_acceptTables[i].Add(-1);
             }
 
             var tokens = m_lexicon.GetTokens();

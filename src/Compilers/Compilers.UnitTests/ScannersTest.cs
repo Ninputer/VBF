@@ -74,14 +74,70 @@ namespace Compilers.UnitTests
             var IF = keywords.DefineToken(RE.Literal("if"));
             var ELSE = keywords.DefineToken(RE.Literal("else"));
 
-            //var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
-            //NFAModel nfa = lexicon.CreateFiniteAutomatonModel();
-            //DFAModel dfa = DFAModel.FromNFA(nfa);
+            var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
+
 
             DFAModel dfa = DFAModel.Create(lexicon);
 
             CompressedTransitionTable tc = CompressedTransitionTable.Compress(dfa);
+
+            FiniteAutomationEngine engine = FiniteAutomationEngine.CreateFromLexicon(lexicon);
+            Assert.AreEqual(0, engine.CurrentLexerStateIndex);
             
+            engine.InputString("if");
+
+            Assert.IsTrue(engine.IsAtAcceptState);
+            Assert.AreEqual(ID.Index, engine.CurrentTokenIndex);
+
+            engine.Reset();
+            engine.InputString("12345");
+            Assert.AreEqual(NUM.Index, engine.CurrentTokenIndex);
+
+            engine.Reset();
+            engine.InputString("asdf12dd");
+            Assert.AreEqual(ID.Index, engine.CurrentTokenIndex);
+
+            engine.Reset();
+            engine.InputString("A");
+            Assert.AreEqual(ERROR.Index, engine.CurrentTokenIndex);
+
+            engine.Reset();
+            engine.InputString("AAA");
+            Assert.IsFalse(engine.IsAtAcceptState);
+            Assert.IsTrue(engine.IsAtStoppedState);
+
+            engine.Reset();
+            engine.InputString("if ");
+            Assert.IsFalse(engine.IsAtAcceptState);
+            Assert.IsTrue(engine.IsAtStoppedState);
+
+            engine.Reset();
+            engine.CurrentLexerStateIndex = keywords.Index;
+            engine.InputString("if");
+            Assert.AreEqual(IF.Index, engine.CurrentTokenIndex);
+
+            engine.Reset();
+            engine.InputString("else");
+            Assert.AreEqual(ELSE.Index, engine.CurrentTokenIndex);
+
+            engine.Reset();
+            engine.InputString("xmlns");
+            Assert.AreEqual(ID.Index, engine.CurrentTokenIndex);
+
+            engine.Reset();
+            engine.CurrentLexerStateIndex = xml.Index;
+            engine.InputString("if");
+            Assert.IsFalse(engine.IsAtAcceptState);
+            //TODO Assert.IsTrue(engine.IsAtStoppedState);
+
+            engine.Reset();
+            engine.InputString("xml");
+            Assert.IsFalse(engine.IsAtAcceptState);
+            Assert.IsFalse(engine.IsAtStoppedState);
+
+            engine.Reset();
+            engine.InputString("xmlns");
+            Assert.AreEqual(XMLNS.Index, engine.CurrentTokenIndex);
             ;
         }
     }
