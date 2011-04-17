@@ -65,19 +65,6 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        /// <summary>
-        /// Creates a lexer state with all tokens
-        /// </summary>
-        /// <returns></returns>
-        public LexerState DefineLexerState()
-        {
-            int index = m_lexerStates.Count;
-            LexerState newState = new LexerState(this, index);
-            m_lexerStates.Add(newState);
-
-            return newState;
-        }
-
         public LexerState DefineLexerState(LexerState baseState)
         {
             int index = m_lexerStates.Count;

@@ -55,12 +55,17 @@
     <Compile Include="Generator\NFAState.cs" />
     <Compile Include="Generator\CompressedTransitionTable.cs" />
     <Compile Include="KleeneStarExpression.cs" />
+    <Compile Include="Lexeme.cs" />
     <Compile Include="LexerState.cs" />
     <Compile Include="Lexicon.cs" />
     <Compile Include="RegularExpressionType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegularExpression.cs" />
     <Compile Include="RegularExpressionConverter.cs" />
+    <Compile Include="Scanner.cs" />
+    <Compile Include="SourceCode.cs" />
+    <Compile Include="SourceLocation.cs" />
+    <Compile Include="SourceSpan.cs" />
     <Compile Include="StringLiteralExpression.cs" />
     <Compile Include="SymbolExpression.cs" />
     <Compile Include="TokenIdentity.cs" />

@@ -3,6 +3,7 @@ using RE = VBF.Compilers.Scanners.RegularExpression;
 using NUnit.Framework;
 using System;
 using VBF.Compilers.Scanners.Generator;
+using System.IO;
 
 namespace Compilers.UnitTests
 {
@@ -64,8 +65,8 @@ namespace Compilers.UnitTests
             Lexicon lexicon = new Lexicon();
             LexerState global = lexicon.DefaultState;
             LexerState keywords = lexicon.DefineLexerState(global);
-            LexerState xml = lexicon.DefineLexerState();
-            
+            LexerState xml = lexicon.DefineLexerState(keywords);
+
             var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
             var NUM = global.DefineToken(RE.Range('0', '9').Many1());
@@ -83,7 +84,7 @@ namespace Compilers.UnitTests
 
             FiniteAutomationEngine engine = FiniteAutomationEngine.CreateFromLexicon(lexicon);
             Assert.AreEqual(0, engine.CurrentLexerStateIndex);
-            
+
             engine.InputString("if");
 
             Assert.IsTrue(engine.IsAtAcceptState);
@@ -127,8 +128,8 @@ namespace Compilers.UnitTests
             engine.Reset();
             engine.CurrentLexerStateIndex = xml.Index;
             engine.InputString("if");
-            Assert.IsFalse(engine.IsAtAcceptState);
-            //TODO Assert.IsTrue(engine.IsAtStoppedState);
+            Assert.IsTrue(engine.IsAtAcceptState);
+            Assert.AreEqual(IF.Index, engine.CurrentTokenIndex);
 
             engine.Reset();
             engine.InputString("xml");
@@ -139,6 +140,23 @@ namespace Compilers.UnitTests
             engine.InputString("xmlns");
             Assert.AreEqual(XMLNS.Index, engine.CurrentTokenIndex);
             ;
+        }
+
+        [Test]
+        public void SourceCodeTest()
+        {
+            string code = @"class A
+{
+    public int c;
+}";
+            StringReader sr = new StringReader(code);
+            SourceCode source = new SourceCode(sr);
+
+            while (!source.IsEndOfStream)
+            {
+                char value = (char)source.ReadChar();
+                var location = source.Location;
+            }
         }
     }
 }
