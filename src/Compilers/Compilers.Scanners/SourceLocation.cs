@@ -7,9 +7,9 @@ namespace VBF.Compilers.Scanners
 {
     public struct SourceLocation : IEquatable<SourceLocation>, IComparable<SourceLocation>
     {
-        public int Line { get; set; }
-        public int Column { get; set; }
-        public int CharIndex { get; set; }
+        public int Line { get; internal set; }
+        public int Column { get; internal set; }
+        public int CharIndex { get; internal set; }
 
         public SourceLocation(int index, int line, int column)
             : this()
