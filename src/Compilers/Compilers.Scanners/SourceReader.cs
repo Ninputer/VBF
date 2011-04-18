@@ -6,7 +6,7 @@ using System.IO;
 
 namespace VBF.Compilers.Scanners
 {
-    public class SourceCode
+    public class SourceReader
     {
         public int DefaultTabSize = 4;
 
@@ -18,7 +18,7 @@ namespace VBF.Compilers.Scanners
 
         public int TabSize { get; set; }
 
-        public SourceCode(TextReader textReader)
+        public SourceReader(TextReader textReader)
         {
             CodeContract.RequiresArgumentNotNull(textReader, "textReader");
             m_textReader = textReader;

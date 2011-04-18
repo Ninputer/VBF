@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="AlternationCharSetExpression.cs" />
     <Compile Include="AlternationExpression.cs" />
+    <Compile Include="CacheQueue.cs" />
     <Compile Include="CodeContract.cs" />
     <Compile Include="ConcatenationExpression.cs" />
     <Compile Include="EmptyExpression.cs" />
@@ -63,12 +64,13 @@
     <Compile Include="RegularExpression.cs" />
     <Compile Include="RegularExpressionConverter.cs" />
     <Compile Include="Scanner.cs" />
-    <Compile Include="SourceCode.cs" />
+    <Compile Include="SourceReader.cs" />
     <Compile Include="SourceLocation.cs" />
     <Compile Include="SourceSpan.cs" />
     <Compile Include="StringLiteralExpression.cs" />
     <Compile Include="SymbolExpression.cs" />
     <Compile Include="TokenIdentity.cs" />
+    <Compile Include="UnitTestVisibility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

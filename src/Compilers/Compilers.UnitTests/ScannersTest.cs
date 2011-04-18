@@ -150,13 +150,54 @@ namespace Compilers.UnitTests
     public int c;
 }";
             StringReader sr = new StringReader(code);
-            SourceCode source = new SourceCode(sr);
+            SourceReader source = new SourceReader(sr);
 
             while (!source.IsEndOfStream)
             {
                 char value = (char)source.ReadChar();
                 var location = source.Location;
             }
+        }
+
+        [Test]
+        public void CacheQueueTest()
+        {
+            CacheQueue<int> q = new CacheQueue<int>();
+
+            q.Enqueue(1);
+            q.Enqueue(2);
+            q.Enqueue(3);
+            q.Enqueue(4);
+            q.Enqueue(5);
+
+            Assert.AreEqual(1, q.Dequeue());
+            Assert.AreEqual(2, q.Dequeue());
+
+            Assert.AreEqual(3, q.Count);
+
+            q.Enqueue(6);
+            q.Enqueue(7);
+            q.Enqueue(8);
+            q.Enqueue(9);
+
+            Assert.AreEqual(7, q.Count);
+
+            Assert.AreEqual(3, q[0]);
+            Assert.AreEqual(4, q[1]);
+            Assert.AreEqual(8, q[5]);
+            Assert.AreEqual(9, q[6]);
+
+            Assert.AreEqual(3, q.Dequeue());
+
+            Assert.AreEqual(4, q[0]);
+            Assert.AreEqual(9, q[5]);
+            Assert.AreEqual(6, q.Count);
+
+            q.Enqueue(10);
+            q.Enqueue(11);
+
+            Assert.AreEqual(11, q[7]);
+            Assert.AreEqual(8, q.Count);
         }
     }
 }
