@@ -64,6 +64,7 @@
     <Compile Include="RegularExpression.cs" />
     <Compile Include="RegularExpressionConverter.cs" />
     <Compile Include="Scanner.cs" />
+    <Compile Include="ScannerInfo.cs" />
     <Compile Include="SourceReader.cs" />
     <Compile Include="SourceLocation.cs" />
     <Compile Include="SourceSpan.cs" />

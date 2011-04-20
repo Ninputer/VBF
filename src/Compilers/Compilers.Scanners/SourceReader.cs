@@ -15,6 +15,7 @@ namespace VBF.Compilers.Scanners
         private bool m_peekCharCacheHasValue;
         private int m_peekCharCache;
         private SourceLocation m_location;
+        private SourceLocation m_lastLocation;
 
         public int TabSize { get; set; }
 
@@ -36,13 +37,17 @@ namespace VBF.Compilers.Scanners
 
         public int PeekChar()
         {
-
             if (!m_peekCharCacheHasValue)
             {
                 m_peekCharCache = m_textReader.Read();
                 m_peekCharCacheHasValue = true;
             }
             return m_peekCharCache;
+        }
+
+        public SourceLocation PeekLocation()
+        {
+            return m_location;
         }
 
         public int ReadChar()
@@ -58,6 +63,9 @@ namespace VBF.Compilers.Scanners
                 charValue = m_textReader.Read();
             }
 
+            //save last location
+            m_lastLocation = m_location;
+            
             if (charValue >= 0)
             {
                 Char c = (char)charValue;
@@ -91,7 +99,7 @@ namespace VBF.Compilers.Scanners
                         m_isLastCharLf = false;
                     }
                 }
-                
+
             }
 
             return charValue;
@@ -101,7 +109,7 @@ namespace VBF.Compilers.Scanners
         {
             get
             {
-                return m_location;
+                return m_lastLocation;
             }
         }
     }

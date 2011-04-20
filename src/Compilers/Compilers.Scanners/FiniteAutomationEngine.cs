@@ -20,11 +20,11 @@ namespace VBF.Compilers.Scanners
 
         private int m_currentTokenIndex;
 
-        protected FiniteAutomationEngine(int[][] transitionTable, ushort[] charClassTable, int[][] acceptTables)
+        public FiniteAutomationEngine(ScannerInfo scannerInfo)
         {
-            m_transitionTable = transitionTable;
-            m_charClassTable = charClassTable;
-            m_acceptTables = acceptTables;
+            m_transitionTable = scannerInfo.TransitionTable;
+            m_charClassTable = scannerInfo.CharClassTable;
+            m_acceptTables = scannerInfo.AcceptTables;
 
             Debug.Assert(m_transitionTable.Length > 0);
             Debug.Assert(m_acceptTables.Length > 0);
@@ -96,18 +96,6 @@ namespace VBF.Compilers.Scanners
             {
                 Input(str[i]);
             }
-        }
-
-        public static FiniteAutomationEngine CreateFromLexicon(Lexicon lexicon)
-        {
-            CodeContract.RequiresArgumentNotNull(lexicon, "lexicon");
-
-            DFAModel dfa = DFAModel.Create(lexicon);
-            CompressedTransitionTable ctt = CompressedTransitionTable.Compress(dfa);
-
-            FiniteAutomationEngine faEngine = new FiniteAutomationEngine(ctt.TransitionTable, ctt.CharClassTable, dfa.GetAcceptTables());
-
-            return faEngine;
         }
     }
 }

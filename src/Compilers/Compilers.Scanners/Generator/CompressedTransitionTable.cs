@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VBF.Compilers.Scanners.Generator
 {
-    public class CompressedTransitionTable
+    class CompressedTransitionTable
     {
         IList<DFAState> m_dfaStates;
         ISet<char> m_alphabet;

@@ -82,7 +82,7 @@ namespace Compilers.UnitTests
 
             CompressedTransitionTable tc = CompressedTransitionTable.Compress(dfa);
 
-            FiniteAutomationEngine engine = FiniteAutomationEngine.CreateFromLexicon(lexicon);
+            FiniteAutomationEngine engine = new FiniteAutomationEngine(lexicon.CreateScannerInfo());
             Assert.AreEqual(0, engine.CurrentLexerStateIndex);
 
             engine.InputString("if");
@@ -198,6 +198,50 @@ namespace Compilers.UnitTests
 
             Assert.AreEqual(11, q[7]);
             Assert.AreEqual(8, q.Count);
+        }
+
+        [Test]
+        public void ScannerTest()
+        {
+            Lexicon lexicon = new Lexicon();
+            LexerState global = lexicon.DefaultState;
+            LexerState keywords = lexicon.DefineLexerState(global);
+            LexerState xml = lexicon.DefineLexerState(keywords);
+
+            var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
+                (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
+            var NUM = global.DefineToken(RE.Range('0', '9').Many1());
+            var WHITESPACE = global.DefineToken(RE.Symbol(' ').Many());
+            var ERROR = global.DefineToken(RE.Range(Char.MinValue, (char)255));
+
+            var IF = keywords.DefineToken(RE.Literal("if"));
+            var ELSE = keywords.DefineToken(RE.Literal("else"));
+
+            var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
+
+            Scanner scanner = new Scanner(lexicon.CreateScannerInfo());
+
+            string source = "asdf04a 1107 else Z if vvv xmlns 772737";
+            StringReader sr = new StringReader(source);
+
+            scanner.SetSource(new SourceReader(sr));
+
+            Lexeme l1 = scanner.Read();
+            Assert.AreEqual(ID.Index,l1.TokenIdentityIndex);
+            Assert.AreEqual("asdf04a", l1.Value);
+            Assert.AreEqual(0, l1.Span.StartLocation.Column);
+            Assert.AreEqual(6, l1.Span.EndLocation.Column);
+
+            Lexeme l2 = scanner.Read();
+            Lexeme l3 = scanner.Read();
+            Lexeme l4 = scanner.Read();
+            Lexeme l5 = scanner.Read();
+
+            int p1 = scanner.Peek();
+            int p2 = scanner.Peek2();
+            int p3 = scanner.Peek(3);
+            int p4 = scanner.Peek(4);
+            int p5 = scanner.Peek(5);
         }
     }
 }

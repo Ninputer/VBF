@@ -74,23 +74,12 @@ namespace VBF.Compilers.Scanners
             return newState;
         }
 
-        public NFAModel CreateFiniteAutomatonModel()
+        public ScannerInfo CreateScannerInfo()
         {
-            NFAState entryState = new NFAState();
-            NFAModel lexerNFA = new NFAModel();
+            DFAModel dfa = DFAModel.Create(this);
+            CompressedTransitionTable ctt = CompressedTransitionTable.Compress(dfa);
 
-            lexerNFA.AddState(entryState);
-            foreach (var token in m_tokenList)
-            {
-                NFAModel tokenNFA = token.CreateFiniteAutomatonModel();
-
-                entryState.AddEdge(tokenNFA.EntryEdge);
-                lexerNFA.AddStates(tokenNFA.States);
-            }
-
-            lexerNFA.EntryEdge = new NFAEdge(entryState);
-
-            return lexerNFA;
+            return new ScannerInfo(ctt.TransitionTable, ctt.CharClassTable, dfa.GetAcceptTables(), m_tokenList.Count);
         }
     }
 }

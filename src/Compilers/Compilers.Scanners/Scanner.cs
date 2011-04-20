@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
@@ -20,12 +21,14 @@ namespace VBF.Compilers.Scanners
 
         private CacheQueue<Lexeme> m_lookAheadQueue;
 
-        public Scanner(FiniteAutomationEngine engine)
-        {
-            CodeContract.RequiresArgumentNotNull(engine, "engine");
+        private int[] m_tokenAttributes;
 
-            m_engine = engine;
+        public Scanner(ScannerInfo scannerInfo)
+        {
+
+            m_engine = new FiniteAutomationEngine(scannerInfo);
             m_lexemeValueBuilder = new StringBuilder();
+            m_tokenAttributes = new int[scannerInfo.TokenCount];
 
             Initialize();
         }
@@ -60,31 +63,31 @@ namespace VBF.Compilers.Scanners
         {
             CodeContract.RequiresArgumentInRange(lookAhead > 0, "lookAhead", "The lookAhead must be greater than zero");
 
-            Lexeme lookAheadLexeme;
-            if (m_lookAheadQueue.Count >= lookAhead)
-            {
-                //there's enough lexemes in the look ahead cache queue
-                lookAheadLexeme = m_lookAheadQueue[lookAhead - 1];
-                return lookAheadLexeme.TokenIdentityIndex;
-            }
-            else
+            while (m_lookAheadQueue.Count < lookAhead)
             {
                 //look ahead more
+                m_lookAheadQueue.Enqueue(ReadNextToken());
             }
+            Lexeme lookAheadLexeme = m_lookAheadQueue[lookAhead - 1];
+            return lookAheadLexeme.TokenIdentityIndex;
 
-            throw new NotImplementedException();
         }
 
         public Lexeme Read()
         {
-            throw new NotImplementedException();
+            if (m_lookAheadQueue.Count > 0)
+            {
+                return m_lookAheadQueue.Dequeue();
+            }
+
+            return ReadNextToken();
         }
 
         private Lexeme ReadNextToken()
         {
             //run to next stopped state
             m_engine.Reset();
-            m_lastTokenStart = m_source.Location;
+            m_lastTokenStart = m_source.PeekLocation();
             m_lastAcceptedTokenIndex = InvalidTokenIndex;
             m_lexemeValueBuilder.Clear();
 
@@ -92,7 +95,7 @@ namespace VBF.Compilers.Scanners
             {
                 //return End Of Stream token
                 return new Lexeme(EndOfStreamTokenIndex,
-                    new SourceSpan(m_lastTokenStart, m_source.Location), null);
+                    new SourceSpan(m_lastTokenStart, m_lastTokenStart), null);
             }
 
             int inputCharValue;
