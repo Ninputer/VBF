@@ -153,7 +153,7 @@ namespace VBF.Compilers.Scanners
                 }
 
                 //skip tokens that marked with "Skip" attribute
-            } while (m_tokenAttributes[m_lastAcceptedTokenIndex] == Skip);
+            } while (m_lastAcceptedTokenIndex >= 0 && m_tokenAttributes[m_lastAcceptedTokenIndex] == Skip);
 
             return new Lexeme(m_lastAcceptedTokenIndex,
                 new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString());
