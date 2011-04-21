@@ -115,23 +115,30 @@ namespace VBF.Compilers.Scanners.Generator
 
             if (acceptStates != null && acceptStates.Length > 0)
             {
+                Queue<LexerState> stateTreeQueue = new Queue<LexerState>();
+
                 foreach (var acceptState in acceptStates)
                 {
-
-
                     int acceptTokenIdentityIndex = acceptState.First().Index;
 
-                    SetAcceptState(acceptState.Key, state.Index, acceptTokenIdentityIndex);
-
-
                     //set all children lexer state's accept token to current lexer state
-                    var childrenStates = from child in lexerStates
-                                         where child.BaseState != null && child.BaseState.Index == acceptState.Key
-                                         select child.Index;
-                    foreach (var childStateIndex in childrenStates)
+                    stateTreeQueue.Clear();
+                    stateTreeQueue.Enqueue(lexerStates[acceptState.Key]);
+
+                    while (stateTreeQueue.Count > 0)
                     {
-                        SetAcceptState(childStateIndex, state.Index, acceptTokenIdentityIndex);
+                        var currentLexerState = stateTreeQueue.Dequeue();
+
+                        foreach (var child in currentLexerState.Children)
+                        {
+                            stateTreeQueue.Enqueue(child);
+                        }
+
+
+                        SetAcceptState(currentLexerState.Index, state.Index, acceptTokenIdentityIndex);
                     }
+
+
                 }
             }
         }

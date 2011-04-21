@@ -133,7 +133,7 @@ namespace Compilers.UnitTests
 
             engine.Reset();
             engine.InputString("xml");
-            Assert.IsFalse(engine.IsAtAcceptState);
+            Assert.IsTrue(engine.IsAtAcceptState);
             Assert.IsFalse(engine.IsAtStoppedState);
 
             engine.Reset();
@@ -233,15 +233,126 @@ namespace Compilers.UnitTests
             Assert.AreEqual(6, l1.Span.EndLocation.Column);
 
             Lexeme l2 = scanner.Read();
+            Assert.AreEqual(WHITESPACE.Index, l2.TokenIdentityIndex);
+            Assert.AreEqual(" ", l2.Value);
+
             Lexeme l3 = scanner.Read();
+            Assert.AreEqual(NUM.Index, l3.TokenIdentityIndex);
+            Assert.AreEqual("1107", l3.Value);
+
             Lexeme l4 = scanner.Read();
+            Assert.AreEqual(WHITESPACE.Index, l4.TokenIdentityIndex);
+
             Lexeme l5 = scanner.Read();
+            Assert.AreEqual(ID.Index, l5.TokenIdentityIndex);
 
             int p1 = scanner.Peek();
+            Assert.AreEqual(WHITESPACE.Index, p1);
+
+            int p2 = scanner.Peek2();
+            Assert.AreEqual(ERROR.Index, p2);
+
+            int p3 = scanner.Peek(3);
+            Assert.AreEqual(WHITESPACE.Index, p3);
+
+            int p4 = scanner.Peek(4);
+            Assert.AreEqual(ID.Index, p4);
+
+            int p5 = scanner.Peek(5);
+            Assert.AreEqual(WHITESPACE.Index, p5);
+
+            Lexeme l6 = scanner.Read();
+            Lexeme l7 = scanner.Read();
+
+            Assert.AreEqual(ERROR.Index, l7.TokenIdentityIndex);
+
+            int p3_2 = scanner.Peek();
+            Assert.AreEqual(p3, p3_2);
+
+            Lexeme l8 = scanner.Read(); // whitespace
+            Lexeme l9 = scanner.Read(); // ID:if
+            Lexeme l10 = scanner.Read(); // whitespace
+            Lexeme l11 = scanner.Read(); // ID:vvv
+            Lexeme l12 = scanner.Read(); // whitespace
+            Lexeme l13 = scanner.Read(); // ID:xmlns
+            Lexeme l14 = scanner.Read(); // whitespace
+            Lexeme l15 = scanner.Read(); // NUM:772737
+            Lexeme leof = scanner.Read(); // eof
+
+            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof.TokenIdentityIndex);
+            Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
+            Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
+
+            Lexeme leof2 = scanner.Read(); //after eof, should return eof again
+
+            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof2.TokenIdentityIndex);
+            Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof2.Span.StartLocation.CharIndex);
+        }
+
+        [Test]
+        public void SkipTokenTest()
+        {
+            Lexicon lexicon = new Lexicon();
+            LexerState global = lexicon.DefaultState;
+            LexerState keywords = lexicon.DefineLexerState(global);
+            LexerState xml = lexicon.DefineLexerState(keywords);
+
+            var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
+                (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
+            var NUM = global.DefineToken(RE.Range('0', '9').Many1());
+            var WHITESPACE = global.DefineToken(RE.Symbol(' ').Many());
+            var ERROR = global.DefineToken(RE.Range(Char.MinValue, (char)255));
+
+            var IF = keywords.DefineToken(RE.Literal("if"));
+            var ELSE = keywords.DefineToken(RE.Literal("else"));
+
+            var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
+
+            Scanner scanner = new Scanner(lexicon.CreateScannerInfo());
+
+            string source = "asdf04a 1107 else Z if vvv xmlns 772737";
+            StringReader sr = new StringReader(source);
+
+            scanner.SetSource(new SourceReader(sr));
+            scanner.SetSkipTokens(WHITESPACE.Index);
+            scanner.SetLexerState(xml.Index);
+
+            Lexeme l1 = scanner.Read();
+            Assert.AreEqual(ID.Index, l1.TokenIdentityIndex);
+            Assert.AreEqual("asdf04a", l1.Value);
+
+            Lexeme l2 = scanner.Read();
+            Assert.AreEqual(NUM.Index, l2.TokenIdentityIndex);
+            Assert.AreEqual("1107", l2.Value);
+
+            Lexeme l3 = scanner.Read();
+            Assert.AreEqual(ELSE.Index, l3.TokenIdentityIndex);
+            Assert.AreEqual("else", l3.Value);
+
+            Lexeme l4 = scanner.Read();
+            Lexeme l5 = scanner.Read();
+            Assert.AreEqual(IF.Index, l5.TokenIdentityIndex);
+            Assert.AreEqual("if", l5.Value);
+
+            int p1 = scanner.Peek();
+            Assert.AreEqual(ID.Index, p1);
+
             int p2 = scanner.Peek2();
             int p3 = scanner.Peek(3);
-            int p4 = scanner.Peek(4);
-            int p5 = scanner.Peek(5);
+            int peof = scanner.Peek(4);
+            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, peof);
+
+            Lexeme l6 = scanner.Read();
+            Lexeme l7 = scanner.Read();
+            Assert.AreEqual(XMLNS.Index, l7.TokenIdentityIndex);
+
+            Lexeme l8 = scanner.Read();
+            Assert.AreEqual(NUM.Index, l8.TokenIdentityIndex);
+
+            Lexeme leof = scanner.Read();
+            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof.TokenIdentityIndex);
+            Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
+            Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
         }
     }
 }

@@ -13,11 +13,13 @@ namespace VBF.Compilers.Scanners
         public LexerState BaseState { get; private set; }
         public int Index { get; private set; }
         internal int Level { get; private set; }
+        internal List<LexerState> Children { get; private set; }
 
         internal LexerState(Lexicon lexicon, int index) : this(lexicon, index, null) { }
 
         internal LexerState(Lexicon lexicon, int index, LexerState baseState)
         {
+            Children = new List<LexerState>();
             Lexicon = lexicon;
             BaseState = baseState;
             m_tokens = new List<TokenIdentity>();
@@ -30,6 +32,7 @@ namespace VBF.Compilers.Scanners
             else
             {
                 Level = baseState.Level + 1;
+                baseState.Children.Add(this);
             }
         }
 

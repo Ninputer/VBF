@@ -11,6 +11,7 @@ namespace VBF.Compilers.Scanners
         //consts
         public const int InvalidTokenIndex = -1;
         public const int EndOfStreamTokenIndex = -100;
+        private const int Skip = 1;
 
         private FiniteAutomationEngine m_engine;
         private SourceReader m_source;
@@ -49,6 +50,26 @@ namespace VBF.Compilers.Scanners
             Initialize();
         }
 
+        public void SetSkipTokens(params int[] skipTokenIndices)
+        {
+            Array.Clear(m_tokenAttributes, 0, m_tokenAttributes.Length);
+
+            for (int i = 0; i < skipTokenIndices.Length; i++)
+            {
+                int skipIndex = skipTokenIndices[i];
+
+                if (skipIndex >= 0 && skipIndex < m_tokenAttributes.Length)
+                {
+                    m_tokenAttributes[skipIndex] = Skip;
+                }
+            }
+        }
+
+        public void SetLexerState(int lexerStateIndex)
+        {
+            m_engine.CurrentLexerStateIndex = lexerStateIndex;
+        }
+
         public int Peek()
         {
             return Peek(1);
@@ -85,50 +106,54 @@ namespace VBF.Compilers.Scanners
 
         private Lexeme ReadNextToken()
         {
-            //run to next stopped state
-            m_engine.Reset();
-            m_lastTokenStart = m_source.PeekLocation();
-            m_lastAcceptedTokenIndex = InvalidTokenIndex;
-            m_lexemeValueBuilder.Clear();
-
-            if (m_source.PeekChar() < 0)
+            do
             {
-                //return End Of Stream token
-                return new Lexeme(EndOfStreamTokenIndex,
-                    new SourceSpan(m_lastTokenStart, m_lastTokenStart), null);
-            }
+                //run to next stopped state
+                m_engine.Reset();
+                m_lastTokenStart = m_source.PeekLocation();
+                m_lastAcceptedTokenIndex = InvalidTokenIndex;
+                m_lexemeValueBuilder.Clear();
 
-            int inputCharValue;
-            while (true)
-            {
-                inputCharValue = m_source.PeekChar();
-
-                if (inputCharValue < 0)
+                if (m_source.PeekChar() < 0)
                 {
-                    //end of stream, treat as stopped
-                    break;
+                    //return End Of Stream token
+                    return new Lexeme(EndOfStreamTokenIndex,
+                        new SourceSpan(m_lastTokenStart, m_lastTokenStart), null);
                 }
 
-                char inputChar = (char)inputCharValue;
-                m_engine.Input(inputChar);
+                while (true)
+                {
+                    int inputCharValue = m_source.PeekChar();
 
-                if (m_engine.IsAtAcceptState)
-                {
-                    m_lastAcceptedTokenIndex = m_engine.CurrentTokenIndex;
-                }
-                else if (m_engine.IsAtStoppedState)
-                {
-                    //stop immediately at a stopped state
-                    break;
-                }
-                else
-                {
-                    m_lastAcceptedTokenIndex = InvalidTokenIndex;
+                    if (inputCharValue < 0)
+                    {
+                        //end of stream, treat as stopped
+                        break;
+                    }
+
+                    char inputChar = (char)inputCharValue;
+                    m_engine.Input(inputChar);
+
+                    if (m_engine.IsAtAcceptState)
+                    {
+                        m_lastAcceptedTokenIndex = m_engine.CurrentTokenIndex;
+                    }
+                    else if (m_engine.IsAtStoppedState)
+                    {
+                        //stop immediately at a stopped state
+                        break;
+                    }
+                    else
+                    {
+                        m_lastAcceptedTokenIndex = InvalidTokenIndex;
+                    }
+
+                    m_source.ReadChar();
+                    m_lexemeValueBuilder.Append(inputChar);
                 }
 
-                m_source.ReadChar();
-                m_lexemeValueBuilder.Append(inputChar);
-            }
+                //skip tokens that marked with "Skip" attribute
+            } while (m_tokenAttributes[m_lastAcceptedTokenIndex] == Skip);
 
             return new Lexeme(m_lastAcceptedTokenIndex,
                 new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString());
