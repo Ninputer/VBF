@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
-    public class FiniteAutomationEngine
+    class FiniteAutomationEngine
     {
         private int[][] m_acceptTables;
         private int[] m_currentAcceptTable;
