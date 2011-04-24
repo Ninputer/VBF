@@ -82,63 +82,59 @@ namespace Compilers.UnitTests
 
             CompressedTransitionTable tc = CompressedTransitionTable.Compress(dfa);
 
-            FiniteAutomationEngine engine = new FiniteAutomationEngine(lexicon.CreateScannerInfo());
-            Assert.AreEqual(0, engine.CurrentLexerStateIndex);
+            ScannerInfo si = lexicon.CreateScannerInfo();
+
+            FiniteAutomationEngine engine = new FiniteAutomationEngine(si.TransitionTable, si.CharClassTable);
 
             engine.InputString("if");
 
-            Assert.IsTrue(engine.IsAtAcceptState);
-            Assert.AreEqual(ID.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(ID.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
             engine.InputString("12345");
-            Assert.AreEqual(NUM.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(NUM.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
             engine.InputString("asdf12dd");
-            Assert.AreEqual(ID.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(ID.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
             engine.InputString("A");
-            Assert.AreEqual(ERROR.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(ERROR.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
             engine.InputString("AAA");
-            Assert.IsFalse(engine.IsAtAcceptState);
             Assert.IsTrue(engine.IsAtStoppedState);
 
             engine.Reset();
             engine.InputString("if ");
-            Assert.IsFalse(engine.IsAtAcceptState);
             Assert.IsTrue(engine.IsAtStoppedState);
 
             engine.Reset();
-            engine.CurrentLexerStateIndex = keywords.Index;
+            si.LexerStateIndex = keywords.Index;
             engine.InputString("if");
-            Assert.AreEqual(IF.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(IF.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
             engine.InputString("else");
-            Assert.AreEqual(ELSE.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(ELSE.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
             engine.InputString("xmlns");
-            Assert.AreEqual(ID.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(ID.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
-            engine.CurrentLexerStateIndex = xml.Index;
+            si.LexerStateIndex = xml.Index;
             engine.InputString("if");
-            Assert.IsTrue(engine.IsAtAcceptState);
-            Assert.AreEqual(IF.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(IF.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
             engine.InputString("xml");
-            Assert.IsTrue(engine.IsAtAcceptState);
             Assert.IsFalse(engine.IsAtStoppedState);
 
             engine.Reset();
             engine.InputString("xmlns");
-            Assert.AreEqual(XMLNS.Index, engine.CurrentTokenIndex);
+            Assert.AreEqual(XMLNS.Index, si.GetTokenIndex(engine.CurrentState));
             ;
         }
 
@@ -289,7 +285,8 @@ namespace Compilers.UnitTests
 
             var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
 
-            Scanner scanner = new Scanner(lexicon.CreateScannerInfo());
+            ScannerInfo info = lexicon.CreateScannerInfo();
+            Scanner scanner = new Scanner(info);
 
             string source = "asdf04a 1107 else Z if vvv xmlns 772737";
             StringReader sr = new StringReader(source);
@@ -297,7 +294,7 @@ namespace Compilers.UnitTests
             scanner.SetSource(new SourceReader(sr));
 
             Lexeme l1 = scanner.Read();
-            Assert.AreEqual(ID.Index,l1.TokenIndex);
+            Assert.AreEqual(ID.Index, l1.TokenIndex);
             Assert.AreEqual("asdf04a", l1.Value);
             Assert.AreEqual(0, l1.Span.StartLocation.Column);
             Assert.AreEqual(6, l1.Span.EndLocation.Column);
@@ -349,13 +346,13 @@ namespace Compilers.UnitTests
             Lexeme l15 = scanner.Read(); // NUM:772737
             Lexeme leof = scanner.Read(); // eof
 
-            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof.TokenIndex);
+            Assert.AreEqual(info.EndOfStreamTokenIndex, leof.TokenIndex);
             Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
             Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
 
             Lexeme leof2 = scanner.Read(); //after eof, should return eof again
 
-            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof2.TokenIndex);
+            Assert.AreEqual(info.EndOfStreamTokenIndex, leof2.TokenIndex);
             Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof2.Span.StartLocation.CharIndex);
         }
 
@@ -378,14 +375,15 @@ namespace Compilers.UnitTests
 
             var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
 
-            Scanner scanner = new Scanner(lexicon.CreateScannerInfo());
+            ScannerInfo info = lexicon.CreateScannerInfo();
+            Scanner scanner = new Scanner(info);
 
             string source = "asdf04a 1107 else Z if vvv xmlns 772737";
             StringReader sr = new StringReader(source);
 
             scanner.SetSource(new SourceReader(sr));
             scanner.SetSkipTokens(WHITESPACE.Index);
-            scanner.LexerStateIndex = xml.Index;
+            info.LexerStateIndex = xml.Index;
 
             Lexeme l1 = scanner.Read();
             Assert.AreEqual(ID.Index, l1.TokenIndex);
@@ -410,7 +408,7 @@ namespace Compilers.UnitTests
             int p2 = scanner.Peek2();
             int p3 = scanner.Peek(3);
             int peof = scanner.Peek(4);
-            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, peof);
+            Assert.AreEqual(info.EndOfStreamTokenIndex, peof);
 
             Lexeme l6 = scanner.Read();
             Lexeme l7 = scanner.Read();
@@ -420,7 +418,7 @@ namespace Compilers.UnitTests
             Assert.AreEqual(NUM.Index, l8.TokenIndex);
 
             Lexeme leof = scanner.Read();
-            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof.TokenIndex);
+            Assert.AreEqual(info.EndOfStreamTokenIndex, leof.TokenIndex);
             Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
             Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
         }

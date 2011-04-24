@@ -9,64 +9,31 @@ namespace VBF.Compilers.Scanners
 {
     class FiniteAutomationEngine
     {
-        private int[][] m_acceptTables;
-        private int[] m_currentAcceptTable;
-        private int m_currentLexerState;
 
         private int[][] m_transitionTable;
         private int m_currentState;
 
         private ushort[] m_charClassTable;
 
-        private int m_currentTokenIndex;
-
-        public FiniteAutomationEngine(ScannerInfo scannerInfo)
+        public FiniteAutomationEngine(int[][] transitionTable, ushort[] charClassTable)
         {
-            m_transitionTable = scannerInfo.TransitionTable;
-            m_charClassTable = scannerInfo.CharClassTable;
-            m_acceptTables = scannerInfo.AcceptTables;
+            m_transitionTable = transitionTable;
+            m_charClassTable = charClassTable;
 
             Debug.Assert(m_transitionTable.Length > 0);
-            Debug.Assert(m_acceptTables.Length > 0);
 
             m_currentState = 1;
-            m_currentLexerState = 0;
-            m_currentAcceptTable = m_acceptTables[m_currentLexerState];
-            m_currentTokenIndex = -1;
-        }
-
-        public int CurrentLexerStateIndex
-        {
-            get { return m_currentLexerState; }
-            set
-            {
-                CodeContract.RequiresArgumentInRange(value >= 0 && value < m_acceptTables.Length, "value", 
-                    "CurrentLexerState must be greater than or equal to 0 and less than the count of lexer states");
-
-                m_currentLexerState = value;
-                m_currentAcceptTable = m_acceptTables[m_currentLexerState];
-            }
         }
 
         public void Reset()
         {
             m_currentState = 1;
-            m_currentTokenIndex = -1;
         }
-
-        public int CurrentTokenIndex
+        public int CurrentState
         {
             get
             {
-                return m_currentTokenIndex;
-            }
-        }
-
-        public bool IsAtAcceptState
-        {
-            get
-            {
-                return m_currentTokenIndex >= 0;
+                return m_currentState;
             }
         }
 
@@ -87,7 +54,6 @@ namespace VBF.Compilers.Scanners
 
             //go to next state
             m_currentState = nextState;
-            m_currentTokenIndex = m_currentAcceptTable[nextState];
         }
 
         public void InputString(string str)

@@ -48,8 +48,16 @@ namespace VBF.Compilers.Scanners.Generator
         }
 
         public int[][] GetAcceptTables()
+        {           
+            return (from t in m_acceptTables select AppendEosToken(t.ToList()).ToArray()).ToArray();
+        }
+
+        private List<int> AppendEosToken(List<int> list)
         {
-            return (from t in m_acceptTables select t.ToArray()).ToArray();
+            //token count is the index of End OF Stream token
+            //add to each accept list
+            list.Add(m_lexicon.TokenCount);
+            return list;
         }
 
         public static DFAModel Create(Lexicon lexicon)
