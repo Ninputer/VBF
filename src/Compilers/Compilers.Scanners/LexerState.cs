@@ -48,5 +48,10 @@ namespace VBF.Compilers.Scanners
             return token;
         }
 
+        public LexerState DefineSubState()
+        {
+            return Lexicon.DefineLexerState(this);
+        }
+
     }
 }

@@ -65,9 +65,22 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        public void SetLexerState(int lexerStateIndex)
+        public int LexerStateIndex
         {
-            m_engine.CurrentLexerStateIndex = lexerStateIndex;
+            get
+            {
+                return m_engine.CurrentLexerStateIndex;
+            }
+
+            set
+            {
+                if (m_lookAheadQueue.Count != 0)
+                {
+                    throw new InvalidOperationException("The lexer state can't be changed when the look ahead queue is not empty");
+                }
+
+                m_engine.CurrentLexerStateIndex = value;
+            }
         }
 
         public int Peek()

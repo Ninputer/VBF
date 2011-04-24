@@ -27,7 +27,7 @@ namespace Compilers.UnitTests
             //var RE_NUM = RE.Range('0', '9').Many1();
             //var RE_ERROR = RE.Range(Char.MinValue, (char)255);
             Lexicon lexicon = new Lexicon();
-            var ID = lexicon.DefaultState.DefineToken(RE_ID);
+            var ID = lexicon.DefaultLexer.DefineToken(RE_ID);
 
             NFAConverter nfaConverter = new NFAConverter();
 
@@ -63,9 +63,9 @@ namespace Compilers.UnitTests
         public void LexerStateToDFATest()
         {
             Lexicon lexicon = new Lexicon();
-            LexerState global = lexicon.DefaultState;
-            LexerState keywords = lexicon.DefineLexerState(global);
-            LexerState xml = lexicon.DefineLexerState(keywords);
+            LexerState global = lexicon.DefaultLexer;
+            LexerState keywords = global.DefineSubState();
+            LexerState xml = keywords.DefineSubState();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -145,18 +145,88 @@ namespace Compilers.UnitTests
         [Test]
         public void SourceCodeTest()
         {
-            string code = @"class A
+            string code = @"class ABCDEFG
 {
     public int c;
 }";
             StringReader sr = new StringReader(code);
             SourceReader source = new SourceReader(sr);
 
-            while (!source.IsEndOfStream)
-            {
-                char value = (char)source.ReadChar();
-                var location = source.Location;
-            }
+            Assert.AreEqual('c', (char)source.PeekChar());
+            Assert.AreEqual('c', (char)source.ReadChar());
+            Assert.AreEqual(0, source.Location.CharIndex);
+
+            //create a revert point
+            var rp1 = source.CreateRevertPoint();
+
+            Assert.AreEqual('l', (char)source.PeekChar());
+            Assert.AreEqual('l', (char)source.ReadChar());
+            Assert.AreEqual('a', (char)source.ReadChar());
+            Assert.AreEqual(2, source.Location.CharIndex);
+
+            //revert
+            source.Revert(rp1);
+            Assert.AreEqual('l', (char)source.PeekChar());
+            Assert.AreEqual('l', (char)source.ReadChar());
+            Assert.AreEqual('a', (char)source.ReadChar());
+            Assert.AreEqual(2, source.Location.CharIndex);
+            Assert.AreEqual('s', (char)source.ReadChar());
+            Assert.AreEqual(3, source.Location.CharIndex);
+
+            source.Revert(rp1);
+            source.RemoveRevertPoint(rp1);
+            Assert.AreEqual('l', (char)source.ReadChar());
+            Assert.AreEqual('a', (char)source.ReadChar());
+            Assert.AreEqual(2, source.Location.CharIndex);
+            Assert.AreEqual('s', (char)source.ReadChar());
+            Assert.AreEqual(3, source.Location.CharIndex);
+            Assert.AreEqual('s', (char)source.ReadChar());
+
+            Assert.Catch<ArgumentException>(() => source.Revert(rp1));
+
+            //peek and then revert
+            Assert.AreEqual(' ', (char)source.PeekChar());
+            var rp2 = source.CreateRevertPoint();
+            Assert.AreEqual(' ', (char)source.PeekChar());
+            Assert.AreEqual(' ', (char)source.ReadChar());
+            Assert.AreEqual('A', (char)source.ReadChar());
+
+            source.Revert(rp2);
+            Assert.AreEqual(' ', (char)source.PeekChar());
+            Assert.AreEqual(' ', (char)source.ReadChar());
+            Assert.AreEqual('A', (char)source.ReadChar());
+
+            //multiple revert point
+            var rp3 = source.CreateRevertPoint();
+            Assert.AreEqual('B', (char)source.ReadChar());
+            Assert.AreEqual('C', (char)source.ReadChar());
+            Assert.AreEqual('D', (char)source.ReadChar());
+            Assert.AreEqual('E', (char)source.PeekChar());
+
+            source.Revert(rp2);
+            Assert.AreEqual(' ', (char)source.PeekChar());
+            Assert.AreEqual(' ', (char)source.ReadChar());
+            Assert.AreEqual('A', (char)source.ReadChar());
+
+            source.Revert(rp3);
+            Assert.AreEqual('B', (char)source.ReadChar());
+            Assert.AreEqual('C', (char)source.ReadChar());
+            Assert.AreEqual('D', (char)source.ReadChar());
+            Assert.AreEqual('E', (char)source.PeekChar());
+
+            source.Revert(rp2);
+            Assert.AreEqual(' ', (char)source.PeekChar());
+            Assert.AreEqual(' ', (char)source.ReadChar());
+            Assert.AreEqual('A', (char)source.ReadChar());
+
+            source.RemoveRevertPoint(rp2);
+            source.RemoveRevertPoint(rp3);
+
+            Assert.AreEqual('B', (char)source.ReadChar());
+            Assert.AreEqual('C', (char)source.ReadChar());
+            Assert.AreEqual('D', (char)source.ReadChar());
+            Assert.AreEqual('E', (char)source.ReadChar());
+            Assert.AreEqual('F', (char)source.PeekChar());
         }
 
         [Test]
@@ -204,9 +274,9 @@ namespace Compilers.UnitTests
         public void ScannerTest()
         {
             Lexicon lexicon = new Lexicon();
-            LexerState global = lexicon.DefaultState;
-            LexerState keywords = lexicon.DefineLexerState(global);
-            LexerState xml = lexicon.DefineLexerState(keywords);
+            LexerState global = lexicon.DefaultLexer;
+            LexerState keywords = global.DefineSubState();
+            LexerState xml = keywords.DefineSubState();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -293,9 +363,9 @@ namespace Compilers.UnitTests
         public void SkipTokenTest()
         {
             Lexicon lexicon = new Lexicon();
-            LexerState global = lexicon.DefaultState;
-            LexerState keywords = lexicon.DefineLexerState(global);
-            LexerState xml = lexicon.DefineLexerState(keywords);
+            LexerState global = lexicon.DefaultLexer;
+            LexerState keywords = global.DefineSubState();
+            LexerState xml = keywords.DefineSubState();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -315,7 +385,7 @@ namespace Compilers.UnitTests
 
             scanner.SetSource(new SourceReader(sr));
             scanner.SetSkipTokens(WHITESPACE.Index);
-            scanner.SetLexerState(xml.Index);
+            scanner.LexerStateIndex = xml.Index;
 
             Lexeme l1 = scanner.Read();
             Assert.AreEqual(ID.Index, l1.TokenIdentityIndex);

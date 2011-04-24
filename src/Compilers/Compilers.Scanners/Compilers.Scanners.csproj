@@ -63,11 +63,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegularExpression.cs" />
     <Compile Include="RegularExpressionConverter.cs" />
+    <Compile Include="RevertPoint.cs" />
+    <Compile Include="RevertPointCollection.cs" />
     <Compile Include="Scanner.cs" />
     <Compile Include="ScannerInfo.cs" />
     <Compile Include="SourceReader.cs" />
     <Compile Include="SourceLocation.cs" />
     <Compile Include="SourceSpan.cs" />
+    <Compile Include="StringBuilderReader.cs" />
     <Compile Include="StringLiteralExpression.cs" />
     <Compile Include="SymbolExpression.cs" />
     <Compile Include="TokenIdentity.cs" />

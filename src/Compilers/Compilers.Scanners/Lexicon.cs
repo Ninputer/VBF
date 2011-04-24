@@ -31,7 +31,7 @@ namespace VBF.Compilers.Scanners
             return token;
         }
 
-        public LexerState DefaultState
+        public LexerState DefaultLexer
         {
             get
             {
@@ -65,7 +65,7 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        public LexerState DefineLexerState(LexerState baseState)
+        internal LexerState DefineLexerState(LexerState baseState)
         {
             int index = m_lexerStates.Count;
             LexerState newState = new LexerState(this, index, baseState);
