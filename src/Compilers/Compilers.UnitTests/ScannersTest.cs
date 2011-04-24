@@ -286,7 +286,7 @@ namespace Compilers.UnitTests
             var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
 
             ScannerInfo info = lexicon.CreateScannerInfo();
-            Scanner scanner = new Scanner(info);
+            PeekableScanner scanner = new PeekableScanner(info);
 
             string source = "asdf04a 1107 else Z if vvv xmlns 772737";
             StringReader sr = new StringReader(source);
@@ -376,7 +376,7 @@ namespace Compilers.UnitTests
             var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
 
             ScannerInfo info = lexicon.CreateScannerInfo();
-            Scanner scanner = new Scanner(info);
+            PeekableScanner scanner = new PeekableScanner(info);
 
             string source = "asdf04a 1107 else Z if vvv xmlns 772737";
             StringReader sr = new StringReader(source);

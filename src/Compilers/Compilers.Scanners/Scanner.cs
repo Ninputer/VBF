@@ -21,8 +21,6 @@ namespace VBF.Compilers.Scanners
         private SourceLocation m_lastTokenStart;
         private StringBuilder m_lexemeValueBuilder;
 
-        private CacheQueue<Lexeme> m_lookAheadQueue;
-
         private int[] m_tokenAttributes;
 
         public Scanner(ScannerInfo scannerInfo)
@@ -40,7 +38,6 @@ namespace VBF.Compilers.Scanners
         {
             m_engine.Reset();
             m_lastState = 0;
-            m_lookAheadQueue = new CacheQueue<Lexeme>();
             m_lexemeValueBuilder.Clear();
         }
 
@@ -65,54 +62,10 @@ namespace VBF.Compilers.Scanners
                     m_tokenAttributes[skipIndex] = Skip;
                 }
             }
-        }
-
-        public int Peek()
-        {
-            return Peek(1);
-        }
-
-        public int Peek2()
-        {
-            return Peek(2);
-        }
-
-        private Lexeme PeekLexeme(int lookAhead)
-        {
-            while (m_lookAheadQueue.Count < lookAhead)
-            {
-                //look ahead more
-                m_lookAheadQueue.Enqueue(ReadNextToken());
-            }
-            Lexeme lookAheadLexeme = m_lookAheadQueue[lookAhead - 1];
-            return lookAheadLexeme;
-        }
-
-        public int Peek(int lookAhead)
-        {
-            CodeContract.RequiresArgumentInRange(lookAhead > 0, "lookAhead", "The lookAhead must be greater than zero");
-
-            Lexeme lookAheadLexeme = PeekLexeme(lookAhead);
-            return lookAheadLexeme.TokenIndex;
-
-        }
-
-        public int PeekInLexerState(int lexerStateIndex, int lookAhead)
-        {
-            CodeContract.RequiresArgumentInRange(lookAhead > 0, "lookAhead", "The lookAhead must be greater than zero");
-            CodeContract.RequiresArgumentInRange(lexerStateIndex >= 0 && lexerStateIndex < m_scannerInfo.LexerStateCount, "lexerStateIndex", "Invalid lexer state index");
-
-            Lexeme lookAheadLexeme = PeekLexeme(lookAhead);
-            return lookAheadLexeme.GetTokenIndex(lexerStateIndex);
-        }
+        }     
 
         public Lexeme Read()
         {
-            if (m_lookAheadQueue.Count > 0)
-            {
-                return m_lookAheadQueue.Dequeue();
-            }
-
             return ReadNextToken();
         }
 
