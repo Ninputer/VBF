@@ -103,7 +103,7 @@ namespace VBF.Compilers.Scanners
                 m_lookAheadQueue.Enqueue(ReadNextToken());
             }
             Lexeme lookAheadLexeme = m_lookAheadQueue[lookAhead - 1];
-            return lookAheadLexeme.TokenIdentityIndex;
+            return lookAheadLexeme.TokenIndex;
 
         }
 

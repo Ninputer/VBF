@@ -85,9 +85,9 @@ namespace VBF.Compilers.Scanners.Generator
             m_nfa = lexerNFA;
         }
 
-        private void SetAcceptState(int lexerStateIndex, int dfaStateIndex, int tokenIdentityIndex)
+        private void SetAcceptState(int lexerStateIndex, int dfaStateIndex, int tokenIndex)
         {
-            m_acceptTables[lexerStateIndex][dfaStateIndex] = tokenIdentityIndex;
+            m_acceptTables[lexerStateIndex][dfaStateIndex] = tokenIndex;
         }
 
         private void AddDFAState(DFAState state)
@@ -104,7 +104,7 @@ namespace VBF.Compilers.Scanners.Generator
             var lexerStates = m_lexicon.GetLexerStates();
             //check accept states
             var acceptStates = (from i in state.NFAStateSet
-                                let tokenIndex = m_nfa.States[i].TokenIdentityIndex
+                                let tokenIndex = m_nfa.States[i].TokenIndex
                                 where tokenIndex >= 0
                                 let token = tokens[tokenIndex]
                                 orderby token.Index
@@ -119,7 +119,7 @@ namespace VBF.Compilers.Scanners.Generator
 
                 foreach (var acceptState in acceptStates)
                 {
-                    int acceptTokenIdentityIndex = acceptState.First().Index;
+                    int acceptTokenIndex = acceptState.First().Index;
 
                     //set all children lexer state's accept token to current lexer state
                     stateTreeQueue.Clear();
@@ -135,7 +135,7 @@ namespace VBF.Compilers.Scanners.Generator
                         }
 
 
-                        SetAcceptState(currentLexerState.Index, state.Index, acceptTokenIdentityIndex);
+                        SetAcceptState(currentLexerState.Index, state.Index, acceptTokenIndex);
                     }
 
 

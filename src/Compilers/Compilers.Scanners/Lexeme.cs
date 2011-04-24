@@ -6,16 +6,16 @@ using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
-    [DebuggerDisplay("Token:{TokenIdentityIndex} {Value}")]
+    [DebuggerDisplay("Token:{TokenIndex} {Value}")]
     public sealed class Lexeme
     {
-        public int TokenIdentityIndex { get; private set; }
+        public int TokenIndex { get; private set; }
         public SourceSpan Span { get; private set; }
         public string Value { get; private set; }
 
-        internal Lexeme(int tokenIdentityIndex, SourceSpan span, string value)
+        internal Lexeme(int tokenIndex, SourceSpan span, string value)
         {
-            TokenIdentityIndex = tokenIdentityIndex;
+            TokenIndex = tokenIndex;
             Span = span;
             Value = value;
         }

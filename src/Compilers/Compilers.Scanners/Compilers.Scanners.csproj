@@ -73,7 +73,7 @@
     <Compile Include="StringBuilderReader.cs" />
     <Compile Include="StringLiteralExpression.cs" />
     <Compile Include="SymbolExpression.cs" />
-    <Compile Include="TokenIdentity.cs" />
+    <Compile Include="Token.cs" />
     <Compile Include="UnitTestVisibility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

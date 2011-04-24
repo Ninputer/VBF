@@ -7,15 +7,14 @@ using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
-    public class TokenIdentity : IEquatable<TokenIdentity>
+    public class Token : IEquatable<Token>
     {
         public int Index { get; private set; }
-        //internal int IndexInState { get; private set; }
         public Lexicon Lexicon { get; private set; }
         public LexerState State { get; private set; }
         public RegularExpression Definition { get; private set; }
 
-        internal TokenIdentity(RegularExpression definition, Lexicon lexicon, int index, LexerState state)
+        internal Token(RegularExpression definition, Lexicon lexicon, int index, LexerState state)
         {
             Lexicon = lexicon;
             Index = index;
@@ -24,7 +23,7 @@ namespace VBF.Compilers.Scanners
             //IndexInState = indexInState;
         }
 
-        public bool Equals(TokenIdentity other)
+        public bool Equals(Token other)
         {
             if (other == null)
             {
@@ -36,7 +35,7 @@ namespace VBF.Compilers.Scanners
 
         public override bool Equals(object obj)
         {
-            TokenIdentity other = obj as TokenIdentity;
+            Token other = obj as Token;
 
             return Equals(other);
         }
@@ -52,7 +51,7 @@ namespace VBF.Compilers.Scanners
 
             Debug.Assert(nfa.TailState != null);
 
-            nfa.TailState.TokenIdentityIndex = Index;
+            nfa.TailState.TokenIndex = Index;
 
             return nfa;
         }

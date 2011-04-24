@@ -297,24 +297,24 @@ namespace Compilers.UnitTests
             scanner.SetSource(new SourceReader(sr));
 
             Lexeme l1 = scanner.Read();
-            Assert.AreEqual(ID.Index,l1.TokenIdentityIndex);
+            Assert.AreEqual(ID.Index,l1.TokenIndex);
             Assert.AreEqual("asdf04a", l1.Value);
             Assert.AreEqual(0, l1.Span.StartLocation.Column);
             Assert.AreEqual(6, l1.Span.EndLocation.Column);
 
             Lexeme l2 = scanner.Read();
-            Assert.AreEqual(WHITESPACE.Index, l2.TokenIdentityIndex);
+            Assert.AreEqual(WHITESPACE.Index, l2.TokenIndex);
             Assert.AreEqual(" ", l2.Value);
 
             Lexeme l3 = scanner.Read();
-            Assert.AreEqual(NUM.Index, l3.TokenIdentityIndex);
+            Assert.AreEqual(NUM.Index, l3.TokenIndex);
             Assert.AreEqual("1107", l3.Value);
 
             Lexeme l4 = scanner.Read();
-            Assert.AreEqual(WHITESPACE.Index, l4.TokenIdentityIndex);
+            Assert.AreEqual(WHITESPACE.Index, l4.TokenIndex);
 
             Lexeme l5 = scanner.Read();
-            Assert.AreEqual(ID.Index, l5.TokenIdentityIndex);
+            Assert.AreEqual(ID.Index, l5.TokenIndex);
 
             int p1 = scanner.Peek();
             Assert.AreEqual(WHITESPACE.Index, p1);
@@ -334,7 +334,7 @@ namespace Compilers.UnitTests
             Lexeme l6 = scanner.Read();
             Lexeme l7 = scanner.Read();
 
-            Assert.AreEqual(ERROR.Index, l7.TokenIdentityIndex);
+            Assert.AreEqual(ERROR.Index, l7.TokenIndex);
 
             int p3_2 = scanner.Peek();
             Assert.AreEqual(p3, p3_2);
@@ -349,13 +349,13 @@ namespace Compilers.UnitTests
             Lexeme l15 = scanner.Read(); // NUM:772737
             Lexeme leof = scanner.Read(); // eof
 
-            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof.TokenIdentityIndex);
+            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof.TokenIndex);
             Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
             Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
 
             Lexeme leof2 = scanner.Read(); //after eof, should return eof again
 
-            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof2.TokenIdentityIndex);
+            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof2.TokenIndex);
             Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof2.Span.StartLocation.CharIndex);
         }
 
@@ -388,20 +388,20 @@ namespace Compilers.UnitTests
             scanner.LexerStateIndex = xml.Index;
 
             Lexeme l1 = scanner.Read();
-            Assert.AreEqual(ID.Index, l1.TokenIdentityIndex);
+            Assert.AreEqual(ID.Index, l1.TokenIndex);
             Assert.AreEqual("asdf04a", l1.Value);
 
             Lexeme l2 = scanner.Read();
-            Assert.AreEqual(NUM.Index, l2.TokenIdentityIndex);
+            Assert.AreEqual(NUM.Index, l2.TokenIndex);
             Assert.AreEqual("1107", l2.Value);
 
             Lexeme l3 = scanner.Read();
-            Assert.AreEqual(ELSE.Index, l3.TokenIdentityIndex);
+            Assert.AreEqual(ELSE.Index, l3.TokenIndex);
             Assert.AreEqual("else", l3.Value);
 
             Lexeme l4 = scanner.Read();
             Lexeme l5 = scanner.Read();
-            Assert.AreEqual(IF.Index, l5.TokenIdentityIndex);
+            Assert.AreEqual(IF.Index, l5.TokenIndex);
             Assert.AreEqual("if", l5.Value);
 
             int p1 = scanner.Peek();
@@ -414,13 +414,13 @@ namespace Compilers.UnitTests
 
             Lexeme l6 = scanner.Read();
             Lexeme l7 = scanner.Read();
-            Assert.AreEqual(XMLNS.Index, l7.TokenIdentityIndex);
+            Assert.AreEqual(XMLNS.Index, l7.TokenIndex);
 
             Lexeme l8 = scanner.Read();
-            Assert.AreEqual(NUM.Index, l8.TokenIdentityIndex);
+            Assert.AreEqual(NUM.Index, l8.TokenIndex);
 
             Lexeme leof = scanner.Read();
-            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof.TokenIdentityIndex);
+            Assert.AreEqual(Scanner.EndOfStreamTokenIndex, leof.TokenIndex);
             Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
             Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
         }
