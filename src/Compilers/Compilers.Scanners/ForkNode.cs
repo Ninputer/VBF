@@ -6,84 +6,17 @@ using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
-    class ForkNode1
-    {
-        private Scanner m_masterScanner;
-        private CacheQueue<Lexeme> m_lookAheadQueue;
-
-        private ForkNode1 m_parent;
-        private List<ForkNode1> m_activeChildren;
-
-        private int m_offset;
-        private int TokenIndex
-        {
-            get
-            {
-                if (m_parent == null)
-                {
-                    return m_offset;
-                }
-
-                return m_parent.TokenIndex + m_offset;
-            }
-        }
-
-        private ForkNode1(ForkNode1 parent)
-        {
-            Debug.Assert(parent != null);
-            m_parent = parent;
-            m_masterScanner = parent.m_masterScanner;
-            m_lookAheadQueue = parent.m_lookAheadQueue;
-
-            m_activeChildren = new List<ForkNode1>();
-        }
-
-        public ForkNode1 CreateChildNode()
-        {
-            ForkNode1 child = new ForkNode1(this);
-            m_activeChildren.Add(child);
-
-            return child;
-        }
-
-        private bool IsClosed
-        {
-            get
-            {
-                return m_masterScanner != null;
-            }
-        }
-
-        private bool HasForked
-        {
-            get
-            {
-                return m_activeChildren.Count > 0;
-            }
-        }
-
-        public void Close()
-        {
-            //step 1: remove scanner references
-            m_masterScanner = null;
-            m_lookAheadQueue = null;
-
-            //step 2: check 
-
-        }
-    }
-
     class ForkNode
     {
         public Scanner MasterScanner { get; set; }
         public CacheQueue<Lexeme> LookAheadQueue { get; private set; }
         public List<ForkNode> Children { get; private set; }
-        public ForkNode Parent { get; private set; }
+        public ForkNode Parent { get; set; }
         public int Offset { get; set; }
 
-        private NodeState m_state;
+        public NodeState State { get; set; }
 
-        public ForkNode(ForkNode parent)
+        internal ForkNode(ForkNode parent)
         {
             if (parent == null)
             {
@@ -112,55 +45,267 @@ namespace VBF.Compilers.Scanners
             }
         }
 
+        public void Close()
+        {
+            //root node is not allowed to be closed
+            if (Parent == null)
+            {
+                throw new InvalidOperationException("This node has been closed or this node is the root node");
+            }
 
+            Destroy();
+
+            //remove myself from parent
+            Parent.State.Remove(this);
+
+            //clear parent ref
+            Parent = null;
+        }
+
+        public void Destroy()
+        {
+            //clear members and children
+            MasterScanner = null;
+            LookAheadQueue = null;
+            State = null;
+
+            Children.ForEach(a => a.Destroy());
+            Children = null;
+        }
     }
 
     abstract class NodeState
     {
-        protected ForkNode Node { get; private set; }
+        internal ForkNode Node { get; private set; }
         protected NodeState(ForkNode node)
         {
             Node = node;
         }
 
         public abstract ForkNode[] Fork(int count);
-        public abstract void Close();
+        public abstract void Remove(ForkNode child);
         public abstract Lexeme Read();
     }
 
-    class TailState
+    class TailState : NodeState
     {
-        void Forward(ForkNode child) { }
+        public TailState(ForkNode node) : base(node) { }
+        public TailState(TailHeadState tailhead) : base(tailhead.Node) { }
+
+        public override ForkNode[] Fork(int count)
+        {
+            Debug.Assert(Node.Children.Count >= 2);
+            ForkNode[] results = new ForkNode[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                results[i] = new ForkNode(Node);
+                results[i].State = new HeadState(results[i]);
+                Node.Children.Add(results[i]);
+            }
+
+            //no switching state
+
+            return results;
+        }
+
+        public override void Remove(ForkNode child)
+        {
+            //remove child from Node
+            bool succ = Node.Children.Remove(child);
+            Debug.Assert(succ);
+            Debug.Assert(Node.Children.Count > 0);
+
+            //check if forwarding necessory
+            if (Node.Children.Count == 1)
+            {
+                ForkNode onlyChild = Node.Children[0];
+
+                //forward to onlyChild
+                Forward(onlyChild);
+            }
+        }
+
+        void Forward(ForkNode child)
+        {
+            // dequeue "offset" times
+            // destroy Node
+            // change child's state to TailHead or Tail
+            for (int i = 0; i < Node.Offset; i++)
+            {
+                Node.LookAheadQueue.Dequeue();
+            }
+
+            Node.Offset = 0;
+
+            Node.Children.Clear();
+            Node.Destroy();
+
+            Debug.Assert(child.State is HeadState || child.State is BranchState, "Invalid child state when forwarding");
+
+            child.Parent = null;
+            if (child.State is HeadState)
+            {
+                child.State = new TailHeadState(child);
+            }
+            else
+            {
+                child.State = new TailState(child);
+            }
+        }
+
+        public override Lexeme Read()
+        {
+            throw new NotSupportedException();
+        }
     }
 
     class HeadState : NodeState
     {
         public HeadState(ForkNode node) : base(node) { }
 
-
         public override ForkNode[] Fork(int count)
         {
-            throw new NotImplementedException();
+            Debug.Assert(count >= 2);
+            Debug.Assert(Node.Children.Count == 0);
+
+            ForkNode[] results = new ForkNode[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                results[i] = new ForkNode(Node);
+                results[i].State = new HeadState(results[i]);
+                Node.Children.Add(results[i]);
+            }
+
+            //switch to BranchState after fork
+            Node.State = new BranchState(this);
+
+            return results;
         }
 
-        public override void Close()
+        public override void Remove(ForkNode child)
         {
-            throw new NotImplementedException();
+            Debug.Assert(Node.Children.Count == 0);
+            throw new NotSupportedException();
         }
 
         public override Lexeme Read()
         {
-            throw new NotImplementedException();
+            Lexeme result;
+            Debug.Assert(Node.Position <= Node.LookAheadQueue.Count);
+            if (Node.Position < Node.LookAheadQueue.Count)
+            {
+                //queue is available to fetch tokens
+                result = Node.LookAheadQueue[Node.Position];
+            }
+            else
+            {
+                result = Node.MasterScanner.Read();
+                Node.LookAheadQueue.Enqueue(result);
+            }
+
+            Node.Offset += 1;
+            return result;
         }
     }
 
-    class BranchState
+    class BranchState : NodeState
     {
+        public BranchState(ForkNode node) : base(node) { }
+        public BranchState(HeadState head) : base(head.Node) { }
 
+        public override ForkNode[] Fork(int count)
+        {
+            Debug.Assert(Node.Children.Count >= 2);
+            ForkNode[] results = new ForkNode[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                results[i] = new ForkNode(Node);
+                results[i].State = new HeadState(results[i]);
+                Node.Children.Add(results[i]);
+            }
+
+            //no switching state
+
+            return results;
+        }
+
+        public override void Remove(ForkNode child)
+        {
+            //remove child from Node
+            bool succ = Node.Children.Remove(child);
+            Debug.Assert(succ);
+            Debug.Assert(Node.Children.Count > 0);
+
+            //check if forwarding necessory
+            if (Node.Children.Count == 1)
+            {
+                ForkNode onlyChild = Node.Children[0];
+
+                //forward to onlyChild
+                Forward(onlyChild);
+            }
+        }
+
+        private void Forward(ForkNode child)
+        {
+            //1. add node's children to its parent's children list
+            //2. remove node from its parent's children list
+
+            ForkNode parent = Node.Parent;
+            parent.Children.Add(child);
+            parent.Offset += Node.Offset;
+
+            Node.Offset = 0;
+            Node.Children.Clear();
+            parent.Children.Remove(Node);
+
+            //destroy Node
+            Node.Destroy();
+        }
+
+        public override Lexeme Read()
+        {
+            throw new NotSupportedException();
+        }
     }
 
-    class TailHeadState
+    class TailHeadState : NodeState
     {
+        public TailHeadState(ForkNode node) : base(node) { }
 
+        public override ForkNode[] Fork(int count)
+        {
+            Debug.Assert(count >= 2);
+            Debug.Assert(Node.Children.Count == 0);
+
+            ForkNode[] results = new ForkNode[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                results[i] = new ForkNode(Node);
+                results[i].State = new HeadState(results[i]);
+                Node.Children.Add(results[i]);
+            }
+
+            //switch to TailState after fork
+            Node.State = new TailState(this);
+
+            return results;
+        }
+
+        public override void Remove(ForkNode child)
+        {
+            Debug.Assert(Node.Children.Count == 0);
+            throw new NotSupportedException();
+        }
+
+        public override Lexeme Read()
+        {
+            //read without writing the look ahead queue
+            return Node.MasterScanner.Read();
+        }
     }
 }

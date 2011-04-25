@@ -10,14 +10,6 @@ namespace VBF.Compilers.Scanners
         private Scanner m_masterScanner;
         private CacheQueue<Lexeme> m_lookAheadQueue;
 
-        public PeekableScanner(Scanner masterScanner)
-        {
-            CodeContract.RequiresArgumentNotNull(masterScanner, "masterScanner");
-
-            m_lookAheadQueue = new CacheQueue<Lexeme>();
-            m_masterScanner = masterScanner;
-        }
-
         public PeekableScanner(ScannerInfo scannerInfo)
         {
             CodeContract.RequiresArgumentNotNull(scannerInfo, "scannerInfo");
@@ -75,21 +67,31 @@ namespace VBF.Compilers.Scanners
             return m_masterScanner.Read();
         }
 
-        public Scanner MasterScanner
+        public ScannerInfo ScannerInfo
         {
             get
             {
-                return m_masterScanner;
+                return m_masterScanner.ScannerInfo;
             }
         }
 
         public void SetSource(SourceReader source)
         {
+            if (m_lookAheadQueue.Count > 0)
+            {
+                throw new InvalidOperationException("The source is not allowed to be set when the look ahead queue not empty");
+            }
+
             m_masterScanner.SetSource(source);
         }
 
         public void SetSkipTokens(params int[] skipTokenIndices)
         {
+            if (m_lookAheadQueue.Count > 0)
+            {
+                throw new InvalidOperationException("The skip tokens are not allowed to be set when the look ahead queue not empty");
+            }
+
             m_masterScanner.SetSkipTokens(skipTokenIndices);
         }
     }
