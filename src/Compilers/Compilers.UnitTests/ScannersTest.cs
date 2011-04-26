@@ -422,5 +422,63 @@ namespace Compilers.UnitTests
             Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
             Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
         }
+
+        [Test]
+        public void ForkableScannerTest()
+        {
+            Lexicon lexicon = new Lexicon();
+            var A = lexicon.DefaultLexer.DefineToken(RE.Range('a', 'z'));
+
+            ScannerInfo si = lexicon.CreateScannerInfo();
+            string source = "abcdefghijklmnopqrstuvwxyz";
+
+            ForkableScanner fscanner = ForkableScanner.Create(si, new SourceReader(new StringReader(source)));
+
+            var l1 = fscanner.Read();
+            Assert.AreEqual("a", l1.Value);
+            var l2 = fscanner.Read();
+            Assert.AreEqual("b", l2.Value);
+
+            //fork
+            ForkableScanner fscanner2 = fscanner.Fork();
+
+            for (int i = 2; i <= 4; i++)
+            {
+                var l = fscanner.Read();
+                Assert.AreEqual(source[i].ToString(), l.Value);
+            }
+
+            for (int i = 2; i <= 5; i++)
+            {
+                var l = fscanner2.Read();
+                Assert.AreEqual(source[i].ToString(), l.Value);
+            }
+
+            ForkableScanner fscanner3 = fscanner.Fork();
+
+            var l5a = fscanner.Read();
+            var l5b = fscanner3.Read();
+
+            Assert.AreEqual(source[5].ToString(), l5a.Value);
+            Assert.AreEqual(source[5].ToString(), l5b.Value);
+
+            fscanner.Close();
+
+            var l6b = fscanner2.Read();
+            var l6a = fscanner3.Read();           
+
+            Assert.AreEqual(source[6].ToString(), l6a.Value);
+            Assert.AreEqual(source[6].ToString(), l6b.Value);
+
+            var l7a = fscanner2.Read();
+
+            fscanner2.Close();
+
+            for (int i = 7; i < 9; i++)
+            {
+                var l = fscanner3.Read();
+                Assert.AreEqual(source[i].ToString(), l.Value);
+            }
+        }
     }
 }

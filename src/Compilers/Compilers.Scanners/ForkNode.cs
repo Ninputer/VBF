@@ -18,18 +18,19 @@ namespace VBF.Compilers.Scanners
 
         internal ForkNode(ForkNode parent)
         {
-            if (parent == null)
-            {
-                LookAheadQueue = new CacheQueue<Lexeme>();
-            }
-            else
-            {
-                LookAheadQueue = parent.LookAheadQueue;
-                MasterScanner = parent.MasterScanner;
-            }
+            Debug.Assert(parent != null);
+
+            LookAheadQueue = parent.LookAheadQueue;
+            MasterScanner = parent.MasterScanner;
 
             Children = new List<ForkNode>();
             Parent = parent;
+        }
+
+        internal ForkNode()
+        {
+            LookAheadQueue = new CacheQueue<Lexeme>();
+            Children = new List<ForkNode>();
         }
 
         public int Position
@@ -131,12 +132,14 @@ namespace VBF.Compilers.Scanners
             // dequeue "offset" times
             // destroy Node
             // change child's state to TailHead or Tail
-            for (int i = 0; i < Node.Offset; i++)
+
+            Debug.Assert(Node.Offset == 0);
+
+            for (int i = 0; i < child.Offset; i++)
             {
                 Node.LookAheadQueue.Dequeue();
             }
-
-            Node.Offset = 0;
+            child.Offset = 0;
 
             Node.Children.Clear();
             Node.Destroy();
@@ -256,7 +259,8 @@ namespace VBF.Compilers.Scanners
 
             ForkNode parent = Node.Parent;
             parent.Children.Add(child);
-            parent.Offset += Node.Offset;
+            child.Offset += Node.Offset;
+            child.Parent = parent;
 
             Node.Offset = 0;
             Node.Children.Clear();
@@ -305,6 +309,10 @@ namespace VBF.Compilers.Scanners
         public override Lexeme Read()
         {
             //read without writing the look ahead queue
+            if (Node.LookAheadQueue.Count > 0)
+            {
+                return Node.LookAheadQueue.Dequeue();
+            }
             return Node.MasterScanner.Read();
         }
     }
