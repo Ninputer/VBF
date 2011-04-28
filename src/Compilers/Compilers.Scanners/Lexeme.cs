@@ -31,7 +31,7 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        internal int GetTokenIndex(int lexerState)
+        public int GetTokenIndex(int lexerState)
         {
             return m_scannerInfo.GetTokenIndex(m_stateIndex, lexerState);
         }

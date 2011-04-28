@@ -9,10 +9,6 @@ namespace Compilers.UnitTests
 {
 
 
-    /// <summary>
-    ///This is a test class for RegularExpressionTest and is intended
-    ///to contain all RegularExpressionTest Unit Tests
-    ///</summary>
     [TestFixture]
     public class ScannersTest
     {
