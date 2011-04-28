@@ -45,9 +45,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Compilers.Scanners\Compilers.Scanners.csproj">
       <Project>{F8ECBF53-C1B2-412B-8322-9E3D6AAC66ED}</Project>
       <Name>Compilers.Scanners</Name>
