@@ -70,15 +70,13 @@ namespace VBF.Compilers.Parsers.Combinators
                 var result1 = parser1(scanner1);
                 if (result1 != null)
                 {
-                    scanner2.Close();
+                    scanner.Join(scanner1);
                     return result1;
-                }
-                else
-                {
-                    scanner1.Close();
                 }
 
                 var result2 = parser2(scanner2);
+
+                scanner.Join(scanner2);
                 return result2;
             };
         }

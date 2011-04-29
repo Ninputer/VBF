@@ -54,6 +54,29 @@ namespace VBF.Compilers.Scanners
             m_node.Close();
         }
 
+        public void Join(ForkableScanner child)
+        {
+            CodeContract.RequiresArgumentNotNull(child, "child");
+            CodeContract.Requires(child.m_node.MasterScanner != null, "The scanner to join with has been closed");
+            CodeContract.Requires(child.m_node.Parent == m_node.Parent, "child", "The scanner to join does not share the parent node with current scanner");
+
+            var parent = m_node.Parent;
+
+            //swap "this" with "child"
+            var temp = m_node;
+            m_node = child.m_node;
+            child.m_node = temp;
+
+            //close other children
+            foreach (var otherChild in parent.Children.ToArray())
+            {
+                if (otherChild != m_node)
+                {
+                    otherChild.Close();
+                }
+            }
+        }
+
         public ScannerInfo ScannerInfo
         {
             get

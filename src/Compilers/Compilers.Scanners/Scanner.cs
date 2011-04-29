@@ -64,17 +64,17 @@ namespace VBF.Compilers.Scanners
             }
         }     
 
-        public Lexeme Read()
-        {
-            return ReadNextToken();
-        }
+        //public Lexeme Read()
+        //{
+        //    return ReadNextToken();
+        //}
 
         public ScannerInfo ScannerInfo
         {
             get { return m_scannerInfo; }
         }
 
-        private Lexeme ReadNextToken()
+        public Lexeme Read()
         {
             do
             {
