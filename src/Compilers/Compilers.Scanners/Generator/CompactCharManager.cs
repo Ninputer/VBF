@@ -19,7 +19,7 @@ namespace VBF.Compilers.Scanners.Generator
             m_maxIndex = maxIndex;
         }
 
-        public int GetCompactClass(Char c)
+        public int GetCompactClass(char c)
         {
             ushort compactClass = m_compactCharTable[(int)c];
 
@@ -28,11 +28,15 @@ namespace VBF.Compilers.Scanners.Generator
             return (int)compactClass;
         }
 
+        public bool HasCompactClass(char c)
+        {
+            return m_compactCharTable[c] >= m_minIndex;
+        }
+
         public HashSet<char>[] CreateCompactCharMapTable()
         {
             HashSet<char>[] result = new HashSet<char>[m_maxIndex + 1];
-            result[0] = null; //occupy the 0 position for invalid index
-            for (int i = m_minIndex; i <= m_maxIndex; i++)
+            for (int i = 0; i <= m_maxIndex; i++)
             {
                 result[i] = new HashSet<char>();
             }
@@ -41,10 +45,7 @@ namespace VBF.Compilers.Scanners.Generator
             {
                 int index = m_compactCharTable[i];
 
-                if (index >= m_minIndex)
-                {
-                    result[index].Add((char)i);
-                }
+                result[index].Add((char)i);
             }
 
             return result;
