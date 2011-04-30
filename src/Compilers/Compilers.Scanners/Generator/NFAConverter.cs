@@ -7,17 +7,69 @@ namespace VBF.Compilers.Scanners.Generator
 {
     public class NFAConverter : RegularExpressionConverter<NFAModel>
     {
-        private class DefaultInstanceHolder
+        public CompactCharManager CompactCharManager { get; private set; }
+
+        public NFAConverter(Lexicon lexicon)
         {
-            internal static NFAConverter s_Instance = new NFAConverter();
+            CompactCharManager = CompactCharSet(lexicon);
         }
 
-        public static NFAConverter Default
+        private static CompactCharManager CompactCharSet(Lexicon lexicon)
         {
-            get
+            var tokens = lexicon.GetTokens();
+
+            HashSet<char> compactableCharSet = new HashSet<char>();
+            HashSet<char> uncompactableCharSet = new HashSet<char>();
+
+            List<HashSet<char>> compactableCharSets = new List<HashSet<char>>();
+            foreach (var token in tokens)
             {
-                return DefaultInstanceHolder.s_Instance;
+                compactableCharSets.AddRange(token.Definition.GetCompactableCharSet());
+                uncompactableCharSet.UnionWith(token.Definition.GetUncompactableCharSet());
             }
+
+            foreach (var cset in compactableCharSets)
+            {
+                compactableCharSet.UnionWith(cset);
+            }
+
+            compactableCharSet.ExceptWith(uncompactableCharSet);
+
+            Dictionary<HashSet<int>, ushort> compactClassDict = new Dictionary<HashSet<int>, ushort>(HashSet<int>.CreateSetComparer());
+            ushort compactCharIndex = 1;
+            ushort[] compactClassTable = new ushort[65536];
+
+            foreach (var c in uncompactableCharSet)
+            {
+                ushort index = compactCharIndex++;
+                compactClassTable[(int)c] = index;
+            }
+
+            foreach (var c in compactableCharSet)
+            {
+                HashSet<int> setofcharset = new HashSet<int>();
+                for (int i = 0; i < compactableCharSets.Count; i++)
+                {
+                    var set = compactableCharSets[i];
+                    if (set.Contains(c)) setofcharset.Add(i);
+                }
+
+                if (compactClassDict.ContainsKey(setofcharset))
+                {
+                    //already exist
+                    ushort index = compactClassDict[setofcharset];
+
+                    compactClassTable[(int)c] = index;
+                }
+                else
+                {
+                    ushort index = compactCharIndex++;
+                    compactClassDict.Add(setofcharset, index);
+
+                    compactClassTable[(int)c] = index;
+                }
+            }
+            return new CompactCharManager(compactClassTable, compactCharIndex);
         }
 
         public override NFAModel ConvertAlternation(AlternationExpression exp)
@@ -52,7 +104,8 @@ namespace VBF.Compilers.Scanners.Generator
         public override NFAModel ConvertSymbol(SymbolExpression exp)
         {
             NFAState tail = new NFAState();
-            NFAEdge entryEdge = new NFAEdge(exp.Symbol, tail);
+            int cclass = CompactCharManager.GetCompactClass(exp.Symbol);
+            NFAEdge entryEdge = new NFAEdge(cclass, tail);
 
             NFAModel symbolNfa = new NFAModel();
 
@@ -107,10 +160,15 @@ namespace VBF.Compilers.Scanners.Generator
 
             charSetNfa.AddState(head);
 
+            HashSet<int> classesSet = new HashSet<int>();
             foreach (var symbol in exp.CharSet)
             {
-                var symbolEdge = new NFAEdge(symbol, tail);
-                head.AddEdge(symbolEdge);
+                int cclass = CompactCharManager.GetCompactClass(symbol);
+                if (classesSet.Add(cclass))
+                {
+                    var symbolEdge = new NFAEdge(cclass, tail);
+                    head.AddEdge(symbolEdge);
+                }
             }
 
             charSetNfa.AddState(tail);
@@ -131,7 +189,8 @@ namespace VBF.Compilers.Scanners.Generator
             foreach (var symbol in exp.Literal)
             {
                 var symbolState = new NFAState();
-                var symbolEdge = new NFAEdge(symbol, symbolState);
+                int cclass = CompactCharManager.GetCompactClass(symbol);
+                var symbolEdge = new NFAEdge(cclass, symbolState);
 
                 if (lastState != null)
                 {

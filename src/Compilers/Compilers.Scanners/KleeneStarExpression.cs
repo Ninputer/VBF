@@ -21,5 +21,15 @@ namespace VBF.Compilers.Scanners
         {
             return '(' + InnerExpression.ToString() + ")*";
         }
+
+        internal override HashSet<char>[] GetCompactableCharSet()
+        {
+            return InnerExpression.GetCompactableCharSet();
+        }
+
+        internal override HashSet<char> GetUncompactableCharSet()
+        {
+            return InnerExpression.GetUncompactableCharSet();
+        }
     }
 }

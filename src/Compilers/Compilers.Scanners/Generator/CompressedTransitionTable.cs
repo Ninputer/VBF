@@ -8,7 +8,9 @@ namespace VBF.Compilers.Scanners.Generator
     class CompressedTransitionTable
     {
         IList<DFAState> m_dfaStates;
-        ISet<char> m_alphabet;
+        CompactCharManager m_compactCharManager;
+
+        //ISet<char> m_alphabet;
 
         ushort[] m_charClassTable;
         Dictionary<string, ushort> m_stateSetDict;
@@ -45,7 +47,8 @@ namespace VBF.Compilers.Scanners.Generator
             m_stateSetDict = new Dictionary<string, ushort>();
 
             m_dfaStates = dfa.States;
-            m_alphabet = dfa.Alphabet;
+
+            m_compactCharManager = dfa.CompactCharManager;
 
             m_compressedTransitionTable = new int[m_dfaStates.Count][];
         }
@@ -54,20 +57,35 @@ namespace VBF.Compilers.Scanners.Generator
         {
             Dictionary<char, int>[] transitionTable = new Dictionary<char, int>[m_dfaStates.Count];
 
+            var compactCharMapTable = m_compactCharManager.CreateCompactCharMapTable();
+
             for (int i = 0; i < m_dfaStates.Count; i++)
             {
                 transitionTable[i] = new Dictionary<char, int>();
 
                 foreach (var edge in m_dfaStates[i].OutEdges)
                 {
-                    transitionTable[i].Add(edge.Symbol, edge.TargetState.Index);
+                    HashSet<char> charsInCompactClass = compactCharMapTable[edge.Symbol];
+
+                    foreach (char c in charsInCompactClass)
+                    {
+                        transitionTable[i].Add(c, edge.TargetState.Index);
+                    }
+
                 }
+            }
+
+            HashSet<char> alphabet = new HashSet<char>();
+            foreach (var charsInCompactClass in compactCharMapTable)
+            {
+                if (charsInCompactClass != null)
+                    alphabet.UnionWith(charsInCompactClass);
             }
 
             List<int[]> transitionColumnTable = new List<int[]>();
 
             //valid chars
-            foreach (char c in m_alphabet)
+            foreach (char c in alphabet)
             {
                 int[] columnSequence = (from row in transitionTable select row[c]).ToArray();
                 StringBuilder signatureBuilder = new StringBuilder();
@@ -106,9 +124,9 @@ namespace VBF.Compilers.Scanners.Generator
 
             transitionColumnTable.Add(invalidColumn);
 
-            for (char c = Char.MinValue; c < Char.MaxValue; c++)
+            for (int c = Char.MinValue; c < Char.MaxValue; c++)
             {
-                if (m_alphabet.Contains(c)) continue;
+                if (alphabet.Contains((char)c)) continue;
 
                 m_charClassTable[c] = invalidIndex;
             }

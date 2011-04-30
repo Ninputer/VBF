@@ -45,9 +45,9 @@ namespace VBF.Compilers.Scanners
             return Index;
         }
 
-        public NFAModel CreateFiniteAutomatonModel()
+        internal NFAModel CreateFiniteAutomatonModel(NFAConverter converter)
         {
-            NFAModel nfa = NFAConverter.Default.Convert(Definition);
+            NFAModel nfa = converter.Convert(Definition);
 
             Debug.Assert(nfa.TailState != null);
 

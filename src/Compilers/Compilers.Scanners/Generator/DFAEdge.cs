@@ -7,10 +7,10 @@ namespace VBF.Compilers.Scanners.Generator
 {
     public struct DFAEdge
     {
-        public char Symbol { get; private set; }
+        public int Symbol { get; private set; }
         public DFAState TargetState { get; private set; }
 
-        public DFAEdge(char symbol, DFAState targetState)
+        public DFAEdge(int symbol, DFAState targetState)
             : this()
         {
             Symbol = symbol;

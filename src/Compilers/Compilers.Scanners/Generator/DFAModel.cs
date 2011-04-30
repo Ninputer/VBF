@@ -11,16 +11,14 @@ namespace VBF.Compilers.Scanners.Generator
     {
         private NFAModel m_nfa;
         private List<DFAState> m_dfaStates;
-        private HashSet<char> m_alphabet;
         private List<int>[] m_acceptTables;
         private Lexicon m_lexicon;
-        private IComparer<char> m_charComparer;
+        public CompactCharManager CompactCharManager { get; private set; }
 
         private DFAModel(Lexicon lexicon)
         {
             m_lexicon = lexicon;
             m_dfaStates = new List<DFAState>();
-            m_alphabet = new HashSet<char>();
 
             //initialize accept table
             int stateCount = lexicon.LexerStateCount;
@@ -30,8 +28,6 @@ namespace VBF.Compilers.Scanners.Generator
                 m_acceptTables[i] = new List<int>();
             }
 
-            //TODO
-            m_charComparer = Comparer<char>.Default;
         }
 
         public ReadOnlyCollection<DFAState> States
@@ -42,13 +38,8 @@ namespace VBF.Compilers.Scanners.Generator
             }
         }
 
-        public ISet<char> Alphabet
-        {
-            get { return m_alphabet; }
-        }
-
         public int[][] GetAcceptTables()
-        {           
+        {
             return (from t in m_acceptTables select AppendEosToken(t.ToList()).ToArray()).ToArray();
         }
 
@@ -76,13 +67,17 @@ namespace VBF.Compilers.Scanners.Generator
 
         private void ConvertLexcionToNFA()
         {
+            //Compact transition char set
+            NFAConverter converter = new NFAConverter(m_lexicon);
+            CompactCharManager = converter.CompactCharManager;
+
             NFAState entryState = new NFAState();
             NFAModel lexerNFA = new NFAModel();
 
             lexerNFA.AddState(entryState);
             foreach (var token in m_lexicon.GetTokens())
             {
-                NFAModel tokenNFA = token.CreateFiniteAutomatonModel();
+                NFAModel tokenNFA = token.CreateFiniteAutomatonModel(converter);
 
                 entryState.AddEdge(tokenNFA.EntryEdge);
                 lexerNFA.AddStates(tokenNFA.States);
@@ -155,18 +150,6 @@ namespace VBF.Compilers.Scanners.Generator
         {
             var nfaStates = m_nfa.States;
 
-            //get alphabet from all edge symbols
-            foreach (var s in nfaStates)
-            {
-                foreach (var edge in s.OutEdges)
-                {
-                    if (!edge.IsEmpty)
-                    {
-                        m_alphabet.Add(edge.Symbol.Value);
-                    }
-                }
-            }
-
             //state 0 is an empty state. All invalid inputs go to state 0
             DFAState state0 = new DFAState();
             AddDFAState(state0);
@@ -186,7 +169,7 @@ namespace VBF.Compilers.Scanners.Generator
             int p = 1, j = 0;
             while (j <= p)
             {
-                foreach (var symbol in m_alphabet)
+                for (int symbol = CompactCharManager.MinClassIndex; symbol <= CompactCharManager.MaxClassIndex; symbol++)
                 {
                     DFAState e = GetDFAState(m_dfaStates[j], symbol);
 
@@ -219,7 +202,7 @@ namespace VBF.Compilers.Scanners.Generator
             }
         }
 
-        private DFAState GetDFAState(DFAState start, char symbol)
+        private DFAState GetDFAState(DFAState start, int symbol)
         {
             DFAState target = new DFAState();
             var nfaStates = m_nfa.States;
@@ -230,7 +213,7 @@ namespace VBF.Compilers.Scanners.Generator
 
                 foreach (var edge in nfaState.OutEdges)
                 {
-                    if (!edge.IsEmpty && m_charComparer.Compare(symbol, edge.Symbol.Value) == 0)
+                    if (!edge.IsEmpty && symbol == edge.Symbol.Value)
                     {
                         int targetIndex = edge.TargetState.Index;
                         Debug.Assert(targetIndex >= 0);

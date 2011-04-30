@@ -18,5 +18,15 @@ namespace VBF.Compilers.Scanners
         {
             return "ε";
         }
+
+        internal override HashSet<char>[] GetCompactableCharSet()
+        {
+            return new HashSet<char>[0];
+        }
+
+        internal override HashSet<char> GetUncompactableCharSet()
+        {
+            return new HashSet<char>();
+        }
     }
 }

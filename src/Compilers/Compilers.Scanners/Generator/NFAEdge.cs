@@ -7,10 +7,10 @@ namespace VBF.Compilers.Scanners.Generator
 {
     public struct NFAEdge
     {
-        public char? Symbol { get; private set; }
+        public int? Symbol { get; private set; }
         public NFAState TargetState { get; private set; }
 
-        public NFAEdge(char symbol, NFAState targetState)
+        public NFAEdge(int symbol, NFAState targetState)
             : this()
         {
             Symbol = symbol;

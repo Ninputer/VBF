@@ -4,6 +4,8 @@ using NUnit.Framework;
 using System;
 using VBF.Compilers.Scanners.Generator;
 using System.IO;
+using System.Globalization;
+using System.Linq;
 
 namespace Compilers.UnitTests
 {
@@ -25,7 +27,7 @@ namespace Compilers.UnitTests
             Lexicon lexicon = new Lexicon();
             var ID = lexicon.DefaultLexer.DefineToken(RE_ID);
 
-            NFAConverter nfaConverter = new NFAConverter();
+            NFAConverter nfaConverter = new NFAConverter(lexicon);
 
             DFAModel D_ID = DFAModel.Create(lexicon);
 
@@ -461,7 +463,7 @@ namespace Compilers.UnitTests
             fscanner.Close();
 
             var l6b = fscanner2.Read();
-            var l6a = fscanner3.Read();           
+            var l6a = fscanner3.Read();
 
             Assert.AreEqual(source[6].ToString(), l6a.Value);
             Assert.AreEqual(source[6].ToString(), l6b.Value);
@@ -475,6 +477,37 @@ namespace Compilers.UnitTests
                 var l = fscanner3.Read();
                 Assert.AreEqual(source[i].ToString(), l.Value);
             }
+        }
+
+        [Test]
+        public void CompactCharSetTest()
+        {
+            Lexicon lexicon = new Lexicon();
+            LexerState global = lexicon.DefaultLexer;
+            LexerState keywords = global.DefineSubState();
+            LexerState xml = keywords.DefineSubState();
+
+            var lettersCategories = new[] { UnicodeCategory.LetterNumber,
+                                            UnicodeCategory.LowercaseLetter,
+                                            UnicodeCategory.ModifierLetter,
+                                            UnicodeCategory.OtherLetter,
+                                            UnicodeCategory.TitlecaseLetter,
+                                            UnicodeCategory.UppercaseLetter};
+
+            var RE_IDCHAR = RE.CharsOf(c => lettersCategories.Contains(Char.GetUnicodeCategory(c)));
+
+
+            var ID = global.DefineToken(RE_IDCHAR.Sequence(
+                (RE_IDCHAR | RE.Range('0', '9')).Many()));
+            var NUM = global.DefineToken(RE.Range('0', '9').Many1());
+            var WHITESPACE = global.DefineToken(RE.Symbol(' ').Many());
+
+            var IF = keywords.DefineToken(RE.Literal("if"));
+            var ELSE = keywords.DefineToken(RE.Literal("else"));
+
+            var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
+
+            var scannerInfo = lexicon.CreateScannerInfo();
         }
     }
 }

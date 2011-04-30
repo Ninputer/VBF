@@ -20,6 +20,9 @@ namespace VBF.Compilers.Scanners
             ExpressionType = expType;
         }
 
+        internal abstract HashSet<char>[] GetCompactableCharSet();
+        internal abstract HashSet<char> GetUncompactableCharSet();
+
         //basic operations
 
         public static RegularExpression Symbol(char c)
