@@ -69,13 +69,6 @@ namespace VBF.Compilers.Scanners.Generator
                 }
             }
 
-            //HashSet<char> alphabet = new HashSet<char>();
-            //foreach (var charsInCompactClass in compactCharMapTable)
-            //{
-            //    if (charsInCompactClass != null)
-            //        alphabet.UnionWith(charsInCompactClass);
-            //}
-
             List<int[]> transitionColumnTable = new List<int[]>();
             var compactCharMapTable = m_compactCharManager.CreateCompactCharMapTable();
 

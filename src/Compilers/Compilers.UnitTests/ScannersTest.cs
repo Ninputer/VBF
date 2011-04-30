@@ -34,7 +34,7 @@ namespace Compilers.UnitTests
             //verify state 0
             var state0 = D_ID.States[0];
 
-            Assert.AreEqual(36, state0.OutEdges.Count);
+            Assert.AreEqual(3, state0.OutEdges.Count);
             foreach (var edge in state0.OutEdges)
             {
                 Assert.AreEqual(0, edge.TargetState.Index);
@@ -45,7 +45,7 @@ namespace Compilers.UnitTests
 
             foreach (var edge in state1.OutEdges)
             {
-                if (edge.Symbol >= 'a' && edge.Symbol <= 'z')
+                if (edge.Symbol == 1) //a..z
                 {
                     Assert.IsTrue(edge.TargetState.Index > 0);
                 }
