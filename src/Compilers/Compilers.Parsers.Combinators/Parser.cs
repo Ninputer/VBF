@@ -6,9 +6,14 @@ using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers.Combinators
 {
-    public delegate Result<T> Parser<T>(ForkableScanner scanner);
+    public delegate IResult<T> Parser<out T>(ForkableScanner scanner);
 
-    public class Result<T>
+    public interface IResult<out T>
+    {
+        T Value { get; }
+    }
+
+    public class Result<T> : IResult<T>
     {
         public T Value { get; private set; }
 

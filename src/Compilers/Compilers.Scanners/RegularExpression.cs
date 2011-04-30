@@ -62,6 +62,11 @@ namespace VBF.Compilers.Scanners
             return new AlternationCharSetExpression(charSet);
         }
 
+        public static RegularExpression CharSet(params char[] charSet)
+        {
+            return new AlternationCharSetExpression(charSet);
+        }
+
         public static RegularExpression Empty()
         {
             return EmptyExpression.Instance;
@@ -90,6 +95,19 @@ namespace VBF.Compilers.Scanners
             }
 
             return new AlternationCharSetExpression(rangeCharSet);
+        }
+
+        public static RegularExpression CharsOf(Func<char, bool> charPredicate)
+        {
+            CodeContract.RequiresArgumentNotNull(charPredicate, "charPredicate");
+
+            List<char> charSet = new List<char>();
+            for (int i = Char.MinValue; i <= Char.MaxValue; i++)
+            {
+                if (charPredicate((char)i)) charSet.Add((char)i);
+            }
+
+            return new AlternationCharSetExpression(charSet);
         }
 
         public RegularExpression Repeat(int number)

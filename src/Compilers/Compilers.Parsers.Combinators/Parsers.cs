@@ -40,7 +40,7 @@ namespace VBF.Compilers.Parsers.Combinators
             };
         }
 
-        public static Result<Lexeme> Scan(this Token token, ForkableScanner scanner)
+        public static IResult<Lexeme> Scan(this Token token, ForkableScanner scanner)
         {
             return token.AsParser()(scanner);
         }
@@ -217,6 +217,16 @@ namespace VBF.Compilers.Parsers.Combinators
         public static Parser<Lexeme[]> Many1(this Token token)
         {
             return token.AsParser().Many1();
+        }
+
+        public static Parser<T> Optional<T>(this Parser<T> parser)
+        {
+            return parser.Or(Success(default(T)));
+        }
+
+        public static Parser<Lexeme> Optional(this Token token)
+        {
+            return token.AsParser().Optional();
         }
     }
 }
