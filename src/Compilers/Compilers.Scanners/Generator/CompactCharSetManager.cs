@@ -6,13 +6,13 @@ using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners.Generator
 {
-    public class CompactCharManager
+    public class CompactCharSetManager
     {
         private ushort[] m_compactCharTable;
         private readonly ushort m_minIndex = 1;
         private readonly ushort m_maxIndex;
 
-        public CompactCharManager(ushort[] compactCharTable, ushort maxIndex)
+        public CompactCharSetManager(ushort[] compactCharTable, ushort maxIndex)
         {
             m_compactCharTable = compactCharTable;
             Debug.Assert(maxIndex >= m_minIndex);

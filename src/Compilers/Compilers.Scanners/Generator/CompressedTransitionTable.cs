@@ -8,7 +8,7 @@ namespace VBF.Compilers.Scanners.Generator
     class CompressedTransitionTable
     {
         IList<DFAState> m_dfaStates;
-        CompactCharManager m_compactCharManager;
+        CompactCharSetManager m_compactCharSetManager;
 
         //ISet<char> m_alphabet;
 
@@ -48,7 +48,7 @@ namespace VBF.Compilers.Scanners.Generator
 
             m_dfaStates = dfa.States;
 
-            m_compactCharManager = dfa.CompactCharManager;
+            m_compactCharSetManager = dfa.CompactCharSetManager;
 
             m_compressedTransitionTable = new int[m_dfaStates.Count][];
         }
@@ -70,10 +70,10 @@ namespace VBF.Compilers.Scanners.Generator
             }
 
             List<int[]> transitionColumnTable = new List<int[]>();
-            var compactCharMapTable = m_compactCharManager.CreateCompactCharMapTable();
+            var compactCharMapTable = m_compactCharSetManager.CreateCompactCharMapTable();
 
             //valid chars
-            for (int i = m_compactCharManager.MinClassIndex; i <= m_compactCharManager.MaxClassIndex; i++)
+            for (int i = m_compactCharSetManager.MinClassIndex; i <= m_compactCharSetManager.MaxClassIndex; i++)
             {
                 int[] columnSequence = (from row in transitionTable select row[i]).ToArray();
                 StringBuilder signatureBuilder = new StringBuilder();

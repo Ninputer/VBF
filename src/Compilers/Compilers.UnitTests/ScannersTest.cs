@@ -27,7 +27,7 @@ namespace Compilers.UnitTests
             Lexicon lexicon = new Lexicon();
             var ID = lexicon.DefaultLexer.DefineToken(RE_ID);
 
-            NFAConverter nfaConverter = new NFAConverter(lexicon);
+            NFAConverter nfaConverter = new NFAConverter(lexicon.CreateCompactCharSetManager());
 
             DFAModel D_ID = DFAModel.Create(lexicon);
 

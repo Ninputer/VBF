@@ -13,7 +13,7 @@ namespace VBF.Compilers.Scanners.Generator
         private List<DFAState> m_dfaStates;
         private List<int>[] m_acceptTables;
         private Lexicon m_lexicon;
-        public CompactCharManager CompactCharManager { get; private set; }
+        public CompactCharSetManager CompactCharSetManager { get; private set; }
 
         private DFAModel(Lexicon lexicon)
         {
@@ -68,8 +68,8 @@ namespace VBF.Compilers.Scanners.Generator
         private void ConvertLexcionToNFA()
         {
             //Compact transition char set
-            NFAConverter converter = new NFAConverter(m_lexicon);
-            CompactCharManager = converter.CompactCharManager;
+            CompactCharSetManager = m_lexicon.CreateCompactCharSetManager();
+            NFAConverter converter = new NFAConverter(CompactCharSetManager);            
 
             NFAState entryState = new NFAState();
             NFAModel lexerNFA = new NFAModel();
@@ -169,7 +169,7 @@ namespace VBF.Compilers.Scanners.Generator
             int p = 1, j = 0;
             while (j <= p)
             {
-                for (int symbol = CompactCharManager.MinClassIndex; symbol <= CompactCharManager.MaxClassIndex; symbol++)
+                for (int symbol = CompactCharSetManager.MinClassIndex; symbol <= CompactCharSetManager.MaxClassIndex; symbol++)
                 {
                     DFAState e = GetDFAState(m_dfaStates[j], symbol);
 

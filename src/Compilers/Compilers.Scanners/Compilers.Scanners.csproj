@@ -49,7 +49,7 @@
     <Compile Include="FiniteAutomationEngine.cs" />
     <Compile Include="ForkNode.cs" />
     <Compile Include="ForkableScanner.cs" />
-    <Compile Include="Generator\CompactCharManager.cs" />
+    <Compile Include="Generator\CompactCharSetManager.cs" />
     <Compile Include="Generator\DFAEdge.cs" />
     <Compile Include="Generator\DFAModel.cs" />
     <Compile Include="Generator\DFAState.cs" />

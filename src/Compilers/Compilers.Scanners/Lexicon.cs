@@ -74,6 +74,67 @@ namespace VBF.Compilers.Scanners
             return newState;
         }
 
+        public CompactCharSetManager CreateCompactCharSetManager()
+        {
+            var tokens = GetTokens();
+
+            HashSet<char> compactableCharSet = new HashSet<char>();
+            HashSet<char> uncompactableCharSet = new HashSet<char>();
+
+            List<HashSet<char>> compactableCharSets = new List<HashSet<char>>();
+            foreach (var token in tokens)
+            {
+                foreach (var getCharSetFunc in token.Definition.GetCompactableCharSets())
+                {
+                    compactableCharSets.Add(getCharSetFunc());
+                }
+                uncompactableCharSet.UnionWith(token.Definition.GetUncompactableCharSet());
+            }
+
+            foreach (var cset in compactableCharSets)
+            {
+                compactableCharSet.UnionWith(cset);
+            }
+
+            compactableCharSet.ExceptWith(uncompactableCharSet);
+
+            Dictionary<HashSet<int>, ushort> compactClassDict = new Dictionary<HashSet<int>, ushort>(HashSet<int>.CreateSetComparer());
+            ushort compactCharIndex = 1;
+            ushort[] compactClassTable = new ushort[65536];
+
+            foreach (var c in uncompactableCharSet)
+            {
+                ushort index = compactCharIndex++;
+                compactClassTable[(int)c] = index;
+            }
+
+            foreach (var c in compactableCharSet)
+            {
+                HashSet<int> setofcharset = new HashSet<int>();
+                for (int i = 0; i < compactableCharSets.Count; i++)
+                {
+                    var set = compactableCharSets[i];
+                    if (set.Contains(c)) setofcharset.Add(i);
+                }
+
+                if (compactClassDict.ContainsKey(setofcharset))
+                {
+                    //already exist
+                    ushort index = compactClassDict[setofcharset];
+
+                    compactClassTable[(int)c] = index;
+                }
+                else
+                {
+                    ushort index = compactCharIndex++;
+                    compactClassDict.Add(setofcharset, index);
+
+                    compactClassTable[(int)c] = index;
+                }
+            }
+            return new CompactCharSetManager(compactClassTable, compactCharIndex);
+        }
+
         public ScannerInfo CreateScannerInfo()
         {
             DFAModel dfa = DFAModel.Create(this);
