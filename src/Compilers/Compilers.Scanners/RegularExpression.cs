@@ -20,7 +20,7 @@ namespace VBF.Compilers.Scanners
             ExpressionType = expType;
         }
 
-        internal abstract HashSet<char>[] GetCompactableCharSet();
+        internal abstract Func<HashSet<char>>[] GetCompactableCharSets();
         internal abstract HashSet<char> GetUncompactableCharSet();
 
         //basic operations

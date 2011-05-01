@@ -23,9 +23,9 @@ namespace VBF.Compilers.Scanners
             return Symbol.ToString();
         }
 
-        internal override HashSet<char>[] GetCompactableCharSet()
+        internal override Func<HashSet<char>>[] GetCompactableCharSets()
         {
-            return new HashSet<char>[0];
+            return new Func<HashSet<char>>[0];
         }
 
         internal override HashSet<char> GetUncompactableCharSet()

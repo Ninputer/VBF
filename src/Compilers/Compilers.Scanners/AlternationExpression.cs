@@ -28,9 +28,9 @@ namespace VBF.Compilers.Scanners
             return '(' + Expression1.ToString() + '|' + Expression2.ToString() +')';
         }
 
-        internal override HashSet<char>[] GetCompactableCharSet()
+        internal override Func<HashSet<char>>[] GetCompactableCharSets()
         {
-            return Expression1.GetCompactableCharSet().Concat(Expression2.GetCompactableCharSet()).ToArray();
+            return Expression1.GetCompactableCharSets().Union(Expression2.GetCompactableCharSets()).ToArray();
         }
 
         internal override HashSet<char> GetUncompactableCharSet()

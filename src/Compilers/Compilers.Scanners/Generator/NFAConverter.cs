@@ -24,7 +24,10 @@ namespace VBF.Compilers.Scanners.Generator
             List<HashSet<char>> compactableCharSets = new List<HashSet<char>>();
             foreach (var token in tokens)
             {
-                compactableCharSets.AddRange(token.Definition.GetCompactableCharSet());
+                foreach (var getCharSetFunc in token.Definition.GetCompactableCharSets())
+                {
+                    compactableCharSets.Add(getCharSetFunc());
+                }
                 uncompactableCharSet.UnionWith(token.Definition.GetUncompactableCharSet());
             }
 

@@ -508,6 +508,35 @@ namespace Compilers.UnitTests
             var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
 
             var scannerInfo = lexicon.CreateScannerInfo();
+            scannerInfo.LexerStateIndex = xml.Index;
+
+            Scanner s = new Scanner(scannerInfo);
+
+            string source = "xmlns 你好吗1 123 蘏臦囧綗 AＢＣＤ if";
+
+            SourceReader sr = new SourceReader(new StringReader(source));
+
+            s.SetSource(sr);
+            s.SetSkipTokens(WHITESPACE.Index);
+
+            var l1 = s.Read();
+            Assert.AreEqual(XMLNS.Index, l1.TokenIndex);
+
+            var l2 = s.Read();
+            Assert.AreEqual(ID.Index, l2.TokenIndex);
+
+            var l3 = s.Read();
+            Assert.AreEqual(NUM.Index, l3.TokenIndex);
+
+            var l4 = s.Read();
+            Assert.AreEqual(ID.Index, l4.TokenIndex);
+
+            var l5 = s.Read();
+            Assert.AreEqual(ID.Index, l5.TokenIndex);
+
+            var l6 = s.Read();
+            Assert.AreEqual(IF.Index, l6.TokenIndex);
+
         }
     }
 }
