@@ -19,6 +19,7 @@ namespace VBF.Compilers.Scanners
         internal ForkNode(ForkNode parent)
         {
             Debug.Assert(parent != null);
+            Debug.Assert(parent != this);
 
             LookAheadQueue = parent.LookAheadQueue;
             MasterScanner = parent.MasterScanner;
@@ -41,6 +42,8 @@ namespace VBF.Compilers.Scanners
                 {
                     return Offset;
                 }
+
+                Debug.Assert(Parent != this);
 
                 return Parent.Position + Offset;
             }
@@ -80,6 +83,7 @@ namespace VBF.Compilers.Scanners
         internal ForkNode Node { get; private set; }
         protected NodeState(ForkNode node)
         {
+            
             Node = node;
         }
 
@@ -260,6 +264,8 @@ namespace VBF.Compilers.Scanners
             ForkNode parent = Node.Parent;
             parent.Children.Add(child);
             child.Offset += Node.Offset;
+
+            Debug.Assert(parent != child);
             child.Parent = parent;
 
             Node.Offset = 0;
