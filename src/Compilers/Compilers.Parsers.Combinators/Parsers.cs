@@ -79,7 +79,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return Wrap(scanner => new Result<Lexeme>(scanner.Read()));
         }
 
-        public static Parser<T> Or<T>(this Parser<T> parser1, Parser<T> parser2)
+        public static Parser<T> Union<T>(this Parser<T> parser1, Parser<T> parser2)
         {
             CodeContract.RequiresArgumentNotNull(parser1, "parser1");
             CodeContract.RequiresArgumentNotNull(parser2, "parser2");
@@ -100,6 +100,25 @@ namespace VBF.Compilers.Parsers.Combinators
 
                 scanner.Join(scanner2);
                 return result2;
+            });
+        }
+
+        public static Parser<Tuple<T1, T2>> Concat<T1, T2>(this Parser<T1> parser1, Parser<T2> parser2)
+        {
+            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
+            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
+
+            return Wrap(scanner =>
+            {
+                var result1 = parser1.Rule(scanner);
+
+                if (result1 == null) return null;
+
+                var result2 = parser2.Rule(scanner);
+
+                if (result2 == null) return null;
+
+                return new Result<Tuple<T1, T2>>(Tuple.Create(result1.Value, result2.Value));
             });
         }
 
@@ -258,7 +277,7 @@ namespace VBF.Compilers.Parsers.Combinators
         {
             CodeContract.RequiresArgumentNotNull(parser, "parser");
 
-            return parser.Many1().Or(Success(new T[0]));
+            return parser.Many1().Union(Success(new T[0]));
         }
 
         public static Parser<T[]> Many1<T>(this Parser<T> parser)
@@ -288,7 +307,7 @@ namespace VBF.Compilers.Parsers.Combinators
         {
             CodeContract.RequiresArgumentNotNull(parser, "parser");
 
-            return parser.Or(Success(default(T)));
+            return parser.Union(Success(default(T)));
         }
 
         public static Parser<Lexeme> Optional(this Token token)

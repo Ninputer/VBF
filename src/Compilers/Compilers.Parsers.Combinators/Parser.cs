@@ -40,7 +40,7 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(leftParser, "leftParser");
             CodeContract.RequiresArgumentNotNull(rightParser, "rightParser");
 
-            return leftParser.Or(rightParser);
+            return leftParser.Union(rightParser);
         }
     }
 }

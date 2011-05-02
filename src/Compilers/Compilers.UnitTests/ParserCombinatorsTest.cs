@@ -17,7 +17,7 @@ namespace Compilers.UnitTests
         {
             Lexicon test = new Lexicon();
 
-            var ID = test.DefaultLexer.DefineToken(RE.Range('a', 'z').Sequence(
+            var ID = test.DefaultLexer.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
             var NUM = test.DefaultLexer.DefineToken(RE.Range('0', '9').Many1());
             var WHITESPACE = test.DefaultLexer.DefineToken(RE.Symbol(' ').Union(RE.Symbol('\t')));

@@ -40,7 +40,7 @@ namespace VBF.Compilers.Scanners
             return new KleeneStarExpression(this);
         }
 
-        public RegularExpression Sequence(RegularExpression follow)
+        public RegularExpression Concat(RegularExpression follow)
         {
             return new ConcatenationExpression(this, follow);
         }
@@ -79,7 +79,7 @@ namespace VBF.Compilers.Scanners
 
         public RegularExpression Many1()
         {
-            return this.Sequence(this.Many());
+            return this.Concat(this.Many());
         }
 
         public RegularExpression Optional()
@@ -124,7 +124,7 @@ namespace VBF.Compilers.Scanners
 
             for (int i = 1; i < number; i++)
             {
-                result = result.Sequence(this);
+                result = result.Concat(this);
             }
 
             return result;

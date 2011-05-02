@@ -20,7 +20,7 @@ namespace Compilers.UnitTests
         {
             //var RE_IF = RE.Literal("if");
             //var RE_ELSE = RE.Literal("else");
-            var RE_ID = RE.Range('a', 'z').Sequence(
+            var RE_ID = RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many());
             //var RE_NUM = RE.Range('0', '9').Many1();
             //var RE_ERROR = RE.Range(Char.MinValue, (char)255);
@@ -65,7 +65,7 @@ namespace Compilers.UnitTests
             LexerState keywords = global.DefineSubState();
             LexerState xml = keywords.DefineSubState();
 
-            var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
+            var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
             var NUM = global.DefineToken(RE.Range('0', '9').Many1());
             var ERROR = global.DefineToken(RE.Range(Char.MinValue, (char)255));
@@ -272,7 +272,7 @@ namespace Compilers.UnitTests
             LexerState keywords = global.DefineSubState();
             LexerState xml = keywords.DefineSubState();
 
-            var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
+            var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
             var NUM = global.DefineToken(RE.Range('0', '9').Many1());
             var WHITESPACE = global.DefineToken(RE.Symbol(' ').Many());
@@ -362,7 +362,7 @@ namespace Compilers.UnitTests
             LexerState keywords = global.DefineSubState();
             LexerState xml = keywords.DefineSubState();
 
-            var ID = global.DefineToken(RE.Range('a', 'z').Sequence(
+            var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
             var NUM = global.DefineToken(RE.Range('0', '9').Many1());
             var WHITESPACE = global.DefineToken(RE.Symbol(' ').Many());
@@ -497,7 +497,7 @@ namespace Compilers.UnitTests
             var RE_IDCHAR = RE.CharsOf(c => lettersCategories.Contains(Char.GetUnicodeCategory(c)));
 
 
-            var ID = global.DefineToken(RE_IDCHAR.Sequence(
+            var ID = global.DefineToken(RE_IDCHAR.Concat(
                 (RE_IDCHAR | RE.Range('0', '9')).Many()));
             var NUM = global.DefineToken(RE.Range('0', '9').Many1());
             var WHITESPACE = global.DefineToken(RE.Symbol(' ').Many());
