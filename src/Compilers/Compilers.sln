@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.UnitTests", "Comp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.Parsers.Combinators", "Compilers.Parsers.Combinators\Compilers.Parsers.Combinators.csproj", "{57E34138-CEE5-422B-8EA2-CB7A9574805D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.Common", "Compilers.Common\Compilers.Common.csproj", "{283A7585-ECF4-405A-824F-AF926C16C78C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{57E34138-CEE5-422B-8EA2-CB7A9574805D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57E34138-CEE5-422B-8EA2-CB7A9574805D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57E34138-CEE5-422B-8EA2-CB7A9574805D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{283A7585-ECF4-405A-824F-AF926C16C78C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{283A7585-ECF4-405A-824F-AF926C16C78C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{283A7585-ECF4-405A-824F-AF926C16C78C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{283A7585-ECF4-405A-824F-AF926C16C78C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

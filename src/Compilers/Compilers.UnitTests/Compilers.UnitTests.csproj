@@ -54,6 +54,10 @@
     <Compile Include="ScannersTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Compilers.Common\Compilers.Common.csproj">
+      <Project>{283A7585-ECF4-405A-824F-AF926C16C78C}</Project>
+      <Name>Compilers.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Compilers.Parsers.Combinators\Compilers.Parsers.Combinators.csproj">
       <Project>{57E34138-CEE5-422B-8EA2-CB7A9574805D}</Project>
       <Name>Compilers.Parsers.Combinators</Name>

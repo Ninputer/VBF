@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
 
-namespace VBF.Compilers.Scanners
+namespace VBF.Compilers
 {
     class RevertPointCollection : KeyedCollection<int, RevertPoint>
     {

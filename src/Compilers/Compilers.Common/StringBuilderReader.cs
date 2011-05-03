@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace VBF.Compilers.Scanners
+namespace VBF.Compilers
 {
 
     class StringBuilderReader : TextReader

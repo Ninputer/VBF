@@ -6,6 +6,7 @@ using VBF.Compilers.Scanners.Generator;
 using System.IO;
 using System.Globalization;
 using System.Linq;
+using VBF.Compilers;
 
 namespace Compilers.UnitTests
 {

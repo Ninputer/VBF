@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 
-namespace VBF.Compilers.Scanners
+namespace VBF.Compilers
 {
     public class SourceReader
     {

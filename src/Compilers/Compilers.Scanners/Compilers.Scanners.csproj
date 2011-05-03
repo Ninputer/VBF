@@ -34,16 +34,16 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Compilers.Common\CodeContract.cs">
+      <Link>CodeContract.cs</Link>
+    </Compile>
     <Compile Include="AlternationCharSetExpression.cs" />
     <Compile Include="AlternationExpression.cs" />
     <Compile Include="CacheQueue.cs" />
-    <Compile Include="CodeContract.cs" />
     <Compile Include="ConcatenationExpression.cs" />
     <Compile Include="EmptyExpression.cs" />
     <Compile Include="FiniteAutomationEngine.cs" />
@@ -67,18 +67,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegularExpression.cs" />
     <Compile Include="RegularExpressionConverter.cs" />
-    <Compile Include="RevertPoint.cs" />
-    <Compile Include="RevertPointCollection.cs" />
     <Compile Include="Scanner.cs" />
     <Compile Include="ScannerInfo.cs" />
-    <Compile Include="SourceReader.cs" />
-    <Compile Include="SourceLocation.cs" />
-    <Compile Include="SourceSpan.cs" />
-    <Compile Include="StringBuilderReader.cs" />
     <Compile Include="StringLiteralExpression.cs" />
     <Compile Include="SymbolExpression.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="UnitTestVisibility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Compilers.Common\Compilers.Common.csproj">
+      <Project>{283A7585-ECF4-405A-824F-AF926C16C78C}</Project>
+      <Name>Compilers.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
