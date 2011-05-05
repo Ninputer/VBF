@@ -35,5 +35,21 @@ namespace VBF.Compilers.Scanners
         {
             return m_scannerInfo.GetTokenIndex(m_stateIndex, lexerState);
         }
+
+        public bool IsEndOfStream
+        {
+            get
+            {
+                return m_stateIndex == m_scannerInfo.EndOfStreamState;
+            }
+        }
+
+        public Lexeme GetErrorCorrectionLexeme(int expectedTokenIndex, string expectedValue)
+        {
+            int state = m_scannerInfo.GetStateIndex(expectedTokenIndex);
+            if (state < 0) throw new ArgumentException("Expected token index is invalid", "expectedTokenIndex");
+
+            return new Lexeme(m_scannerInfo, state, new SourceSpan(Span.StartLocation, Span.StartLocation), expectedValue);
+        }
     }
 }

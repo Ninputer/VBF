@@ -33,6 +33,11 @@ namespace VBF.Compilers.Scanners
             get { return m_detail.TokenCount; }
         }
 
+        internal int GetStateIndex(int tokenIndex)
+        {
+            return Array.IndexOf(m_detail.AcceptTables[m_lexerState], tokenIndex);
+        }
+
         internal int GetTokenIndex(int state)
         {
             return m_detail.AcceptTables[m_lexerState][state];
