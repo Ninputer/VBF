@@ -12,14 +12,24 @@ namespace ContinuationParserCombinators
     public abstract class Parser<T>
     {
         public abstract Func<ForkableScanner, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future);
+
+        public static Parser<T> operator |(Parser<T> p1, Parser<T> p2)
+        {
+            return new Alternation<T>(p1, p2);
+        }
     }
 
     public class Succeed<T> : Parser<T>
     {
         public T Value { get; private set; }
+
+        public Succeed(T value)
+        {
+            Value = value;
+        }
         public override Func<ForkableScanner, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future)
         {
-            return future(Value);
+            return scanner => future(Value)(scanner);
         }
     }
 
@@ -36,7 +46,7 @@ namespace ContinuationParserCombinators
 
         public override Func<ForkableScanner, Result<TFuture>> Run<TFuture>(Future<Tuple<T1, T2>, TFuture> future)
         {
-            return ParserLeft.Run(left => ParserRight.Run(right => future(Tuple.Create(left, right))));
+            return scanner => ParserLeft.Run(left => ParserRight.Run(right => future(Tuple.Create(left, right))))(scanner);
         }
     }
 
@@ -55,7 +65,7 @@ namespace ContinuationParserCombinators
 
         public override Func<ForkableScanner, Result<TFuture>> Run<TFuture>(Future<TR, TFuture> future)
         {
-            return ParserLeft.Run(left => ParserRight.Run(right => future(Selector(left, right))));
+            return scanner => ParserLeft.Run(left => ParserRight.Run(right => future(Selector(left, right))))(scanner);
         }
     }
 
@@ -63,6 +73,13 @@ namespace ContinuationParserCombinators
     {
         public Parser<T> Parser1 { get; private set; }
         public Parser<T> Parser2 { get; private set; }
+
+        public Alternation(Parser<T> parser1, Parser<T> parser2)
+        {
+            Parser1 = parser1;
+            Parser2 = parser2;
+        }
+
         public override Func<ForkableScanner, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future)
         {
             return scanner =>
@@ -78,6 +95,12 @@ namespace ContinuationParserCombinators
     public class TokenParser : Parser<Lexeme>
     {
         public Token ExpectedToken { get; private set; }
+
+        public TokenParser(Token expected)
+        {
+            ExpectedToken = expected;
+        }
+
         public override Func<ForkableScanner, Result<TFuture>> Run<TFuture>(Future<Lexeme, TFuture> future)
         {
             Func<ForkableScanner, Result<TFuture>> scan = null;
@@ -89,26 +112,62 @@ namespace ContinuationParserCombinators
                 if (l.TokenIndex == ExpectedToken.Index)
                 {
                     s1.Close();
-                    return new Step<TFuture>(0, future(l)(scanner));
+                    var r = Result.Step(0, () => future(l)(scanner));
+                    return r;
                 }
                 else
                 {
                     if (l.IsEndOfStream)
                     {
-                        s1.Close();
-                        return new Step<TFuture>(1, future(l.GetErrorCorrectionLexeme(ExpectedToken.Index, "<missing>"))(scanner)); //insert
+                        scanner.Join(s1);
+                        return Result.Step<TFuture>(1, () => future(l.GetErrorCorrectionLexeme(ExpectedToken.Index, "<missing>"))(scanner)); //insert
                     }
                     else
                     {
                         return Parsers.Best(
-                            new Step<TFuture>(1, future(l.GetErrorCorrectionLexeme(ExpectedToken.Index, "<missing>"))(scanner)), scanner, //insert
-                            new Step<TFuture>(1, scan(s1)), s1, //delete
+                            Result.Step(1, () => future(l.GetErrorCorrectionLexeme(ExpectedToken.Index, "<missing>"))(scanner)), s1, //insert
+                            Result.Step(1, () => scan(s1)), scanner, //delete
                             scanner);
                     }
                 }
             };
 
             return scan;
+        }
+    }
+
+    public class DelayAssignParser<T> : Parser<T>
+    {
+        public Parser<T> Rule { get; set; }
+
+        public override Func<ForkableScanner, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future)
+        {
+            return Rule.Run(future);
+        }
+    }
+
+    public class EndOfStreamParser : Parser<Lexeme>
+    {
+        public override Func<ForkableScanner, Result<TFuture>> Run<TFuture>(Future<Lexeme, TFuture> future)
+        {
+            return scanner =>
+            {
+                var s1 = scanner.Fork();
+
+                var l = scanner.Read();
+
+                if (l.IsEndOfStream)
+                {
+                    //s1.Close();
+                    return Result.Step(0, () => future(l)(scanner));
+                }
+                else
+                {
+                    //scanner.Join(s1);
+                    return Result.Fail<TFuture>();
+                }
+            };
+            throw new NotImplementedException();
         }
     }
 }
