@@ -84,8 +84,6 @@ namespace VBF.Compilers.Parsers.Combinators
         {
             if (context != null && context.ErrorManager != null)
             {
-                context.ErrorManager.ClearErrors();
-
                 foreach (var ec in ErrorCorrections)
                 {
                     if (ec.Method == CorrectionMethod.Inserted)

@@ -105,6 +105,10 @@ namespace VBF.Compilers.Parsers.Combinators
                         return step1;
                     }
                 }
+                else if (correctionDepth > 10)
+                {
+                    return FailResult<T>();
+                }
 
                 return new StepResult<T>(1, () => ChooseBest(step1.NextResult, step2.NextResult, correctionDepth + 1), null);
             }

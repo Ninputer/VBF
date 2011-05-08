@@ -51,6 +51,7 @@
     <Compile Include="Parser.cs" />
     <Compile Include="ParserContext.cs" />
     <Compile Include="ParserReference.cs" />
+    <Compile Include="ParserRunner.cs" />
     <Compile Include="Parsers.cs" />
     <Compile Include="PredicateParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
