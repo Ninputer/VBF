@@ -14,7 +14,6 @@ namespace VBF.Compilers
         private TextReader m_textReader;
 
         //scanner location service
-        private bool m_isLastCharLf;
         private SourceLocation m_location;
         private SourceLocation m_lastLocation;
 
@@ -100,17 +99,10 @@ namespace VBF.Compilers
                 //treat \n as the line breaker. \r\n will be handled too
                 if (c == '\n')
                 {
-                    m_isLastCharLf = true;
-                }
-                else
-                {
-                    if (m_isLastCharLf)
-                    {
-                        m_location.Line += 1;
-                        m_location.Column = 0;
 
-                        m_isLastCharLf = false;
-                    }
+                    m_location.Line += 1;
+                    m_location.Column = 0;
+
                 }
 
             }
@@ -135,7 +127,7 @@ namespace VBF.Compilers
 
             int revertPointKey = GetRevertPointKey();
 
-            RevertPoint revertPoint = new RevertPoint(revertPointKey, m_backupReader.Position, m_lastLocation, m_location, m_isLastCharLf);
+            RevertPoint revertPoint = new RevertPoint(revertPointKey, m_backupReader.Position, m_lastLocation, m_location);
             m_revertPoints.Add(revertPoint);
 
             return revertPoint;
@@ -153,7 +145,6 @@ namespace VBF.Compilers
             //restore location state
             m_lastLocation = revertPoint.LastLocation;
             m_location = revertPoint.Location;
-            m_isLastCharLf = revertPoint.IsLastCharLf;
         }
 
         public void RemoveRevertPoint(RevertPoint revertPoint)

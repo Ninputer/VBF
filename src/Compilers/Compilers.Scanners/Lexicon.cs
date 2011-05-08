@@ -22,10 +22,10 @@ namespace VBF.Compilers.Scanners
             m_lexerStates.Add(m_defaultState);
         }
 
-        internal Token AddToken(RegularExpression definition, LexerState state, int indexInState)
+        internal Token AddToken(RegularExpression definition, LexerState state, int indexInState, string description)
         {
             int index = m_tokenList.Count;
-            Token token = new Token(definition, this, index, state);
+            Token token = new Token(definition, this, index, state, description);
             m_tokenList.Add(token);
 
             return token;

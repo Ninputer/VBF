@@ -11,16 +11,14 @@ namespace VBF.Compilers
         internal int Key { get; private set; }
         public SourceLocation LastLocation { get; private set; }
         internal SourceLocation Location { get; private set; }
-        internal bool IsLastCharLf { get; private set; }
 
-        internal RevertPoint(int key, int offset, SourceLocation lastLocation, SourceLocation location, bool isLastCharLf)
+        internal RevertPoint(int key, int offset, SourceLocation lastLocation, SourceLocation location)
             : this()
         {
             Key = key;
             Offset = offset;
             LastLocation = lastLocation;
             Location = location;
-            IsLastCharLf = IsLastCharLf;
         }
     }
 }

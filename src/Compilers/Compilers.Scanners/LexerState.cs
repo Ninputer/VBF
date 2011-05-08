@@ -36,16 +36,21 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        public Token DefineToken(RegularExpression regex)
+        public Token DefineToken(RegularExpression regex, string description)
         {
             CodeContract.RequiresArgumentNotNull(regex, "regex");
 
             int indexInState = m_tokens.Count;
 
-            Token token = Lexicon.AddToken(regex, this, indexInState);
+            Token token = Lexicon.AddToken(regex, this, indexInState, description);
             m_tokens.Add(token);
 
             return token;
+        }
+
+        public Token DefineToken(RegularExpression regex)
+        {
+            return DefineToken(regex, String.Empty);
         }
 
         public LexerState DefineSubState()

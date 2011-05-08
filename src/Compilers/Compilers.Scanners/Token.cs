@@ -7,20 +7,22 @@ using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
+    [DebuggerDisplay("Index: {Index}  {ToString()}")]
     public class Token : IEquatable<Token>
     {
         public int Index { get; private set; }
         public Lexicon Lexicon { get; private set; }
         public LexerState State { get; private set; }
         public RegularExpression Definition { get; private set; }
+        public string Description { get; private set; }
 
-        internal Token(RegularExpression definition, Lexicon lexicon, int index, LexerState state)
+        internal Token(RegularExpression definition, Lexicon lexicon, int index, LexerState state, string description)
         {
             Lexicon = lexicon;
             Index = index;
             Definition = definition;
             State = state;
-            //IndexInState = indexInState;
+            Description = description;
         }
 
         public bool Equals(Token other)
@@ -43,6 +45,18 @@ namespace VBF.Compilers.Scanners
         public override int GetHashCode()
         {
             return Index;
+        }
+
+        public override string ToString()
+        {
+            if (!String.IsNullOrEmpty(Description))
+            {
+                return Description;
+            }
+            else
+            {
+                return Definition.ToString();
+            }
         }
 
         public NFAModel CreateFiniteAutomatonModel(NFAConverter converter)
