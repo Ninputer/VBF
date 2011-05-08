@@ -7,40 +7,15 @@ using System.Diagnostics;
 
 namespace VBF.Compilers.Parsers.Combinators
 {
-    public class Parser<T>
+    public delegate Func<ForkableScanner, ParserContext, Result<TFuture>> Future<T, TFuture>(T value);
+
+    public abstract class Parser<T>
     {
-        public ParserFunc<T> Rule { get; private set; }
+        public abstract Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future);
 
-        public Parser()
+        public static Parser<T> operator |(Parser<T> p1, Parser<T> p2)
         {
-
-        }
-
-        public Parser(ParserFunc<T> rule)
-        {
-            Rule = rule;
-        }
-
-        public void Assign<U>(Parser<U> assignedParser) where U : class, T
-        {
-            CodeContract.RequiresArgumentNotNull(assignedParser, "assignedParser");
-
-            Rule = assignedParser.Rule;
-        }
-
-        public void Assign(Parser<T> assignedParser)
-        {
-            CodeContract.RequiresArgumentNotNull(assignedParser, "assignedParser");
-
-            Rule = assignedParser.Rule;
-        }
-
-        public static Parser<T> operator |(Parser<T> leftParser, Parser<T> rightParser)
-        {
-            CodeContract.RequiresArgumentNotNull(leftParser, "leftParser");
-            CodeContract.RequiresArgumentNotNull(rightParser, "rightParser");
-
-            return leftParser.Union(rightParser);
+            return new AlternationParser<T>(p1, p2);
         }
     }
 }

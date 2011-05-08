@@ -8,158 +8,31 @@ namespace VBF.Compilers.Parsers.Combinators
 {
     public static class Parsers
     {
-        public static Parser<T> Wrap<T>(ParserFunc<T> rule)
-        {
-            CodeContract.RequiresArgumentNotNull(rule, "rule");
-
-            return new Parser<T>(rule);
-        }
-
         public static Parser<Lexeme> AsParser(this Token token)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
 
-            return Wrap(scanner =>
-            {
-                var lexeme = scanner.Read();
-                if (lexeme.TokenIndex == token.Index)
-                {
-                    return new Result<Lexeme>(lexeme);
-                }
-                else
-                {
-                    return null;
-                }
-            });
+            return new TokenParser(token);
         }
 
-        public static Parser<Lexeme> AsParser(this Token token, int lexerStateIndex)
+        public static Parser<Lexeme> Eos()
         {
-            CodeContract.RequiresArgumentNotNull(token, "token");
-
-            return Wrap(scanner =>
-            {
-                var lexeme = scanner.Read();
-                if (lexeme.GetTokenIndex(lexerStateIndex) == token.Index)
-                {
-                    return new Result<Lexeme>(lexeme);
-                }
-                else
-                {
-                    return null;
-                }
-            });
+            return new EndOfStreamParser();
         }
 
-        public static IResult<Lexeme> Scan(this Token token, ForkableScanner scanner)
+        public static Parser<T> Succeed<T>(T value)
         {
-            var lexeme = scanner.Read();
-            if (lexeme.TokenIndex == token.Index)
-            {
-                return new Result<Lexeme>(lexeme);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static Parser<T> Success<T>(T result)
-        {
-            return Wrap(scanner => new Result<T>(result));
+            return new SucceedParser<T>(value);
         }
 
         public static Parser<T> Fail<T>()
         {
-            return Wrap<T>(scanner => null);
+            return new FailParser<T>();
         }
 
         public static Parser<Lexeme> Any()
         {
-            return Wrap(scanner => new Result<Lexeme>(scanner.Read()));
-        }
-
-        public static Parser<T> Union<T>(this Parser<T> parser1, Parser<T> parser2)
-        {
-            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
-            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
-
-            return Wrap(scanner =>
-            {
-                var scanner1 = scanner;
-                var scanner2 = scanner.Fork();
-
-                var result1 = parser1.Rule(scanner1);
-                if (result1 != null)
-                {
-                    scanner.Join(scanner1);
-                    return result1;
-                }
-
-                var result2 = parser2.Rule(scanner2);
-
-                scanner.Join(scanner2);
-                return result2;
-            });
-        }
-
-        public static Parser<Tuple<T1, T2>> Concat<T1, T2>(this Parser<T1> parser1, Parser<T2> parser2)
-        {
-            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
-            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
-
-            return Wrap(scanner =>
-            {
-                var result1 = parser1.Rule(scanner);
-
-                if (result1 == null) return null;
-
-                var result2 = parser2.Rule(scanner);
-
-                if (result2 == null) return null;
-
-                return new Result<Tuple<T1, T2>>(Tuple.Create(result1.Value, result2.Value));
-            });
-        }
-
-        public static Parser<T> Where<T>(this Parser<T> parser, Func<T, bool> predicate)
-        {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
-            CodeContract.RequiresArgumentNotNull(predicate, "predicate");
-
-            return Wrap(scanner =>
-            {
-                var result = parser.Rule(scanner);
-
-                if (predicate(result.Value))
-                {
-                    return result;
-                }
-                else
-                {
-                    return null;
-                }
-            });
-        }
-
-        public static Parser<Lexeme> Where(this Token token, Func<Lexeme, bool> predicate)
-        {
-            CodeContract.RequiresArgumentNotNull(token, "token");
-            CodeContract.RequiresArgumentNotNull(predicate, "predicate");
-
-            return Wrap(scanner =>
-            {
-                var result = token.Scan(scanner);
-
-                if (predicate(result.Value))
-                {
-                    return result;
-                }
-                else
-                {
-                    return null;
-                }
-            });
+            return new AnyTokenParser();
         }
 
         public static Parser<TResult> Select<TSource, TResult>(this Parser<TSource> parser, Func<TSource, TResult> selector)
@@ -167,14 +40,7 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(parser, "parser");
             CodeContract.RequiresArgumentNotNull(selector, "selector");
 
-            return Wrap(scanner => 
-            {
-                var result = parser.Rule(scanner);
-
-                if (result == null) return null;
-
-                return new Result<TResult>(selector(result.Value));
-            });
+            return new MapParser<TSource, TResult>(parser, selector);
         }
 
         public static Parser<TResult> Select<TResult>(this Token token, Func<Lexeme, TResult> selector)
@@ -182,7 +48,7 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(token, "token");
             CodeContract.RequiresArgumentNotNull(selector, "selector");
 
-            return token.AsParser().Select(selector);
+            return new MapParser<Lexeme, TResult>(token.AsParser(), selector);
         }
 
         public static Parser<TResult> SelectMany<T1, T2, TResult>(this Parser<T1> parser, Func<T1, Parser<T2>> parserSelector, Func<T1, T2, TResult> resultSelector)
@@ -191,64 +57,25 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(parserSelector, "parserSelector");
             CodeContract.RequiresArgumentNotNull(resultSelector, "resultSelector");
 
-            return Wrap(scanner =>
-            {
-                var result1 = parser.Rule(scanner);
-
-                if (result1 == null) return null;
-
-                var parser2 = parserSelector(result1.Value);
-
-                var result2 = parser2.Rule(scanner);
-
-                if (result2 == null) return null;
-
-                return new Result<TResult>(resultSelector(result1.Value, result2.Value));
-            });
+            return new ConcatenationParser<T1, T2, TResult>(parser, parserSelector, resultSelector);
         }
 
-        public static Parser<TResult> SelectMany<T, TResult>(this Token token, Func<Lexeme, Parser<T>> parserSelector, Func<Lexeme, T, TResult> resultSelector)
+        public static Parser<TResult> SelectMany<T2, TResult>(this Token token, Func<Lexeme, Parser<T2>> parserSelector, Func<Lexeme, T2, TResult> resultSelector)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
             CodeContract.RequiresArgumentNotNull(parserSelector, "parserSelector");
             CodeContract.RequiresArgumentNotNull(resultSelector, "resultSelector");
 
-            return Wrap(scanner =>
-            {
-                var result1 = token.Scan(scanner);
-
-                if (result1 == null) return null;
-
-                var parser2 = parserSelector(result1.Value);
-
-                var result2 = parser2.Rule(scanner);
-
-                if (result2 == null) return null;
-
-                return new Result<TResult>(resultSelector(result1.Value, result2.Value));
-            });
+            return new ConcatenationParser<Lexeme, T2, TResult>(token.AsParser(), parserSelector, resultSelector);
         }
 
-        public static Parser<TResult> SelectMany<T, TResult>(this Parser<T> parser, Func<T, Token> parserSelector, Func<T, Lexeme, TResult> resultSelector)
+        public static Parser<TResult> SelectMany<T1, TResult>(this Parser<T1> parser, Func<T1, Token> parserSelector, Func<T1, Lexeme, TResult> resultSelector)
         {
             CodeContract.RequiresArgumentNotNull(parser, "parser");
             CodeContract.RequiresArgumentNotNull(parserSelector, "parserSelector");
             CodeContract.RequiresArgumentNotNull(resultSelector, "resultSelector");
 
-            return Wrap(scanner =>
-            {
-                var result1 = parser.Rule(scanner);
-
-                if (result1 == null) return null;
-
-                var token2 = parserSelector(result1.Value);
-
-                var result2 = token2.Scan(scanner);
-
-                if (result2 == null) return null;
-
-                return new Result<TResult>(resultSelector(result1.Value, result2.Value));
-            });
+            return new ConcatenationParser<T1, Lexeme, TResult>(parser, v => parserSelector(v).AsParser(), resultSelector);
         }
 
         public static Parser<TResult> SelectMany<TResult>(this Token token, Func<Lexeme, Token> parserSelector, Func<Lexeme, Lexeme, TResult> resultSelector)
@@ -257,27 +84,91 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(parserSelector, "parserSelector");
             CodeContract.RequiresArgumentNotNull(resultSelector, "resultSelector");
 
-            return Wrap(scanner =>
-            {
-                var result1 = token.Scan(scanner);
+            return new ConcatenationParser<Lexeme, Lexeme, TResult>(token.AsParser(), v => parserSelector(v).AsParser(), resultSelector);
+        }
 
-                if (result1 == null) return null;
+        public static Parser<T> Where<T>(this Parser<T> parser, Func<T, bool> predicate)
+        {
+            CodeContract.RequiresArgumentNotNull(parser, "parser");
+            CodeContract.RequiresArgumentNotNull(predicate, "predicate");
 
-                var token2 = parserSelector(result1.Value);
+            return new PredicateParser<T>(parser, predicate);
+        }
 
-                var result2 = token2.Scan(scanner);
+        public static Parser<Lexeme> Where(this Token token, Func<Lexeme, bool> predicate)
+        {
+            CodeContract.RequiresArgumentNotNull(token, "token");
+            CodeContract.RequiresArgumentNotNull(predicate, "predicate");
 
-                if (result2 == null) return null;
+            return new PredicateParser<Lexeme>(token.AsParser(), predicate);
+        }
 
-                return new Result<TResult>(resultSelector(result1.Value, result2.Value));
-            });
+        public static Parser<T> Union<T>(this Parser<T> parser1, Parser<T> parser2)
+        {
+            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
+            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
+
+            return new AlternationParser<T>(parser1, parser2);
+        }
+
+        public static Parser<Tuple<T1, T2>> Concat<T1, T2>(this Parser<T1> parser1, Parser<T2> parser2)
+        {
+            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
+            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
+
+            return from v1 in parser1 from v2 in parser2 select Tuple.Create(v1, v2);
+        }
+
+        public static Parser<Tuple<Lexeme, T2>> Concat<T2>(this Token token1, Parser<T2> parser2)
+        {
+            CodeContract.RequiresArgumentNotNull(token1, "token1");
+            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
+
+            return from v1 in token1 from v2 in parser2 select Tuple.Create(v1, v2);
+        }
+
+        public static Parser<Tuple<T1, Lexeme>> Concat<T1>(this Parser<T1> parser1, Token token2)
+        {
+            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
+            CodeContract.RequiresArgumentNotNull(token2, "token2");
+
+            return from v1 in parser1 from v2 in token2 select Tuple.Create(v1, v2);
+        }
+
+        public static Parser<Tuple<Lexeme, Lexeme>> Concat(this Token token1, Token token2)
+        {
+            CodeContract.RequiresArgumentNotNull(token1, "token1");
+            CodeContract.RequiresArgumentNotNull(token2, "token2");
+
+            return from v1 in token1 from v2 in token2 select Tuple.Create(v1, v2);
+        }
+
+        public static Parser<T1> First<T1, T2>(this Parser<Tuple<T1, T2>> tupleParser)
+        {
+            CodeContract.RequiresArgumentNotNull(tupleParser, "tupleParser");
+
+            return tupleParser.Select(t => t.Item1);
+        }
+
+        public static Parser<T2> Second<T1, T2>(this Parser<Tuple<T1, T2>> tupleParser)
+        {
+            CodeContract.RequiresArgumentNotNull(tupleParser, "tupleParser");
+
+            return tupleParser.Select(t => t.Item2);
         }
 
         public static Parser<T[]> Many<T>(this Parser<T> parser)
         {
             CodeContract.RequiresArgumentNotNull(parser, "parser");
 
-            return parser.Many1().Union(Success(new T[0]));
+            return parser.Many1().Union(Succeed(new T[0]));
+        }
+
+        public static Parser<Lexeme[]> Many(this Token token)
+        {
+            CodeContract.RequiresArgumentNotNull(token, "token");
+
+            return token.AsParser().Many();
         }
 
         public static Parser<T[]> Many1<T>(this Parser<T> parser)
@@ -287,13 +178,6 @@ namespace VBF.Compilers.Parsers.Combinators
             return from r in parser
                    from rm in parser.Many()
                    select new[] { r }.Concat(rm).ToArray();
-        }
-
-        public static Parser<Lexeme[]> Many(this Token token)
-        {
-            CodeContract.RequiresArgumentNotNull(token, "token");
-
-            return token.AsParser().Many();
         }
 
         public static Parser<Lexeme[]> Many1(this Token token)
@@ -307,7 +191,7 @@ namespace VBF.Compilers.Parsers.Combinators
         {
             CodeContract.RequiresArgumentNotNull(parser, "parser");
 
-            return parser.Union(Success(default(T)));
+            return parser.Union(Succeed(default(T)));
         }
 
         public static Parser<Lexeme> Optional(this Token token)
@@ -315,6 +199,21 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(token, "token");
 
             return token.AsParser().Optional();
+        }
+
+        public static Parser<T> PrefixedBy<T, TPrefix>(this Parser<T> parser, Parser<TPrefix> prefix)
+        {
+            return prefix.Concat(parser).Second();
+        }
+
+        public static Parser<T> SuffixedBy<T, TSuffix>(this Parser<T> parser, Parser<TSuffix> suffix)
+        {
+            return parser.Concat(suffix).First();
+        }
+
+        public static Parser<T> PackedBy<T, TPrefix, TSuffix>(this Parser<T> parser, Parser<TPrefix> prefix, Parser<TSuffix> suffix)
+        {
+            return prefix.Concat(parser).Second().Concat(suffix).First();
         }
     }
 }

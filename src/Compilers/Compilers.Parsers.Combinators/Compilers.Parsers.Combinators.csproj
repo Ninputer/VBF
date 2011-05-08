@@ -41,11 +41,22 @@
     <Compile Include="..\Compilers.Common\CodeContract.cs">
       <Link>CodeContract.cs</Link>
     </Compile>
+    <Compile Include="AlternationParser.cs" />
+    <Compile Include="AnyTokenParser.cs" />
+    <Compile Include="ConcatenationParser.cs" />
+    <Compile Include="EndOfStreamParser.cs" />
+    <Compile Include="ErrorCorrection.cs" />
+    <Compile Include="FailParser.cs" />
+    <Compile Include="MapParser.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserContext.cs" />
-    <Compile Include="ParserFunc.cs" />
+    <Compile Include="ParserReference.cs" />
     <Compile Include="Parsers.cs" />
+    <Compile Include="PredicateParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Result.cs" />
+    <Compile Include="SucceedParser.cs" />
+    <Compile Include="TokenParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Compilers.Common\Compilers.Common.csproj">
