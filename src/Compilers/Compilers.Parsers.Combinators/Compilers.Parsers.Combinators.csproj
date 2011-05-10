@@ -47,6 +47,9 @@
     <Compile Include="EndOfStreamParser.cs" />
     <Compile Include="ErrorCorrection.cs" />
     <Compile Include="FailParser.cs" />
+    <Compile Include="LookAhead.cs" />
+    <Compile Include="LookAheadParser.cs" />
+    <Compile Include="LookAheadType.cs" />
     <Compile Include="MapParser.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserContext.cs" />
