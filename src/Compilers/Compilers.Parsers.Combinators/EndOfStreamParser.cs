@@ -22,7 +22,7 @@ namespace VBF.Compilers.Parsers.Combinators
                 }
                 else
                 {
-                    ErrorCorrection deleteCorrection = new ErrorCorrection(CorrectionMethod.Deleted, "$", l);
+                    ErrorCorrection deleteCorrection = new DeletedErrorCorrection(l);
                     return context.StepResult(1, () => scan(scanner, context), deleteCorrection); //delete to recover
                 }
             };

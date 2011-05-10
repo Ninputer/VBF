@@ -82,21 +82,9 @@ namespace VBF.Compilers.Parsers.Combinators
 
         public override T GetResult(ParserContext context)
         {
-            if (context != null && context.ErrorManager != null)
+            foreach (var ec in ErrorCorrections)
             {
-                foreach (var ec in ErrorCorrections)
-                {
-                    if (ec.Method == CorrectionMethod.Inserted)
-                    {
-                        context.ErrorManager.AddError(
-                            context.InsertionErrorId, ec.CorrectionLexeme.Span, ec.CorrectionToken);
-                    }
-                    else
-                    {
-                        context.ErrorManager.AddError(
-                            context.DeletionErrorId, ec.CorrectionLexeme.Span, ec.CorrectionLexeme.Value);
-                    }
-                }
+                ec.AddError(context);
             }
             return Result;
         }

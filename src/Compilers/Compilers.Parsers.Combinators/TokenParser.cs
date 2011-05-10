@@ -44,7 +44,7 @@ namespace VBF.Compilers.Parsers.Combinators
                 else
                 {
                     Lexeme correctionLexeme = l.GetErrorCorrectionLexeme(ExpectedToken.Index, MissingCorrection);
-                    ErrorCorrection insertCorrection = new ErrorCorrection(CorrectionMethod.Inserted, ExpectedToken.ToString(), correctionLexeme);
+                    ErrorCorrection insertCorrection = new InsertedErrorCorrection(ExpectedToken.ToString(), correctionLexeme.Span);
 
                     if (l.IsEndOfStream)
                     {
@@ -53,7 +53,7 @@ namespace VBF.Compilers.Parsers.Combinators
                     }
                     else
                     {
-                        ErrorCorrection deleteCorrection = new ErrorCorrection(CorrectionMethod.Deleted, ExpectedToken.ToString(), l);
+                        ErrorCorrection deleteCorrection = new DeletedErrorCorrection(l);
                         return context.ChooseBest(context.StepResult(1, () => future(correctionLexeme)(s1, context), insertCorrection), //insert
                             context.StepResult(1, () => scan(scanner, context), deleteCorrection)); //delete
                     }
