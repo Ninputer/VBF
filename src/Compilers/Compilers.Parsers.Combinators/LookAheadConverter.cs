@@ -18,7 +18,7 @@ namespace VBF.Compilers.Parsers.Combinators
 
     public static class LookAheadConverter
     {
-        public static TResult Visit<T, TResult>(this ILookAheadConverter<T, TResult> visitor, LookAhead<T> lookAhead)
+        public static TResult Convert<T, TResult>(this ILookAheadConverter<T, TResult> converter, LookAhead<T> lookAhead)
         {
             switch (lookAhead.Type)
             {
@@ -27,22 +27,22 @@ namespace VBF.Compilers.Parsers.Combinators
                     var newchoices = new Dictionary<int, TResult>();
                     foreach (var choice in shift.Choices)
                     {
-                        newchoices[choice.Key] = visitor.Visit(choice.Value);
+                        newchoices[choice.Key] = converter.Convert(choice.Value);
                     }
 
-                    return visitor.ConvertShift(shift.Parser, newchoices);
+                    return converter.ConvertShift(shift.Parser, newchoices);
                 case LookAheadType.Split:
                     var split = (Split<T>)lookAhead;
 
-                    return visitor.ConvertSplit(visitor.Visit(split.Shift), visitor.Visit(split.Reduce));
+                    return converter.ConvertSplit(converter.Convert(split.Shift), converter.Convert(split.Reduce));
                 case LookAheadType.Reduce:
                     var reduce = (Reduce<T>)lookAhead;
 
-                    return visitor.ConvertReduce(reduce.Parser);
+                    return converter.ConvertReduce(reduce.Parser);
                 case LookAheadType.Found:
                     var found = (Found<T>)lookAhead;
 
-                    return visitor.ConvertFound(found.Parser, visitor.Visit(found.Next));
+                    return converter.ConvertFound(found.Parser, converter.Convert(found.Next));
                 default:
                     throw new ArgumentException("The Type of LookAhead is invalid", "lookAhead");
             }

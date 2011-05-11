@@ -13,7 +13,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return (scanner, context) =>
             {
                 var l = scanner.Read();
-                return future(l)(scanner, context);
+                return context.StepResult(0, () => future(l)(scanner, context));
             };
         }
     }
