@@ -27,4 +27,29 @@ namespace VBF.Compilers.Parsers.Combinators
             };
         }
     }
+
+    class LookAheadApplier<T> : ILookAheadConverter<T, LookAhead<T>>
+    {
+        public Func<Parser<T>, Parser<T>> Converter { get; private set; }
+
+        public LookAhead<T> ConvertShift(Parser<T> parser, Dictionary<int, LookAhead<T>> choices)
+        {
+            return new Shift<T>(Converter(parser), choices);
+        }
+
+        public LookAhead<T> ConvertSplit(LookAhead<T> shift, LookAhead<T> reduce)
+        {
+            return new Split<T>(shift, reduce);
+        }
+
+        public LookAhead<T> ConvertReduce(Parser<T> parser)
+        {
+            return new Reduce<T>(Converter(parser));
+        }
+
+        public LookAhead<T> ConvertFound(Parser<T> parser, LookAhead<T> next)
+        {
+            return new Found<T>(Converter(parser), next);
+        }
+    }
 }

@@ -23,13 +23,18 @@ namespace VBF.Compilers.Parsers.Combinators
     {
         private Dictionary<int, LookAhead<T>> m_choices;
 
+        public Dictionary<int, LookAhead<T>> Choices
+        {
+            get { return m_choices; }
+        }
+
         public Shift(Parser<T> parser)
             : base(LookAheadType.Shift, parser)
         {
             m_choices = new Dictionary<int, LookAhead<T>>();
         }
 
-        public Shift(Dictionary<int, LookAhead<T>> choices, Parser<T> parser)
+        public Shift(Parser<T> parser, Dictionary<int, LookAhead<T>> choices)
             : base(LookAheadType.Shift, parser)
         {
             m_choices = new Dictionary<int, LookAhead<T>>(choices);
@@ -59,7 +64,7 @@ namespace VBF.Compilers.Parsers.Combinators
             switch (other.Type)
             {
                 case LookAheadType.Shift:
-                    var newshift = new Shift<T>(this.m_choices, new ChooseBestParser<T>(this.Parser, other.Parser));
+                    var newshift = new Shift<T>(new ChooseBestParser<T>(this.Parser, other.Parser), this.m_choices);
                     newshift.Combine(((Shift<T>)other).m_choices);
                     return newshift;
 
@@ -103,7 +108,7 @@ namespace VBF.Compilers.Parsers.Combinators
             {
                 case LookAheadType.Shift:
                     return other.Merge(this);
-                
+
                 default:
                     throw new ArgumentException("Ambiguous grammer: trying to merge a Split with a LookAhead rather than Shift");
             }
@@ -131,7 +136,11 @@ namespace VBF.Compilers.Parsers.Combinators
     {
         public LookAhead<T> Next { get; set; }
 
-        public Found(Parser<T> parser) : base(LookAheadType.Found, parser) { }
+        public Found(Parser<T> parser, LookAhead<T> next)
+            : base(LookAheadType.Found, parser)
+        {
+            Next = next;
+        }
 
         public override LookAhead<T> Merge(LookAhead<T> other)
         {

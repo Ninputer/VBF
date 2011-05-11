@@ -50,6 +50,7 @@
     <Compile Include="LookAhead.cs" />
     <Compile Include="LookAheadParser.cs" />
     <Compile Include="LookAheadType.cs" />
+    <Compile Include="LookAheadConverter.cs" />
     <Compile Include="MapParser.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserContext.cs" />
