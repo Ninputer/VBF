@@ -54,11 +54,7 @@ namespace VBF.Compilers.Parsers.Combinators
             {
                 m_succeedSteps++;
 
-                if (m_failedSteps <= m_succeedSteps)
-                {
-                    ResetFailedStepCount();
-                }
-                else if (m_failedSteps <= m_succeedSteps * 5)
+                if (m_failedSteps <= m_succeedSteps * 5)
                 {
                     m_trimmingThreshold = Int32.MaxValue;
                 }
