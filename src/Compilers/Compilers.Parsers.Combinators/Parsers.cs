@@ -25,11 +25,6 @@ namespace VBF.Compilers.Parsers.Combinators
             return new SucceedParser<T>(value);
         }
 
-        public static Parser<T> Fail<T>()
-        {
-            return new FailParser<T>();
-        }
-
         public static Parser<Lexeme> Any()
         {
             return new AnyTokenParser();
@@ -85,22 +80,6 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(resultSelector, "resultSelector");
 
             return new ConcatenationParser<Lexeme, Lexeme, TResult>(token.AsParser(), v => parserSelector(v).AsParser(), resultSelector);
-        }
-
-        public static Parser<T> Where<T>(this Parser<T> parser, Func<T, bool> predicate)
-        {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
-            CodeContract.RequiresArgumentNotNull(predicate, "predicate");
-
-            return new PredicateParser<T>(parser, predicate);
-        }
-
-        public static Parser<Lexeme> Where(this Token token, Func<Lexeme, bool> predicate)
-        {
-            CodeContract.RequiresArgumentNotNull(token, "token");
-            CodeContract.RequiresArgumentNotNull(predicate, "predicate");
-
-            return new PredicateParser<Lexeme>(token.AsParser(), predicate);
         }
 
         public static Parser<T> Union<T>(this Parser<T> parser1, Parser<T> parser2)
