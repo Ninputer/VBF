@@ -54,8 +54,15 @@
   <ItemGroup>
     <Compile Include="Ast\AstNode.cs" />
     <Compile Include="Ast\ClassDecl.cs" />
+    <Compile Include="Ast\Expression.cs" />
+    <Compile Include="Ast\Formal.cs" />
+    <Compile Include="Ast\Identifier.cs" />
     <Compile Include="Ast\MainClass.cs" />
+    <Compile Include="Ast\MethodDecl.cs" />
     <Compile Include="Ast\Program.cs" />
+    <Compile Include="Ast\Statement.cs" />
+    <Compile Include="Ast\Type.cs" />
+    <Compile Include="Ast\VarDecl.cs" />
     <Compile Include="MiniSharpParser.cs" />
     <Compile Include="ParserFrame.cs" />
     <Compile Include="ProgramEntry.cs" />

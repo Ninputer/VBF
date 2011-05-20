@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class ClassDecl : AstNode
+    public abstract class ClassDecl
     {
     }
 }

@@ -5,9 +5,8 @@ using System.Text;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class Program
+    public class VarDecl
     {
-        public MainClass MainClass { get; set; }
-        public ClassDecl[] Classes { get; set; }
+
     }
 }
