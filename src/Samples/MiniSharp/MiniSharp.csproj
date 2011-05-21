@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ast\AstNode.cs" />
+    <Compile Include="Ast\Binary.cs" />
     <Compile Include="Ast\ClassDecl.cs" />
     <Compile Include="Ast\Expression.cs" />
     <Compile Include="Ast\Formal.cs" />

@@ -34,7 +34,7 @@ namespace VBF.Compilers.Parsers.Combinators
             }
 
             ErrorManager.DefineError(DeletionErrorId, errorLevel, CompilationStage.Parsing, "Unexpected token \"{0}\"");
-            ErrorManager.DefineError(InsertionErrorId, errorLevel, CompilationStage.Parsing, "Missing token of {0}");
+            ErrorManager.DefineError(InsertionErrorId, errorLevel, CompilationStage.Parsing, "Missing {0}");
         }
 
         public void ResetFailedStepCount()
@@ -54,9 +54,13 @@ namespace VBF.Compilers.Parsers.Combinators
             {
                 m_succeedSteps++;
 
-                if (m_failedSteps <= m_succeedSteps * 5)
+                if (m_failedSteps < m_succeedSteps * 6)
                 {
                     m_trimmingThreshold = Int32.MaxValue;
+                }
+                else if (m_failedSteps < m_succeedSteps * 10)
+                {
+                    m_trimmingThreshold = 1;
                 }
             }
             return new StepResult<T>(cost, nextResult, null);
@@ -72,11 +76,16 @@ namespace VBF.Compilers.Parsers.Combinators
                 {
                     m_trimmingThreshold = 0;
                 }
-                else if (m_failedSteps >= m_failedSteps * 5)
+                else if (m_failedSteps >= m_succeedSteps * 6)
                 {
                     m_trimmingThreshold = 1;
                 }
             }
+            else
+            {
+                m_succeedSteps++;
+            }
+
             return new StepResult<T>(cost, nextResult, errorCorrection);
         }
 
@@ -122,7 +131,7 @@ namespace VBF.Compilers.Parsers.Combinators
                     }
                 }
 
-                return new StepResult<T>(1, () => ChooseBest(step1.NextResult, step2.NextResult, correctionDepth + 1), null);
+                return new StepResult<T>(Math.Max(step1.Cost, step2.Cost), () => ChooseBest(step1.NextResult, step2.NextResult, correctionDepth + 1), null);
             }
         }
     }
