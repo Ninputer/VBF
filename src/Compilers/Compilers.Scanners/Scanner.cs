@@ -23,6 +23,10 @@ namespace VBF.Compilers.Scanners
 
         private int[] m_tokenAttributes;
 
+        public CompilationErrorManager ErrorManager { get; set; }
+        public bool RecoverErrors { get; set; }
+        public int LexicalErrorId { get; set; }
+
         public Scanner(ScannerInfo scannerInfo)
         {
             m_scannerInfo = scannerInfo;
@@ -62,12 +66,7 @@ namespace VBF.Compilers.Scanners
                     m_tokenAttributes[skipIndex] = Skip;
                 }
             }
-        }     
-
-        //public Lexeme Read()
-        //{
-        //    return ReadNextToken();
-        //}
+        }
 
         public ScannerInfo ScannerInfo
         {
@@ -128,6 +127,20 @@ namespace VBF.Compilers.Scanners
         private bool IsLastTokenSkippable()
         {
             int acceptTokenIndex = m_scannerInfo.GetTokenIndex(m_lastState);
+
+            if (acceptTokenIndex < 0 && RecoverErrors)
+            {
+                //eat one char to continue
+                m_lexemeValueBuilder.Append((char)m_source.ReadChar());
+                
+                if (ErrorManager != null)
+                {                 
+                    ErrorManager.AddError(LexicalErrorId, new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString());
+                }
+                
+                return true;
+            }
+
             return acceptTokenIndex >= 0 && m_tokenAttributes[acceptTokenIndex] == Skip;
         }
     }

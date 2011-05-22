@@ -9,13 +9,11 @@ namespace VBF.Compilers.Scanners
     {
         private ForkNode m_node;
 
-        public static ForkableScanner Create(ScannerInfo scannerInfo, SourceReader source, params int[] skipTokens)
+        internal static ForkableScanner Create(Scanner masterScanner)
         {
             ForkNode node = new ForkNode();
             node.State = new TailHeadState(node);
-            node.MasterScanner = new Scanner(scannerInfo);
-            node.MasterScanner.SetSource(source);
-            node.MasterScanner.SetSkipTokens(skipTokens);
+            node.MasterScanner = masterScanner;
 
             return new ForkableScanner(node);
         }

@@ -15,19 +15,24 @@ namespace VBF.MiniSharp
         private readonly CompilationErrorManager m_errorManager;
         private Lexicon m_lexicon;
         private ScannerInfo m_scannerInfo;
+        private ForkableScannerBuilder m_scannerBuilder;
         private Parser<T> m_parser;
         private ParserRunner<T> m_parserRunner;
         private readonly int m_missingTokenErrorId;
         private readonly int m_unexpectedTokenErrorId;
+        private readonly int m_lexicalErrorId;
 
         private bool m_isInitialized = false;
         private List<int> m_skippedTokens;
 
-        protected ParserFrame(CompilationErrorManager errorManager, int missingTokenErrorId, int unexpectedTokenErrorId)
+        protected ParserFrame(CompilationErrorManager errorManager, int lexicalErrorId, int missingTokenErrorId, int unexpectedTokenErrorId)
         {
             m_errorManager = errorManager;
+
             m_missingTokenErrorId = missingTokenErrorId;
             m_unexpectedTokenErrorId = unexpectedTokenErrorId;
+            m_lexicalErrorId = lexicalErrorId;
+
             m_skippedTokens = new List<int>();
         }
 
@@ -54,6 +59,12 @@ namespace VBF.MiniSharp
 
             m_parserRunner = new ParserRunner<T>(m_parser, m_context);
 
+            m_scannerBuilder = new ForkableScannerBuilder(m_scannerInfo);
+            m_scannerBuilder.SetSkipTokens(m_skippedTokens.ToArray());
+            m_scannerBuilder.ErrorManager = m_errorManager;
+            m_scannerBuilder.RecoverErrors = true;
+            m_scannerBuilder.LexicalErrorId = m_lexicalErrorId;
+
             m_isInitialized = true;
         }
 
@@ -61,6 +72,7 @@ namespace VBF.MiniSharp
 
         protected virtual void OnDefineParserErrors(CompilationErrorManager errorManager)
         {
+            errorManager.DefineError(m_lexicalErrorId, 0, CompilationStage.Scanning, "Invalid token: {0}");
             m_context.DefineDefaultCompilationErrorInfo(0);
         }
 
@@ -89,7 +101,7 @@ namespace VBF.MiniSharp
                 Initialize();
             }
 
-            ForkableScanner scanner = ForkableScanner.Create(m_scannerInfo, source, m_skippedTokens.ToArray());
+            ForkableScanner scanner = m_scannerBuilder.Create(source);
 
             return m_parserRunner.Run(scanner);
         }

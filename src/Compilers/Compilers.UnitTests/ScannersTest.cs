@@ -431,7 +431,8 @@ namespace Compilers.UnitTests
             ScannerInfo si = lexicon.CreateScannerInfo();
             string source = "abcdefghijklmnopqrstuvwxyz";
 
-            ForkableScanner fscanner = ForkableScanner.Create(si, new SourceReader(new StringReader(source)));
+            ForkableScannerBuilder fsBuilder = new ForkableScannerBuilder(si);
+            ForkableScanner fscanner = fsBuilder.Create(new SourceReader(new StringReader(source)));
 
             var l1 = fscanner.Read();
             Assert.AreEqual("a", l1.Value);
@@ -538,6 +539,49 @@ namespace Compilers.UnitTests
             var l6 = s.Read();
             Assert.AreEqual(IF.Index, l6.TokenIndex);
 
+        }
+
+        [Test]
+        public void ErrorRecoveryTest()
+        {
+            Lexicon lexicon = new Lexicon();
+            LexerState global = lexicon.DefaultLexer;
+
+
+            var ID = global.DefineToken(RE.Range('a', 'z').Concat(
+                (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
+            var NUM = global.DefineToken(RE.Range('0', '9').Many1());
+            var WHITESPACE = global.DefineToken(RE.Symbol(' ').Many());
+
+            ScannerInfo info = lexicon.CreateScannerInfo();
+            PeekableScanner scanner = new PeekableScanner(info);
+
+            string source = "asdf04a 1107 !@#$!@ Z if vvv xmlns 772737";
+            StringReader sr = new StringReader(source);
+
+            scanner.SetSource(new SourceReader(sr));
+            scanner.SetSkipTokens(WHITESPACE.Index);
+            scanner.RecoverErrors = true;
+
+            CompilationErrorManager em = new CompilationErrorManager();
+            em.DefineError(101, 0, CompilationStage.Scanning, "Invalid token: {0}");
+
+            scanner.ErrorManager = em;
+            scanner.LexicalErrorId = 101;
+
+            Lexeme l1 = scanner.Read();
+            Assert.AreEqual(ID.Index, l1.TokenIndex);
+
+            Lexeme l2 = scanner.Read();
+            Assert.AreEqual(NUM.Index, l2.TokenIndex);
+
+            Assert.AreEqual(0, em.Errors.Count);
+
+            Lexeme l3 = scanner.Read();
+            Assert.AreEqual(ID.Index, l3.TokenIndex);
+
+            Assert.IsTrue(em.Errors.Count > 0);
+            Assert.AreEqual(101, em.Errors[0].Info.Id);
         }
     }
 }

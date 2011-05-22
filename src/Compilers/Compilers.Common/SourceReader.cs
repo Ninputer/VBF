@@ -30,6 +30,10 @@ namespace VBF.Compilers
             CodeContract.RequiresArgumentNotNull(textReader, "textReader");
             m_textReader = textReader;
 
+            //start counting line number from 1
+            m_location.Line = 1;
+            m_lastLocation.Line = 1;
+
             TabSize = tabSize;
         }
 

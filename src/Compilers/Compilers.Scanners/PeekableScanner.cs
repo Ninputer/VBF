@@ -94,5 +94,41 @@ namespace VBF.Compilers.Scanners
 
             m_masterScanner.SetSkipTokens(skipTokenIndices);
         }
+
+        public CompilationErrorManager ErrorManager
+        {
+            get
+            {
+                return m_masterScanner.ErrorManager;
+            }
+            set
+            {
+                m_masterScanner.ErrorManager = value;
+            }
+        }
+
+        public bool RecoverErrors
+        {
+            get
+            {
+                return m_masterScanner.RecoverErrors;
+            }
+            set
+            {
+                m_masterScanner.RecoverErrors = value;
+            }
+        }
+
+        public int LexicalErrorId
+        {
+            get
+            {
+                return m_masterScanner.LexicalErrorId;
+            }
+            set
+            {
+                m_masterScanner.LexicalErrorId = value;
+            }
+        }
     }
 }
