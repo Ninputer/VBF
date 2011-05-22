@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class Identifier
+    public class BooleanType : Type
     {
     }
 }

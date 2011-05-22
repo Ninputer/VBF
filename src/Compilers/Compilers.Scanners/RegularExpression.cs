@@ -22,6 +22,7 @@ namespace VBF.Compilers.Scanners
 
         internal abstract Func<HashSet<char>>[] GetCompactableCharSets();
         internal abstract HashSet<char> GetUncompactableCharSet();
+        internal abstract T Accept<T>(RegularExpressionConverter<T> converter);
 
         //basic operations
 

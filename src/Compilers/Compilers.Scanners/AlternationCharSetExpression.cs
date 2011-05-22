@@ -43,5 +43,10 @@ namespace VBF.Compilers.Scanners
         {
             return new HashSet<char>();
         }
+
+        internal override T Accept<T>(RegularExpressionConverter<T> converter)
+        {
+            return converter.ConvertAlternationCharSet(this);
+        }
     }
 }

@@ -6,15 +6,15 @@ using VBF.Compilers.Scanners;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class Formal
+    public class FieldDecl
     {
         public Type Type { get; private set; }
-        public Lexeme ParameterName { get; private set; }
+        public Lexeme FieldName { get; private set; }
 
-        public Formal(Type type, Lexeme paramName)
+        public FieldDecl(Type type, Lexeme fieldName)
         {
             Type = type;
-            ParameterName = paramName;
+            FieldName = fieldName;
         }
     }
 }

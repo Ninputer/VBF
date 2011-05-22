@@ -40,5 +40,10 @@ namespace VBF.Compilers.Scanners
 
             return result;
         }
+
+        internal override T Accept<T>(RegularExpressionConverter<T> converter)
+        {
+            return converter.ConvertAlternation(this);
+        }
     }
 }

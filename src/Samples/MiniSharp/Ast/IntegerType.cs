@@ -5,8 +5,7 @@ using System.Text;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class AstNode
+    public class IntegerType : Type
     {
-        
     }
 }

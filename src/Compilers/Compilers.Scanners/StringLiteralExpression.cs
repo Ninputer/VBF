@@ -29,5 +29,10 @@ namespace VBF.Compilers.Scanners
         {
             return new HashSet<char>(Literal);
         }
+
+        internal override T Accept<T>(RegularExpressionConverter<T> converter)
+        {
+            return converter.ConvertStringLiteral(this);
+        }
     }
 }

@@ -13,32 +13,14 @@ namespace VBF.Compilers.Scanners
     {
         protected RegularExpressionConverter() { }
 
-        public virtual T Convert(RegularExpression expression)
+        public T Convert(RegularExpression expression)
         {
             if (expression == null)
             {
                 return default(T);
             }
 
-            switch (expression.ExpressionType)
-            {
-                case RegularExpressionType.Empty:
-                    return ConvertEmpty(expression as EmptyExpression);
-                case RegularExpressionType.Symbol:
-                    return ConvertSymbol(expression as SymbolExpression);
-                case RegularExpressionType.Alternation:
-                    return ConvertAlternation(expression as AlternationExpression);
-                case RegularExpressionType.Concatenation:
-                    return ConvertConcatenation(expression as ConcatenationExpression);
-                case RegularExpressionType.KleeneStar:
-                    return ConvertKleeneStar(expression as KleeneStarExpression);
-                case RegularExpressionType.AlternationCharSet:
-                    return ConvertAlternationCharSet(expression as AlternationCharSetExpression);
-                case RegularExpressionType.StringLiteral:
-                    return ConvertStringLiteral(expression as StringLiteralExpression);
-                default:
-                    throw new ArgumentException("The expression type is not recognized.", "expression");
-            }
+            return expression.Accept(this);
         }
 
         public abstract T ConvertAlternation(AlternationExpression exp);

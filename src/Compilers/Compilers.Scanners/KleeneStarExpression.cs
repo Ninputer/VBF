@@ -31,5 +31,10 @@ namespace VBF.Compilers.Scanners
         {
             return InnerExpression.GetUncompactableCharSet();
         }
+
+        internal override T Accept<T>(RegularExpressionConverter<T> converter)
+        {
+            return converter.ConvertKleeneStar(this);
+        }
     }
 }

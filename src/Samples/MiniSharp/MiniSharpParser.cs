@@ -72,7 +72,7 @@ namespace VBF.MiniSharp
         private ParserReference<Program> PProgram = new ParserReference<Program>();
         private ParserReference<MainClass> PMainClass = new ParserReference<MainClass>();
         private ParserReference<ClassDecl> PClassDecl = new ParserReference<ClassDecl>();
-        private ParserReference<VarDecl> PVarDecl = new ParserReference<VarDecl>();
+        private ParserReference<FieldDecl> PFieldDecl = new ParserReference<FieldDecl>();
         private ParserReference<MethodDecl> PMethodDecl = new ParserReference<MethodDecl>();
         private ParserReference<Formal[]> PFormalList = new ParserReference<Formal[]>();
         private ParserReference<Formal> PFormalRest = new ParserReference<Formal>();
@@ -206,7 +206,7 @@ namespace VBF.MiniSharp
             PProgram.Reference = // MainClass ClassDecl*
                 from main in PMainClass
                 from classes in PClassDecl.Many()
-                select new Program();
+                select new Program(main, classes);
 
             PMainClass.Reference = // class id { public static void Main(string[] id) { statement }}
                 from _class in K_CLASS
@@ -220,42 +220,42 @@ namespace VBF.MiniSharp
                 from _string in K_STRING
                 from _3 in LEFT_BK
                 from _4 in RIGHT_BK
-                from _id in ID
+                from arg in ID
                 from _5 in RIGHT_PH
                 from _6 in LEFT_BR
                 from statements in PStatement.Many1()
                 from _7 in RIGHT_BR
                 from _8 in RIGHT_BR
-                select new MainClass();
+                select new MainClass(className.Value, arg.Value, statements);
 
             var classMembers =
                 from _1 in LEFT_BR
-                from varDecls in PVarDecl.Many()
+                from varDecls in PFieldDecl.Many()
                 from methodDecls in PMethodDecl.Many()
                 from _2 in RIGHT_BR
-                select new { Variables = varDecls, Methods = methodDecls };
+                select new { Fields = varDecls, Methods = methodDecls };
 
             var classDeclSimple = // { VarDecl* MethodDecl* }
                 from members in classMembers
-                select new { BaseClassName = default(string), Members = members };
+                select new { BaseClassName = default(Lexeme), Members = members };
 
             var classDeclInherits = //: id { VarDecl* MethodDecl* }
                 from _1 in COLON
                 from baseClassName in ID
                 from members in classMembers
-                select new { BaseClassName = baseClassName.Value, Members = members };
+                select new { BaseClassName = baseClassName, Members = members };
 
             PClassDecl.Reference = //class id
                 from _class in K_CLASS
                 from className in ID
                 from def in (classDeclSimple | classDeclInherits)
-                select default(ClassDecl);
+                select new ClassDecl(className, def.BaseClassName, def.Members.Fields, def.Members.Methods);
 
-            PVarDecl.Reference = // Type id;
+            PFieldDecl.Reference = // Type id;
                 from type in PType
                 from varName in ID
                 from _sc in SEMICOLON
-                select new VarDecl();
+                select new FieldDecl(type, varName);
 
             PMethodDecl.Reference = // public Type id (FormalList) { Statement* return Exp; }
                 from _public in K_PUBLIC
@@ -265,18 +265,17 @@ namespace VBF.MiniSharp
                 from formals in PFormalList
                 from _2 in RIGHT_PH
                 from _3 in LEFT_BR
-                /*from varDecls in PVarDecl.Many()*/
                 from statements in PStatement.Many()
                 from _return in K_RETURN
                 from returnExp in PExp
                 from _sc in SEMICOLON
                 from _4 in RIGHT_BR
-                select new MethodDecl();
+                select new MethodDecl(methodName, type, formals, statements, returnExp);
 
             var paramFormal =
                 from paramType in PType
-                from paramName in PIdType
-                select new Formal();
+                from paramName in ID
+                select new Formal(paramType, paramName);
 
             PFormalList.Reference = // Type id FormalRest* | <empty>
                 (from first in paramFormal
@@ -295,24 +294,24 @@ namespace VBF.MiniSharp
                 from _int in K_INT
                 from _lb in LEFT_BK
                 from _rb in RIGHT_BK
-                select default(Ast.Type);
+                select (Ast.Type)new IntArrayType();
 
             PBoolType.Reference = // bool
                 from _bool in K_BOOL
-                select default(Ast.Type);
+                select (Ast.Type)new BooleanType();
 
             PIntType.Reference = // int
                 from _int in K_INT
-                select default(Ast.Type);
+                select (Ast.Type)new IntegerType();
 
             PIdType.Reference = // id
                 from type in ID
-                select default(Ast.Type);
+                select (Ast.Type)new IdentifierType(type);
 
             //statements
 
             PStatement.Reference = // { statement*} | ifelse | while | writeline | assign | array assign | var decl
-                (from _1 in LEFT_BR from stmts in PStatement.Many() from _2 in RIGHT_BR select default(Statement)) |
+                (from _1 in LEFT_BR from stmts in PStatement.Many() from _2 in RIGHT_BR select (Statement)new Block(stmts)) |
                 PIfElse |
                 PWhile |
                 PWriteLine |
@@ -328,7 +327,7 @@ namespace VBF.MiniSharp
                 from truePart in PStatement
                 from _else in K_ELSE
                 from falsePart in PStatement
-                select default(Statement);
+                select (Statement)new IfElse(condExp, truePart, falsePart);
 
             PWhile.Reference = // while ( exp ) statement
                 from _while in K_WHILE
@@ -336,7 +335,7 @@ namespace VBF.MiniSharp
                 from condExp in PExp
                 from _2 in RIGHT_PH
                 from loopBody in PStatement
-                select default(Statement);
+                select (Statement)new While(condExp, loopBody);
 
             PWriteLine.Reference = // System.Console.WriteLine( exp );
                 from _sys in K_SYSTEM
@@ -348,14 +347,14 @@ namespace VBF.MiniSharp
                 from exp in PExp
                 from _4 in RIGHT_PH
                 from _sc in SEMICOLON
-                select default(Statement);
+                select (Statement)new WriteLine(exp);
 
             PAssignment.Reference = // id = exp;
                 from variable in ID
                 from _eq in ASSIGN
                 from value in PExp
                 from _sc in SEMICOLON
-                select default(Statement);
+                select (Statement)new Assign(variable, value);
 
             PArrayAssignment.Reference = // id[ exp ] = exp ;
                 from variable in ID
@@ -365,39 +364,39 @@ namespace VBF.MiniSharp
                 from _eq in ASSIGN
                 from value in PExp
                 from _sc in SEMICOLON
-                select default(Statement);
+                select (Statement)new ArrayAssign(variable, index, value);
 
             PVarDeclStmt.Reference = // Type id;
                 from type in PType
                 from varName in ID
                 from _sc in SEMICOLON
-                select default(Statement);
+                select (Statement)new VarDecl(type, varName);
 
             //expressions
 
             //basic
             PNumberLiteral.Reference = // number
                 from intvalue in INTEGER_LITERAL
-                select default(Expression);
+                select (Expression)new IntegerLiteral(intvalue.Value);
 
             PBoolLiteral.Reference = // true | false
-                (from _t in K_TRUE select default(Expression)) |
-                from _f in K_FALSE select default(Expression);
+                (from t in K_TRUE select (Expression)new BooleanLiteral(t.Value)) |
+                from f in K_FALSE select (Expression)new BooleanLiteral(f.Value);
 
             PThis.Reference = // this
                 from _this in K_THIS
-                select default(Expression);
+                select (Expression)new This();
 
             PVariable.Reference = // id
                 from varName in ID
-                select default(Expression);
+                select (Expression)new Variable(varName);
 
             PNewObj.Reference = // new id()
                 from _new in K_NEW
                 from typeName in ID
                 from _1 in LEFT_PH
                 from _2 in RIGHT_PH
-                select default(Expression);
+                select (Expression)new NewObject(typeName);
 
             PNewArray.Reference = // new int [exp]
                 from _new in K_NEW
@@ -423,18 +422,21 @@ namespace VBF.MiniSharp
                from _1 in LEFT_PH
                from args in PExpList
                from _2 in RIGHT_PH
-               select new Func<Expression, Expression>(e => default(Expression));
+               select new Func<Expression, Expression>(e =>
+                    new Call(e, methodName, args));
 
             PArrayLookup.Reference = // exp[exp]
                 from _1 in LEFT_BK
                 from index in PExp
                 from _2 in RIGHT_BK
-                select new Func<Expression, Expression>(e => default(Expression));
+                select new Func<Expression, Expression>(e =>
+                    new ArrayLookup(e, index));
 
             PArrayLength.Reference = // exp.Length
                 from _d in DOT
                 from _length in K_LENGTH
-                select new Func<Expression, Expression>(e => default(Expression));
+                select new Func<Expression, Expression>(e =>
+                    new ArrayLength(e));
 
             var basicExp = //foundation >> call | id[exp] | id.Length
                 from exp in foundationExp
@@ -447,7 +449,7 @@ namespace VBF.MiniSharp
                 basicExp |
                 from _n in LOGICAL_NOT
                 from exp in PNot
-                select default(Expression);
+                select (Expression)new Not(exp);
 
             //binary
 
@@ -462,7 +464,7 @@ namespace VBF.MiniSharp
             PTerm.Reference = // term * factor | factor
                 from factor in PFactor
                 from rest in termRest.Many()
-                select rest.Aggregate(factor, (f, r) => new Binary(f, r.Op, r.Right));
+                select rest.Aggregate(factor, (f, r) => new Binary(r.Op, f, r.Right));
 
             var comparandRest =
                 from op in (PLUS.AsParser() | MINUS.AsParser())
@@ -472,7 +474,7 @@ namespace VBF.MiniSharp
             PComparand.Reference = // comparand + term | term
                 from term in PTerm
                 from rest in comparandRest.Many()
-                select rest.Aggregate(term, (t, r) => new Binary(t, r.Op, r.Right));
+                select rest.Aggregate(term, (t, r) => new Binary(r.Op, t, r.Right));
 
 
             var comparisonRest =
@@ -483,7 +485,7 @@ namespace VBF.MiniSharp
             PComparison.Reference = // comparison < comparand | comparand
                 from comparand in PComparand
                 from rest in comparisonRest.Many()
-                select rest.Aggregate(comparand, (c, r) => new Binary(c, r.Op, r.Right));
+                select rest.Aggregate(comparand, (c, r) => new Binary(r.Op, c, r.Right));
 
             var andRest =
                 from op in LOGICAL_AND
@@ -493,7 +495,7 @@ namespace VBF.MiniSharp
             PAnd.Reference = // andexp && comparison | comparison
                 from comparison in PComparison
                 from rest in andRest.Many()
-                select rest.Aggregate(comparison, (c, r) => new Binary(c, r.Op, r.Right));
+                select rest.Aggregate(comparison, (c, r) => new Binary(r.Op, c, r.Right));
 
             var orRest =
                 from op in LOGICAL_OR
@@ -503,7 +505,7 @@ namespace VBF.MiniSharp
             POr.Reference = // orexp || andexp | andexp
                 from and in PAnd
                 from rest in orRest.Many()
-                select rest.Aggregate(and, (c, r) => new Binary(c, r.Op, r.Right));
+                select rest.Aggregate(and, (c, r) => new Binary(r.Op, c, r.Right));
 
             PExp.Reference = POr;
 

@@ -6,15 +6,13 @@ using VBF.Compilers.Scanners;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class VarDecl : Statement
+    public class VariableRef
     {
-        public Type Type { get; private set; }
         public Lexeme VariableName { get; private set; }
 
-        public VarDecl(Type type, Lexeme variableName)
+        public VariableRef(Lexeme name)
         {
-            Type = type;
-            VariableName = variableName;
+            VariableName = name;
         }
     }
 }

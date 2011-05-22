@@ -52,18 +52,41 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ast\ArrayAssign.cs" />
+    <Compile Include="Ast\Assign.cs" />
+    <Compile Include="Ast\ArrayLength.cs" />
+    <Compile Include="Ast\ArrayLookup.cs" />
     <Compile Include="Ast\AstNode.cs" />
     <Compile Include="Ast\Binary.cs" />
+    <Compile Include="Ast\Block.cs" />
+    <Compile Include="Ast\BooleanLiteral.cs" />
+    <Compile Include="Ast\BooleanType.cs" />
+    <Compile Include="Ast\Call.cs" />
     <Compile Include="Ast\ClassDecl.cs" />
     <Compile Include="Ast\Expression.cs" />
     <Compile Include="Ast\Formal.cs" />
-    <Compile Include="Ast\Identifier.cs" />
+    <Compile Include="Ast\IdentifierType.cs" />
+    <Compile Include="Ast\IntArrayType.cs" />
+    <Compile Include="Ast\IntegerType.cs" />
+    <Compile Include="Ast\VariableRef.cs" />
+    <Compile Include="Ast\IfElse.cs" />
+    <Compile Include="Ast\IntegerLiteral.cs" />
     <Compile Include="Ast\MainClass.cs" />
     <Compile Include="Ast\MethodDecl.cs" />
+    <Compile Include="Ast\MethodRef.cs" />
+    <Compile Include="Ast\NewArray.cs" />
+    <Compile Include="Ast\NewObject.cs" />
+    <Compile Include="Ast\Not.cs" />
     <Compile Include="Ast\Program.cs" />
     <Compile Include="Ast\Statement.cs" />
+    <Compile Include="Ast\This.cs" />
     <Compile Include="Ast\Type.cs" />
+    <Compile Include="Ast\TypeRef.cs" />
     <Compile Include="Ast\VarDecl.cs" />
+    <Compile Include="Ast\Variable.cs" />
+    <Compile Include="Ast\While.cs" />
+    <Compile Include="Ast\WriteLine.cs" />
+    <Compile Include="Ast\FieldDecl.cs" />
     <Compile Include="MiniSharpParser.cs" />
     <Compile Include="ParserFrame.cs" />
     <Compile Include="ProgramEntry.cs" />

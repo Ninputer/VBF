@@ -5,8 +5,11 @@ using System.Text;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class AstNode
+    public class This : Expression
     {
-        
+        public This()
+        {
+
+        }
     }
 }
