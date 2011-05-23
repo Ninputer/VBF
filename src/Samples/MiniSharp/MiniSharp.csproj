@@ -57,6 +57,7 @@
     <Compile Include="Ast\ArrayLength.cs" />
     <Compile Include="Ast\ArrayLookup.cs" />
     <Compile Include="Ast\AstNode.cs" />
+    <Compile Include="Ast\IAstVisitor.cs" />
     <Compile Include="Ast\Binary.cs" />
     <Compile Include="Ast\Block.cs" />
     <Compile Include="Ast\BooleanLiteral.cs" />

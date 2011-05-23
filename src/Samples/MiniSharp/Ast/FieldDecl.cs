@@ -6,7 +6,7 @@ using VBF.Compilers.Scanners;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class FieldDecl
+    public class FieldDecl : AstNode
     {
         public Type Type { get; private set; }
         public Lexeme FieldName { get; private set; }
@@ -15,6 +15,11 @@ namespace VBF.MiniSharp.Ast
         {
             Type = type;
             FieldName = fieldName;
+        }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitFieldDecl(this);
         }
     }
 }

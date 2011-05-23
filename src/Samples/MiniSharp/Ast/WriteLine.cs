@@ -12,5 +12,10 @@ namespace VBF.MiniSharp.Ast
         {
             Value = value;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitWriteLine(this);
+        }
     }
 }

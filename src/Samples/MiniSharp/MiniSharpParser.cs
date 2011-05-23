@@ -380,8 +380,8 @@ namespace VBF.MiniSharp
                 select (Expression)new IntegerLiteral(intvalue.Value);
 
             PBoolLiteral.Reference = // true | false
-                (from t in K_TRUE select (Expression)new BooleanLiteral(t.Value)) |
-                from f in K_FALSE select (Expression)new BooleanLiteral(f.Value);
+                from b in K_TRUE.AsParser() | K_FALSE.AsParser()
+                select (Expression)new BooleanLiteral(b);
 
             PThis.Reference = // this
                 from _this in K_THIS
@@ -404,7 +404,7 @@ namespace VBF.MiniSharp
                 from _1 in LEFT_BK
                 from length in PExp
                 from _2 in RIGHT_BR
-                select default(Expression);
+                select (Expression)new NewArray(length);
 
             var foundationExp = // (exp) | number literal | true | false | this | id | new
                 PNumberLiteral |

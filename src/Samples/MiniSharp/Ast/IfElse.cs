@@ -17,5 +17,10 @@ namespace VBF.MiniSharp.Ast
             TruePart = truePart;
             FalsePart = falsePart;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitIfElse(this);
+        }
     }
 }

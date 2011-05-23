@@ -5,8 +5,8 @@ using System.Text;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class AstNode
+    public abstract class AstNode
     {
-        
+        public abstract T Accept<T>(IAstVisitor<T> visitor);
     }
 }

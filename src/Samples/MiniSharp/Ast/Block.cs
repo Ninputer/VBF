@@ -14,5 +14,10 @@ namespace VBF.MiniSharp.Ast
         {
             Statements = new ReadOnlyCollection<Statement>(statements);
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitBlock(this);
+        }
     }
 }

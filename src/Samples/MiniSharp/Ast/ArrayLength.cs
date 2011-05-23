@@ -13,5 +13,10 @@ namespace VBF.MiniSharp.Ast
         {
             Array = array;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitArrayLength(this);
+        }
     }
 }

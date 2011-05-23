@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VBF.MiniSharp.Ast
 {
-    public abstract class Statement
+    public abstract class Statement : AstNode
     {
     }
 }

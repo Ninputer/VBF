@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class MethodDecl
+    public class MethodDecl : AstNode
     {
         public Type ReturnType { get; private set; }
         public Lexeme Name { get; private set; }
@@ -22,6 +22,11 @@ namespace VBF.MiniSharp.Ast
             Parameters = new ReadOnlyCollection<Formal>(parameters);
             Statements = new ReadOnlyCollection<Statement>(stmts);
             ReturnExpression = retExp;
+        }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitMethodDecl(this);
         }
     }
 }

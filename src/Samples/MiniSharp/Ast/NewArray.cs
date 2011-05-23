@@ -5,13 +5,18 @@ using System.Text;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class NewArray
+    public class NewArray : Expression
     {
         public Expression Length { get; private set; }
 
         public NewArray(Expression length)
         {
             Length = length;
+        }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitNewArray(this);
         }
     }
 }

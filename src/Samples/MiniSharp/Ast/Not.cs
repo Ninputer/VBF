@@ -13,5 +13,10 @@ namespace VBF.MiniSharp.Ast
         {
             Operand = exp;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitNot(this);
+        }
     }
 }

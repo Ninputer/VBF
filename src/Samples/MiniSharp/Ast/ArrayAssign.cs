@@ -18,5 +18,10 @@ namespace VBF.MiniSharp.Ast
             Index = index;
             Value = value;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitArrayAssign(this);
+        }
     }
 }

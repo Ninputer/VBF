@@ -19,5 +19,10 @@ namespace VBF.MiniSharp.Ast
             Method = new MethodRef(methodName);
             Arguments = new ReadOnlyCollection<Expression>(argList);
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitCall(this);
+        }
     }
 }

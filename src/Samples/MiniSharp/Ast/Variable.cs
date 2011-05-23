@@ -14,5 +14,10 @@ namespace VBF.MiniSharp.Ast
         {
             VariableRef = new VariableRef(name);
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitVariable(this);
+        }
     }
 }

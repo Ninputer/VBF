@@ -13,5 +13,10 @@ namespace VBF.MiniSharp.Ast
         {
             Literal = literal;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitIntegerLiteral(this);
+        }
     }
 }

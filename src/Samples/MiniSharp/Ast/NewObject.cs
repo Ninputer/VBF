@@ -14,5 +14,10 @@ namespace VBF.MiniSharp.Ast
         {
             Type = new TypeRef(typeName);
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitNewObject(this);
+        }
     }
 }

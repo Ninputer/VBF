@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class Program
+    public class Program : AstNode
     {
         public MainClass MainClass { get; private set; }
         public ReadOnlyCollection<ClassDecl> Classes { get; private set; }
@@ -15,6 +15,11 @@ namespace VBF.MiniSharp.Ast
         {
             MainClass = mainClass;
             Classes = new ReadOnlyCollection<ClassDecl>(classes);
+        }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitProgram(this);
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace VBF.MiniSharp.Ast
 {
-    public class ClassDecl
+    public class ClassDecl : AstNode
     {
         public TypeRef BaseClass { get; private set; }
         public Lexeme Name { get; private set; }
@@ -20,6 +20,11 @@ namespace VBF.MiniSharp.Ast
             Name = name;
             Fields = new ReadOnlyCollection<FieldDecl>(fields);
             Methods = new ReadOnlyCollection<MethodDecl>(methods);
+        }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitClassDecl(this);
         }
     }
 }

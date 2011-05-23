@@ -15,5 +15,10 @@ namespace VBF.MiniSharp.Ast
             Condition = cond;
             LoopBody = body;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitWhile(this);
+        }
     }
 }

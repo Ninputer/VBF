@@ -48,5 +48,10 @@ namespace VBF.MiniSharp.Ast
             Left = left;
             Right = right;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+        {
+            return visitor.VisitBinary(this);
+        }
     }
 }
