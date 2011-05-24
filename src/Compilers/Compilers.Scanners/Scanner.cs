@@ -75,19 +75,22 @@ namespace VBF.Compilers.Scanners
 
         public Lexeme Read()
         {
+            int skippedTokenCount = -1;
+
             do
             {
                 //run to next stopped state
                 m_engine.Reset();
                 m_lastTokenStart = m_source.PeekLocation();
                 m_lastState = 0;
+                skippedTokenCount++;
                 m_lexemeValueBuilder.Clear();
 
                 if (m_source.PeekChar() < 0)
                 {
                     //return End Of Stream token
                     return new Lexeme(m_scannerInfo, m_scannerInfo.EndOfStreamState,
-                        new SourceSpan(m_lastTokenStart, m_lastTokenStart), null);
+                        new SourceSpan(m_lastTokenStart, m_lastTokenStart), null, skippedTokenCount);
                 }
 
                 while (true)
@@ -121,7 +124,7 @@ namespace VBF.Compilers.Scanners
             } while (IsLastTokenSkippable());
 
             return new Lexeme(m_scannerInfo, m_lastState,
-                new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString());
+                new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString(), skippedTokenCount);
         }
 
         private bool IsLastTokenSkippable()

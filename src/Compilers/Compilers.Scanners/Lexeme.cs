@@ -14,13 +14,15 @@ namespace VBF.Compilers.Scanners
 
         public SourceSpan Span { get; private set; }
         public string Value { get; private set; }
+        public int SkippedTokenCount { get; private set; }
 
-        internal Lexeme(ScannerInfo scannerInfo, int state, SourceSpan span, string value)
+        internal Lexeme(ScannerInfo scannerInfo, int state, SourceSpan span, string value, int skippedTokenCount)
         {
             m_scannerInfo = scannerInfo;
             m_stateIndex = state;
             Span = span;
             Value = value;
+            SkippedTokenCount = skippedTokenCount;
         }
 
         public int TokenIndex
@@ -49,7 +51,7 @@ namespace VBF.Compilers.Scanners
             int state = m_scannerInfo.GetStateIndex(expectedTokenIndex);
             if (state < 0) throw new ArgumentException("Expected token index is invalid", "expectedTokenIndex");
 
-            return new Lexeme(m_scannerInfo, state, new SourceSpan(Span.StartLocation, Span.StartLocation), expectedValue);
+            return new Lexeme(m_scannerInfo, state, new SourceSpan(Span.StartLocation, Span.StartLocation), expectedValue, 0);
         }
     }
 }

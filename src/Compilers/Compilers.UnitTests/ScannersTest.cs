@@ -381,25 +381,29 @@ namespace Compilers.UnitTests
             StringReader sr = new StringReader(source);
 
             scanner.SetSource(new SourceReader(sr));
-            scanner.SetSkipTokens(WHITESPACE.Index);
+            scanner.SetSkipTokens(WHITESPACE.Index, ERROR.Index);
             info.LexerStateIndex = xml.Index;
 
             Lexeme l1 = scanner.Read();
             Assert.AreEqual(ID.Index, l1.TokenIndex);
             Assert.AreEqual("asdf04a", l1.Value);
+            Assert.AreEqual(0, l1.SkippedTokenCount);
 
             Lexeme l2 = scanner.Read();
             Assert.AreEqual(NUM.Index, l2.TokenIndex);
             Assert.AreEqual("1107", l2.Value);
+            Assert.AreEqual(1, l2.SkippedTokenCount);
 
             Lexeme l3 = scanner.Read();
             Assert.AreEqual(ELSE.Index, l3.TokenIndex);
             Assert.AreEqual("else", l3.Value);
+            Assert.AreEqual(1, l2.SkippedTokenCount);
 
             Lexeme l4 = scanner.Read();
-            Lexeme l5 = scanner.Read();
-            Assert.AreEqual(IF.Index, l5.TokenIndex);
-            Assert.AreEqual("if", l5.Value);
+            Assert.AreEqual(IF.Index, l4.TokenIndex);
+            Assert.AreEqual("if", l4.Value);
+            Assert.AreEqual(3, l4.SkippedTokenCount);
+            
 
             int p1 = scanner.Peek();
             Assert.AreEqual(ID.Index, p1);

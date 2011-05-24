@@ -12,7 +12,28 @@ namespace VBF.Compilers.Parsers.Combinators
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
 
-            return new TokenParser(token);
+            return new TokenParser(token, null, false);
+        }
+
+        public static Parser<Lexeme> AsParser(this Token token, bool disallowSkippingTokens)
+        {
+            CodeContract.RequiresArgumentNotNull(token, "token");
+
+            return new TokenParser(token, null, disallowSkippingTokens);
+        }
+
+        public static Parser<Lexeme> AsParser(this Token token, int lexerStateIndex)
+        {
+            CodeContract.RequiresArgumentNotNull(token, "token");
+
+            return new TokenParser(token, lexerStateIndex, false);
+        }
+
+        public static Parser<Lexeme> AsParser(this Token token, int lexerStateIndex, bool disallowSkippingTokens)
+        {
+            CodeContract.RequiresArgumentNotNull(token, "token");
+
+            return new TokenParser(token, lexerStateIndex, disallowSkippingTokens);
         }
 
         public static Parser<Lexeme> Eos()
