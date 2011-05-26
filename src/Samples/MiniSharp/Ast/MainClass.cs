@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
+using VBF.Compilers.Scanners;
 
 namespace VBF.MiniSharp.Ast
 {
     public class MainClass : AstNode
     {
-        public string Name { get; private set; }
-        public string ArgName { get; private set; }
+        public Lexeme Name { get; private set; }
+        public Lexeme ArgName { get; private set; }
         public ReadOnlyCollection<Statement> Statements { get; private set; }
 
-        public MainClass(string name, string argName, IList<Statement> statements)
+        public TypeBase Type { get; set; }
+
+        public MainClass(Lexeme name, Lexeme argName, IList<Statement> statements)
         {
             Name = name;
             ArgName = argName;

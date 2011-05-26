@@ -52,11 +52,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrayType.cs" />
     <Compile Include="Ast\ArrayAssign.cs" />
     <Compile Include="Ast\Assign.cs" />
     <Compile Include="Ast\ArrayLength.cs" />
     <Compile Include="Ast\ArrayLookup.cs" />
     <Compile Include="Ast\AstNode.cs" />
+    <Compile Include="Ast\AstVisitor.cs" />
     <Compile Include="Ast\IAstVisitor.cs" />
     <Compile Include="Ast\Binary.cs" />
     <Compile Include="Ast\Block.cs" />
@@ -88,10 +90,21 @@
     <Compile Include="Ast\While.cs" />
     <Compile Include="Ast\WriteLine.cs" />
     <Compile Include="Ast\FieldDecl.cs" />
+    <Compile Include="CodeClassType.cs" />
+    <Compile Include="Field.cs" />
+    <Compile Include="MemberDeclResolver.cs" />
+    <Compile Include="Method.cs" />
     <Compile Include="MiniSharpParser.cs" />
+    <Compile Include="Parameter.cs" />
     <Compile Include="ParserFrame.cs" />
+    <Compile Include="PrimaryType.cs" />
     <Compile Include="ProgramEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeBase.cs" />
+    <Compile Include="TypeCollection.cs" />
+    <Compile Include="TypeDeclResolver.cs" />
+    <Compile Include="VariableInfo.cs" />
+    <Compile Include="VariableCollection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

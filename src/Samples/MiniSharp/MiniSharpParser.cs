@@ -226,7 +226,7 @@ namespace VBF.MiniSharp
                 from statements in PStatement.Many1()
                 from _7 in RIGHT_BR
                 from _8 in RIGHT_BR
-                select new MainClass(className.Value, arg.Value, statements);
+                select new MainClass(className, arg, statements);
 
             var classMembers =
                 from _1 in LEFT_BR

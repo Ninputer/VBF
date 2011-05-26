@@ -14,6 +14,8 @@ namespace VBF.MiniSharp.Ast
         public ReadOnlyCollection<FieldDecl> Fields { get; private set; }
         public ReadOnlyCollection<MethodDecl> Methods { get; private set; }
 
+        public TypeBase Type { get; set; }
+
         public ClassDecl(Lexeme name, Lexeme baseClassName, IList<FieldDecl> fields, IList<MethodDecl> methods)
         {
             BaseClass = new TypeRef(baseClassName);
