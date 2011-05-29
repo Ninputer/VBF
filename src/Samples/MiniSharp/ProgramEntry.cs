@@ -10,7 +10,7 @@ namespace VBF.MiniSharp
         static void Main(string[] args)
         {
             string source = @"
-class 程序入口
+static class 程序入口
 {
     //中文注释
     public static void Main(string[] args)

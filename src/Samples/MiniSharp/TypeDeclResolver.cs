@@ -45,7 +45,7 @@ namespace VBF.MiniSharp
             Debug.Assert(m_types.Count == 0);
             var name = ast.Name.Value;
 
-            var mainclassType = new CodeClassType() { Name = name };
+            var mainclassType = new CodeClassType() { Name = name, IsStatic = true };
 
             m_types.Add(mainclassType);
             ast.Type = mainclassType;
@@ -68,6 +68,11 @@ namespace VBF.MiniSharp
             ast.Type = classType;
 
             return ast;
+        }
+
+        public TypeCollection Types
+        {
+            get { return m_types; }
         }
 
     }
