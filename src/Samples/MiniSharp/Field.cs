@@ -7,6 +7,6 @@ namespace VBF.MiniSharp
 {
     public class Field : VariableInfo
     {
-
+        public TypeBase DeclaringType { get; set; }
     }
 }

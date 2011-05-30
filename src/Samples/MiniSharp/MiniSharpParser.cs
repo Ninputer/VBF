@@ -208,12 +208,13 @@ namespace VBF.MiniSharp
                 from classes in PClassDecl.Many()
                 select new Program(main, classes);
 
-            PMainClass.Reference = // class id { public static void Main(string[] id) { statement }}
+            PMainClass.Reference = // static class id { public static void Main(string[] id) { statement }}
+                from _static1 in K_STATIC
                 from _class in K_CLASS
                 from className in ID
                 from _1 in LEFT_BR
                 from _public in K_PUBLIC
-                from _static in K_STATIC
+                from _static2 in K_STATIC
                 from _void in K_VOID
                 from _main in K_MAIN
                 from _2 in LEFT_PH

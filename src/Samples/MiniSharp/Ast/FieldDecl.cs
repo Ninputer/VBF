@@ -8,6 +8,7 @@ namespace VBF.MiniSharp.Ast
 {
     public class FieldDecl : AstNode
     {
+        public Field FieldInfo { get; set; }
         public Type Type { get; private set; }
         public Lexeme FieldName { get; private set; }
 
