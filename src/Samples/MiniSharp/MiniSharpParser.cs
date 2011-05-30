@@ -417,12 +417,12 @@ namespace VBF.MiniSharp
 
 
             PCall.Reference = // exp.id(explist)
-               from _d in DOT
-               from methodName in ID
-               from _1 in LEFT_PH
-               from args in PExpList
-               from _2 in RIGHT_PH
-               select new Func<Expression, Expression>(e =>
+                from _d in DOT
+                from methodName in ID
+                from _1 in LEFT_PH
+                from args in PExpList
+                from _2 in RIGHT_PH
+                select new Func<Expression, Expression>(e =>
                     new Call(e, methodName, args));
 
             PArrayLookup.Reference = // exp[exp]
