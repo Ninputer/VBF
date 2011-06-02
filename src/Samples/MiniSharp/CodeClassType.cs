@@ -11,13 +11,13 @@ namespace VBF.MiniSharp
         public bool IsStatic { get; set; }
         public Collection<Method> Methods { get; private set; }
         public Collection<Method> StaticMethods { get; private set; }
-        public VariableCollection Fields { get; private set; }
+        public VariableCollection<Field> Fields { get; private set; }
 
         public CodeClassType()
         {
             Methods = new Collection<Method>();
             StaticMethods = new Collection<Method>();
-            Fields = new VariableCollection();
+            Fields = new VariableCollection<Field>();
         }
 
         public static readonly CodeClassType Void = new CodeClassType() { Name = "Void" };

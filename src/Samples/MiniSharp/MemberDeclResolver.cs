@@ -170,7 +170,36 @@ namespace VBF.MiniSharp
 
         public override AstNode VisitMethodDecl(MethodDecl ast)
         {
-            return base.VisitMethodDecl(ast);
+            var method = new Method();
+
+            method.Name = ast.Name.Value;
+            method.IsStatic = false;
+
+            //step 1, resolve return type
+            var returnTypeNode = ast.ReturnType;
+            var returnType = ResolveTypeNode(returnTypeNode);
+
+            method.ReturnType = returnType;
+
+            //step 2, resolve parameter types
+            bool allValid = true;
+            foreach (var parameter in ast.Parameters)
+            {
+                var paramTypeNode = parameter.Type;
+                var paramType = ResolveTypeNode(paramTypeNode);
+
+                if (paramType == null)
+                {
+                    allValid = false;
+                }
+
+                var paramInfo = new Parameter() { Name = parameter.ParameterName.Value, Type = paramType };
+
+                
+            }
+
+            //step 3, check overloading
+            return ast;
         }
     }
 }

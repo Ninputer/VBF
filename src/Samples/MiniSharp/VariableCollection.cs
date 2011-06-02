@@ -6,9 +6,9 @@ using System.Collections.ObjectModel;
 
 namespace VBF.MiniSharp
 {
-    public class VariableCollection: KeyedCollection<string, VariableInfo>
+    public class VariableCollection<T>: KeyedCollection<string, T> where T: VariableInfo
     {
-        protected override string GetKeyForItem(VariableInfo item)
+        protected override string GetKeyForItem(T item)
         {
             return item.Name;
         }
