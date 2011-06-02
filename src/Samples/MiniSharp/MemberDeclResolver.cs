@@ -17,6 +17,7 @@ namespace VBF.MiniSharp
         private const int c_SE_StaticBaseType = 303;
         private const int c_SE_FieldDuplicates = 310;
         private const int c_SE_MethodDuplicates = 311;
+        private const int c_SE_ParameterDuplicates = 312;
 
         public void DefineErrors()
         {
@@ -30,7 +31,10 @@ namespace VBF.MiniSharp
                 "The type '{0}' has already defined a field named '{1}'.");
 
             m_errorManager.DefineError(c_SE_MethodDuplicates, 0, CompilationStage.SemanticAnalysis,
-                "The type '{0}' has already define a method named '{1}' with same parameter types.");
+                "The type '{0}' has already defined a method named '{1}' with same parameter types.");
+
+            m_errorManager.DefineError(c_SE_ParameterDuplicates, 0, CompilationStage.SemanticAnalysis,
+                "The method '{0}' has already defined a parameter named '{1}'.");
         }
 
         public MemberDeclResolver(CompilationErrorManager errorManager, TypeCollection types)
@@ -183,6 +187,7 @@ namespace VBF.MiniSharp
 
             //step 2, resolve parameter types
             bool allValid = true;
+            HashSet<string> paramNames = new HashSet<string>();
             foreach (var parameter in ast.Parameters)
             {
                 var paramTypeNode = parameter.Type;
@@ -195,10 +200,28 @@ namespace VBF.MiniSharp
 
                 var paramInfo = new Parameter() { Name = parameter.ParameterName.Value, Type = paramType };
 
-                
+                if (paramNames.Contains(paramInfo.Name))
+                {
+                    m_errorManager.AddError(c_SE_ParameterDuplicates, parameter.ParameterName.Span, method.Name, paramInfo.Name);
+                    allValid = false;
+                }
+                else
+                {
+                    paramNames.Add(paramInfo.Name);
+                    method.Parameters.Add(paramInfo);
+                }
             }
 
             //step 3, check overloading
+
+            if (returnType == null || !allValid)
+            {
+                //resolve type failed
+                return ast;
+            }
+
+
+
             return ast;
         }
     }
