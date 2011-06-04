@@ -145,6 +145,7 @@ namespace VBF.MiniSharp
             //methods
             foreach (var method in ast.Methods)
             {
+                method.MethodInfo = new Method() { DeclaringType = ast.Type };
                 Visit(method);
             }
 
@@ -174,7 +175,7 @@ namespace VBF.MiniSharp
 
         public override AstNode VisitMethodDecl(MethodDecl ast)
         {
-            var method = new Method();
+            var method = ast.MethodInfo;
 
             method.Name = ast.Name.Value;
             method.IsStatic = false;
@@ -220,7 +221,29 @@ namespace VBF.MiniSharp
                 return ast;
             }
 
+            var declType = method.DeclaringType as CodeClassType;
 
+            var methodsSameName = declType.Methods.Where(m => m.Name == method.Name).ToArray();
+            foreach (var overloadMethod in methodsSameName)
+            {
+                if (overloadMethod.Parameters.Count == method.Parameters.Count)
+                {
+                    bool allTypeSame = true;
+                    for (int i = 0; i < overloadMethod.Parameters.Count; i++)
+                    {
+                        if (overloadMethod.Parameters[i].Type != method.Parameters[i].Type)
+                        {
+                            allTypeSame = false;
+                            break;
+                        }
+                    }
+
+                    if (allTypeSame)
+                    {
+                        m_errorManager.AddError(c_SE_MethodDuplicates, ast.Name.Span, method.DeclaringType.Name, method.Name);
+                    }
+                }
+            }
 
             return ast;
         }

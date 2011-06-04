@@ -9,6 +9,7 @@ namespace VBF.MiniSharp.Ast
 {
     public class MethodDecl : AstNode
     {
+        public Method MethodInfo { get; set; }
         public Type ReturnType { get; private set; }
         public Lexeme Name { get; private set; }
         public ReadOnlyCollection<Formal> Parameters { get; private set; }
