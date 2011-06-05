@@ -7,5 +7,6 @@ namespace VBF.MiniSharp.Ast
 {
     public abstract class Expression : AstNode
     {
+        public TypeBase ExpressionType { get; set; }
     }
 }

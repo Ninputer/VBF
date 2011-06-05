@@ -13,7 +13,7 @@ namespace VBF.MiniSharp
         private TypeCollection m_types;
 
         private CompilationErrorManager m_errorManager;
-        private const int c_SE_TypeNameMissing = 302;
+        internal const int c_SE_TypeNameMissing = 302;
         private const int c_SE_StaticBaseType = 303;
         private const int c_SE_FieldDuplicates = 310;
         private const int c_SE_MethodDuplicates = 311;
@@ -50,7 +50,7 @@ namespace VBF.MiniSharp
             var boolType = typeNode as BooleanType;
             var intArrayType = typeNode as IntArrayType;
 
-            TypeBase resolvedType = null;
+            TypeBase resolvedType = PrimaryType.Unknown;
 
             if (idType != null)
             {
@@ -96,7 +96,7 @@ namespace VBF.MiniSharp
         public override AstNode VisitMainClass(MainClass ast)
         {
             var mainMethod = new Method() { Name = "Main", IsStatic = true };
-            mainMethod.ReturnType = CodeClassType.Void;
+            mainMethod.ReturnType = PrimaryType.Void;
 
             var codeType = ast.Type as CodeClassType;
 
@@ -130,6 +130,7 @@ namespace VBF.MiniSharp
                     }
 
                     ast.BaseClass.Type = type;
+                    (ast.Type as CodeClassType).BaseType = type;
                 }
             }
 

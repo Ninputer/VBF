@@ -9,6 +9,7 @@ namespace VBF.MiniSharp
     public class CodeClassType : TypeBase
     {
         public bool IsStatic { get; set; }
+        public CodeClassType BaseType { get; set; }
         public Collection<Method> Methods { get; private set; }
         public Collection<Method> StaticMethods { get; private set; }
         public VariableCollection<Field> Fields { get; private set; }
@@ -20,6 +21,24 @@ namespace VBF.MiniSharp
             Fields = new VariableCollection<Field>();
         }
 
-        public static readonly CodeClassType Void = new CodeClassType() { Name = "Void" };
+        public override bool IsAssignableFrom(TypeBase type)
+        {
+            CodeClassType otherClassType = type as CodeClassType;
+
+            if (otherClassType == null)
+            {
+                return false;
+            }
+
+            if (otherClassType == this)
+            {
+                return true;
+            }
+            else
+            {
+                return IsAssignableFrom(otherClassType.BaseType);
+            }
+        }
+
     }
 }

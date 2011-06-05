@@ -328,7 +328,7 @@ namespace VBF.MiniSharp
                 from truePart in PStatement
                 from _else in K_ELSE
                 from falsePart in PStatement
-                select (Statement)new IfElse(condExp, truePart, falsePart);
+                select (Statement)new IfElse(condExp, truePart, falsePart, _if.Span, _else.Span);
 
             PWhile.Reference = // while ( exp ) statement
                 from _while in K_WHILE
@@ -336,7 +336,7 @@ namespace VBF.MiniSharp
                 from condExp in PExp
                 from _2 in RIGHT_PH
                 from loopBody in PStatement
-                select (Statement)new While(condExp, loopBody);
+                select (Statement)new While(condExp, loopBody, _while.Span);
 
             PWriteLine.Reference = // System.Console.WriteLine( exp );
                 from _sys in K_SYSTEM
@@ -348,7 +348,7 @@ namespace VBF.MiniSharp
                 from exp in PExp
                 from _4 in RIGHT_PH
                 from _sc in SEMICOLON
-                select (Statement)new WriteLine(exp);
+                select (Statement)new WriteLine(exp, new SourceSpan(_sys.Span.StartLocation, _wl.Span.EndLocation));
 
             PAssignment.Reference = // id = exp;
                 from variable in ID
@@ -378,7 +378,7 @@ namespace VBF.MiniSharp
             //basic
             PNumberLiteral.Reference = // number
                 from intvalue in INTEGER_LITERAL
-                select (Expression)new IntegerLiteral(intvalue.Value);
+                select (Expression)new IntegerLiteral(intvalue);
 
             PBoolLiteral.Reference = // true | false
                 from b in K_TRUE.AsParser() | K_FALSE.AsParser()
@@ -405,7 +405,7 @@ namespace VBF.MiniSharp
                 from _1 in LEFT_BK
                 from length in PExp
                 from _2 in RIGHT_BR
-                select (Expression)new NewArray(length);
+                select (Expression)new NewArray(length, new SourceSpan(_1.Span.EndLocation, _2.Span.StartLocation));
 
             var foundationExp = // (exp) | number literal | true | false | this | id | new
                 PNumberLiteral |
@@ -431,13 +431,13 @@ namespace VBF.MiniSharp
                 from index in PExp
                 from _2 in RIGHT_BK
                 select new Func<Expression, Expression>(e =>
-                    new ArrayLookup(e, index));
+                    new ArrayLookup(e, index, new SourceSpan(_1.Span.EndLocation, _2.Span.StartLocation)));
 
             PArrayLength.Reference = // exp.Length
                 from _d in DOT
                 from _length in K_LENGTH
                 select new Func<Expression, Expression>(e =>
-                    new ArrayLength(e));
+                    new ArrayLength(e, _length.Span));
 
             var basicExp = //foundation >> call | id[exp] | id.Length
                 from exp in foundationExp
@@ -450,7 +450,7 @@ namespace VBF.MiniSharp
                 basicExp |
                 from _n in LOGICAL_NOT
                 from exp in PNot
-                select (Expression)new Not(exp);
+                select (Expression)new Not(exp, _n.Span);
 
             //binary
 

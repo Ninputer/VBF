@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VBF.Compilers.Scanners;
 
 namespace VBF.MiniSharp.Ast
 {
     public class IntegerLiteral : Expression
     {
-        public string Literal { get; private set; }
+        public Lexeme Literal { get; private set; }
+        public int Value { get; set; }
 
-        public IntegerLiteral(string literal)
+        public IntegerLiteral(Lexeme literal)
         {
             Literal = literal;
         }

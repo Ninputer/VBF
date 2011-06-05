@@ -8,5 +8,10 @@ namespace VBF.MiniSharp
     public class TypeBase
     {
         public string Name { get; set; }
+
+        public virtual bool IsAssignableFrom(TypeBase type)
+        {
+            return false;
+        }
     }
 }

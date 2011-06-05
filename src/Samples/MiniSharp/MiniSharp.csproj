@@ -94,6 +94,7 @@
     <Compile Include="Field.cs" />
     <Compile Include="MemberDeclResolver.cs" />
     <Compile Include="Method.cs" />
+    <Compile Include="MethodBodyResolver.cs" />
     <Compile Include="MiniSharpParser.cs" />
     <Compile Include="Parameter.cs" />
     <Compile Include="ParserFrame.cs" />
