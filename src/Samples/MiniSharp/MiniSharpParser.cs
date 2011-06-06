@@ -460,7 +460,7 @@ namespace VBF.MiniSharp
             var termRest =
                 from op in (ASTERISK.AsParser() | SLASH.AsParser())
                 from factor in PFactor
-                select new { Op = op.Value, Right = factor };
+                select new { Op = op, Right = factor };
 
             PTerm.Reference = // term * factor | factor
                 from factor in PFactor
@@ -470,7 +470,7 @@ namespace VBF.MiniSharp
             var comparandRest =
                 from op in (PLUS.AsParser() | MINUS.AsParser())
                 from term in PTerm
-                select new { Op = op.Value, Right = term };
+                select new { Op = op, Right = term };
 
             PComparand.Reference = // comparand + term | term
                 from term in PTerm
@@ -481,7 +481,7 @@ namespace VBF.MiniSharp
             var comparisonRest =
                 from op in (LESS.AsParser() | GREATER.AsParser() | EQUAL.AsParser())
                 from comparand in PComparand
-                select new { Op = op.Value, Right = comparand };
+                select new { Op = op, Right = comparand };
 
             PComparison.Reference = // comparison < comparand | comparand
                 from comparand in PComparand
@@ -491,7 +491,7 @@ namespace VBF.MiniSharp
             var andRest =
                 from op in LOGICAL_AND
                 from comparison in PComparison
-                select new { Op = op.Value, Right = comparison };
+                select new { Op = op, Right = comparison };
 
             PAnd.Reference = // andexp && comparison | comparison
                 from comparison in PComparison
@@ -501,7 +501,7 @@ namespace VBF.MiniSharp
             var orRest =
                 from op in LOGICAL_OR
                 from comparison in PComparison
-                select new { Op = op.Value, Right = comparison };
+                select new { Op = op, Right = comparison };
 
             POr.Reference = // orexp || andexp | andexp
                 from and in PAnd

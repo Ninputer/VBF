@@ -71,6 +71,7 @@
     <Compile Include="Ast\IdentifierType.cs" />
     <Compile Include="Ast\IntArrayType.cs" />
     <Compile Include="Ast\IntegerType.cs" />
+    <Compile Include="Ast\TypeConvert.cs" />
     <Compile Include="Ast\VariableRef.cs" />
     <Compile Include="Ast\IfElse.cs" />
     <Compile Include="Ast\IntegerLiteral.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="MemberDeclResolver.cs" />
     <Compile Include="Method.cs" />
     <Compile Include="MethodBodyResolver.cs" />
+    <Compile Include="MethodOverloadingComparer.cs" />
     <Compile Include="MiniSharpParser.cs" />
     <Compile Include="Parameter.cs" />
     <Compile Include="ParserFrame.cs" />

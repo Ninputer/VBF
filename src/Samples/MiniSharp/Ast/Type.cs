@@ -7,5 +7,6 @@ namespace VBF.MiniSharp.Ast
 {
     public abstract class Type : AstNode
     {
+        public TypeBase ResolvedType { get; set; }
     }
 }

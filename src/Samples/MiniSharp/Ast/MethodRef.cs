@@ -9,6 +9,7 @@ namespace VBF.MiniSharp.Ast
     public class MethodRef
     {
         public Lexeme MethodName { get; set; }
+        public Method MethodInfo { get; set; }
 
         public MethodRef(Lexeme name)
         {

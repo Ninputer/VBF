@@ -9,7 +9,7 @@ namespace VBF.MiniSharp.Ast
     public class Assign : Statement
     {
         public VariableRef Variable { get; private set; }
-        public Expression Value { get; private set; }
+        public Expression Value { get; internal set; }
 
         public Assign(Lexeme varName, Expression value)
         {

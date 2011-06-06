@@ -43,42 +43,28 @@ namespace VBF.MiniSharp
             m_types = types;
         }
 
+        private TypeBase ResolveTypeRef(TypeRef typeRef)
+        {
+            TypeBase resolvedType = PrimaryType.Unknown;
+            var name = typeRef.TypeName;
+
+            if (!m_types.Contains(name.Value))
+            {
+                m_errorManager.AddError(c_SE_TypeNameMissing, name.Span, name.Value);
+            }
+            else
+            {
+                typeRef.Type = m_types[name.Value];
+                resolvedType = typeRef.Type;
+            }
+
+            return resolvedType;
+        }
+
         private TypeBase ResolveTypeNode(Ast.Type typeNode)
         {
-            var idType = typeNode as IdentifierType;
-            var intType = typeNode as IntegerType;
-            var boolType = typeNode as BooleanType;
-            var intArrayType = typeNode as IntArrayType;
-
-            TypeBase resolvedType = PrimaryType.Unknown;
-
-            if (idType != null)
-            {
-                var name = idType.Type.TypeName;
-
-                if (!m_types.Contains(name.Value))
-                {
-                    m_errorManager.AddError(c_SE_TypeNameMissing, name.Span, name.Value);
-                }
-                else
-                {
-                    idType.Type.Type = m_types[name.Value];
-                    resolvedType = idType.Type.Type;
-                }
-            }
-            else if (intType != null)
-            {
-                resolvedType = PrimaryType.Int;
-            }
-            else if (boolType != null)
-            {
-                resolvedType = PrimaryType.Boolean;
-            }
-            else if (intArrayType != null)
-            {
-                resolvedType = ArrayType.IntArray;
-            }
-            return resolvedType;
+            Visit(typeNode);
+            return typeNode.ResolvedType;
         }
 
         public override AstNode VisitProgram(Program ast)
@@ -246,6 +232,30 @@ namespace VBF.MiniSharp
                 }
             }
 
+            return ast;
+        }
+
+        public override AstNode VisitIdentifierType(IdentifierType ast)
+        {
+            ast.ResolvedType = ResolveTypeRef(ast.Type);
+            return ast;
+        }
+
+        public override AstNode VisitIntArrayType(IntArrayType ast)
+        {
+            ast.ResolvedType = ArrayType.IntArray;
+            return ast;
+        }
+
+        public override AstNode VisitIntegerType(IntegerType ast)
+        {
+            ast.ResolvedType = PrimaryType.Int;
+            return ast;
+        }
+
+        public override AstNode VisitBooleanType(BooleanType ast)
+        {
+            ast.ResolvedType = PrimaryType.Boolean;
             return ast;
         }
     }

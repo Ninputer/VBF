@@ -31,6 +31,7 @@ namespace VBF.MiniSharp
         private const int c_SE_NotArray = 333;
         private const int c_SE_ExpressionNotArray = 334;
         private const int c_SE_InvalidIntLiteral = 335;
+        private const int c_SE_MethodAmbiguous = 336;
         private const int c_SE_NotSupported = 390;
 
         public void DefineErrors()
@@ -58,6 +59,9 @@ namespace VBF.MiniSharp
 
             m_errorManager.DefineError(c_SE_MethodMissing, 0, CompilationStage.SemanticAnalysis,
                 "Method '{0}' could not be found.");
+
+            m_errorManager.DefineError(c_SE_MethodAmbiguous, 0, CompilationStage.SemanticAnalysis,
+                "The call is ambiguous between the following two methods: '{0}' and '{1}'.");
 
             m_errorManager.DefineError(c_SE_VariableDeclMissing, 0, CompilationStage.SemanticAnalysis,
                 "The name '{0}' is not declared.");
@@ -159,30 +163,8 @@ namespace VBF.MiniSharp
 
         private TypeBase ResolveTypeNode(Ast.Type typeNode)
         {
-            var idType = typeNode as IdentifierType;
-            var intType = typeNode as IntegerType;
-            var boolType = typeNode as BooleanType;
-            var intArrayType = typeNode as IntArrayType;
-
-            TypeBase resolvedType = PrimaryType.Unknown;
-
-            if (idType != null)
-            {
-                resolvedType = ResolveTypeRef(idType.Type);
-            }
-            else if (intType != null)
-            {
-                resolvedType = PrimaryType.Int;
-            }
-            else if (boolType != null)
-            {
-                resolvedType = PrimaryType.Boolean;
-            }
-            else if (intArrayType != null)
-            {
-                resolvedType = ArrayType.IntArray;
-            }
-            return resolvedType;
+            Visit(typeNode);
+            return typeNode.ResolvedType;
         }
 
         public override AstNode VisitProgram(Program ast)
@@ -246,6 +228,30 @@ namespace VBF.MiniSharp
 
             Visit(ast.ReturnExpression);
 
+            return ast;
+        }
+
+        public override AstNode VisitIdentifierType(IdentifierType ast)
+        {
+            ast.ResolvedType = ResolveTypeRef(ast.Type);
+            return ast;
+        }
+
+        public override AstNode VisitIntArrayType(IntArrayType ast)
+        {
+            ast.ResolvedType = ArrayType.IntArray;
+            return ast;
+        }
+
+        public override AstNode VisitIntegerType(IntegerType ast)
+        {
+            ast.ResolvedType = PrimaryType.Int;
+            return ast;
+        }
+
+        public override AstNode VisitBooleanType(BooleanType ast)
+        {
+            ast.ResolvedType = PrimaryType.Boolean;
             return ast;
         }
 
@@ -321,6 +327,12 @@ namespace VBF.MiniSharp
             if (!variable.Type.IsAssignableFrom(ast.Value.ExpressionType))
             {
                 m_errorManager.AddError(c_SE_InvalidCast, ast.Variable.VariableName.Span, ast.Value.ExpressionType.Name, variable.Type.Name);
+            }
+
+            if (variable.Type != ast.Value.ExpressionType)
+            {
+                var convert = new TypeConvert(ast.Value, variable.Type);
+                ast.Value = convert;
             }
 
             return ast;
@@ -500,5 +512,181 @@ namespace VBF.MiniSharp
             return ast;
         }
 
+        public override AstNode VisitBinary(Binary ast)
+        {
+            Visit(ast.Left);
+            Visit(ast.Right);
+
+            bool checkFailed = false;
+            switch (ast.Operator)
+            {
+                case BinaryOperator.Add:
+                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+
+                    ast.ExpressionType = PrimaryType.Int;
+                    break;
+                case BinaryOperator.Substract:
+                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+
+                    ast.ExpressionType = PrimaryType.Int;
+                    break;
+                case BinaryOperator.Multiply:
+                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+
+                    ast.ExpressionType = PrimaryType.Int;
+                    break;
+                case BinaryOperator.Divide:
+                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+
+                    ast.ExpressionType = PrimaryType.Int;
+                    break;
+                case BinaryOperator.Less:
+                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+
+                    ast.ExpressionType = PrimaryType.Boolean;
+                    break;
+                case BinaryOperator.Greater:
+                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+
+                    ast.ExpressionType = PrimaryType.Boolean;
+                    break;
+                case BinaryOperator.Equal:
+                    // use proper comparison instruction in translation stage
+                    // == is allowed on:
+                    // 1. class type and class type (compare ref)
+                    // 2. array type and array type (compare ref)
+                    // 3. int and int (compare value)
+                    // 4. bool and bool (compare value)
+                    checkFailed = ast.Left.ExpressionType.GetType() != ast.Right.ExpressionType.GetType();
+                    if (ast.Left.ExpressionType is PrimaryType && ast.Right.ExpressionType is PrimaryType)
+                    {
+                        checkFailed = ast.Left.ExpressionType != ast.Right.ExpressionType;
+                    }
+
+                    ast.ExpressionType = PrimaryType.Boolean;
+                    break;
+                case BinaryOperator.LogicalAnd:
+                    checkFailed = ast.Left.ExpressionType != PrimaryType.Boolean;
+                    checkFailed = ast.Right.ExpressionType != PrimaryType.Boolean;
+
+                    ast.ExpressionType = PrimaryType.Boolean;
+                    break;
+                case BinaryOperator.LogicalOr:
+                    checkFailed = ast.Left.ExpressionType != PrimaryType.Boolean;
+                    checkFailed = ast.Right.ExpressionType != PrimaryType.Boolean;
+
+                    ast.ExpressionType = PrimaryType.Boolean;
+                    break;
+                default:
+                    ast.ExpressionType = PrimaryType.Unknown;
+                    break;
+            }
+
+            if (checkFailed)
+            {
+                m_errorManager.AddError(c_SE_BinaryOpTypeInvalid, ast.OpLexeme.Span, ast.OpLexeme.Value, ast.Left.ExpressionType.Name, ast.Right.ExpressionType.Name);
+            }
+
+            return ast;
+        }
+
+        public override AstNode VisitCall(Call ast)
+        {
+            // step 1. resolve each argument
+            foreach (var argument in ast.Arguments)
+            {
+                Visit(argument);
+            }
+
+            //step 2. resolve object
+            Visit(ast.Target);
+
+            CodeClassType targetType = ast.Target.ExpressionType as CodeClassType;
+
+            if (targetType == null)
+            {
+                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Value);
+                ast.ExpressionType = PrimaryType.Unknown;
+                return ast;
+            }
+
+            //step 3. resolve method
+            ResolveMethod(ast, targetType);
+
+            return ast;
+        }
+
+        private void ResolveMethod(Call ast, CodeClassType targetType)
+        {
+            // step 1: collect candidates from current type
+            var candidates = (from m in targetType.Methods
+                              where String.Equals(m.Name, ast.Method.MethodName.Value, StringComparison.InvariantCulture) && m.Parameters.Count == ast.Arguments.Count
+                              select m).ToArray();
+
+            if (candidates.Length == 0)
+            {
+                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Value);
+                ast.ExpressionType = PrimaryType.Unknown;
+
+                return;
+            }
+
+            // step 2: remove unqualifed candidates
+            List<Method> qualifiedCandidates = new List<Method>();
+            foreach (var candidate in candidates)
+            {
+                for (int i = 0; i < candidate.Parameters.Count; i++)
+                {
+                    if (!candidate.Parameters[i].Type.IsAssignableFrom(ast.Arguments[i].ExpressionType))
+                    {
+                        continue;
+                    }
+                }
+
+                qualifiedCandidates.Add(candidate);
+            }
+
+            if (qualifiedCandidates.Count == 0)
+            {
+                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Value);
+                ast.ExpressionType = PrimaryType.Unknown;
+
+                return;
+            }
+
+            // step 3: choose a "best" one
+            if (qualifiedCandidates.Count > 1)
+            {
+                var comparer = new MethodOverloadingComparer(ast.Arguments);
+                qualifiedCandidates.Sort(comparer);
+
+                var firstCandidate = qualifiedCandidates[0];
+                var secondCandidate = qualifiedCandidates[1];
+
+                if (comparer.Compare(firstCandidate, secondCandidate) < 0)
+                {
+                    //choose first as the best one
+                    ast.Method.MethodInfo = firstCandidate;
+                    ast.ExpressionType = firstCandidate.ReturnType;
+                }
+                else
+                {
+                    //ambiguous between first & second
+                    m_errorManager.AddError(c_SE_MethodAmbiguous, ast.Method.MethodName.Span, firstCandidate.GetSignatureString(), secondCandidate.GetSignatureString());
+                    ast.ExpressionType = PrimaryType.Unknown;
+                }
+            }
+            else
+            {
+                ast.Method.MethodInfo = qualifiedCandidates[0];
+                ast.ExpressionType = qualifiedCandidates[0].ReturnType;
+            }
+        }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VBF.Compilers;
+using VBF.Compilers.Scanners;
 
 namespace VBF.MiniSharp.Ast
 {
@@ -41,12 +43,14 @@ namespace VBF.MiniSharp.Ast
         public Expression Left { get; private set; }
         public Expression Right { get; private set; }
         public BinaryOperator Operator { get; private set; }
+        public Lexeme OpLexeme { get; private set; }
 
-        public Binary(string op, Expression left, Expression right)
+        public Binary(Lexeme op, Expression left, Expression right)
         {
-            Operator = s_OperatorMap[op];
+            Operator = s_OperatorMap[op.Value];
             Left = left;
             Right = right;
+            OpLexeme = op;
         }
 
         public override T Accept<T>(IAstVisitor<T> visitor)

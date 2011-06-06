@@ -31,6 +31,7 @@ namespace VBF.MiniSharp.Ast
         T VisitNot(Not ast);
         T VisitProgram(Program ast);
         T VisitThis(This ast);
+        T VisitTypeConvert(TypeConvert ast);
         T VisitVarDecl(VarDecl ast);
         T VisitVariable(Variable ast);
         T VisitWhile(While ast);

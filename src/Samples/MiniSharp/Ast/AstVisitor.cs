@@ -153,5 +153,10 @@ namespace VBF.MiniSharp.Ast
         {
             return ast;
         }
+
+        public virtual AstNode VisitTypeConvert(TypeConvert ast)
+        {
+            return ast;
+        }
     }
 }
