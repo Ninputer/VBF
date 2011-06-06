@@ -48,8 +48,13 @@ namespace VBF.MiniSharp
         {
             base.InsertItem(index, item);
 
-            var keysInLevel = m_levelStack.Peek();
-            keysInLevel.Add(GetKeyForItem(item));
+            if (m_Levels > 0)
+            {
+                var keysInLevel = m_levelStack.Peek();
+                keysInLevel.Add(GetKeyForItem(item));
+            }
+
+
         }
     }
 }

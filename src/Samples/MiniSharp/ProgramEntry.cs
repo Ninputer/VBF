@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VBF.Compilers;
 
 namespace VBF.MiniSharp
 {
@@ -35,8 +36,26 @@ class Fac
     }
 }
 ";
-            MiniSharpParser p = new MiniSharpParser();
+            CompilationErrorManager errorManager = new CompilationErrorManager();
+            MiniSharpParser p = new MiniSharpParser(errorManager);
             var ast = p.Parse(source);
+
+            if (errorManager.Errors.Count != 0)
+            {
+                return;
+            }
+
+            TypeDeclResolver resolver1 = new TypeDeclResolver(errorManager);
+            resolver1.DefineErrors();
+            resolver1.Visit(ast);
+
+            MemberDeclResolver resolver2 = new MemberDeclResolver(errorManager, resolver1.Types);
+            resolver2.DefineErrors();
+            resolver2.Visit(ast);
+
+            MethodBodyResolver resolver3 = new MethodBodyResolver(errorManager, resolver1.Types);
+            resolver3.DefineErrors();
+            resolver3.Visit(ast);
 
             ;
         }

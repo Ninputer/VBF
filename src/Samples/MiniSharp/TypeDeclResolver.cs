@@ -60,6 +60,7 @@ namespace VBF.MiniSharp
             if (m_types.Contains(name))
             {
                 m_errorManager.AddError(c_SE_TypeNameDuplicates, ast.Name.Span, name);
+                return ast;
             }
 
             var classType = new CodeClassType() { Name = name };

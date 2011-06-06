@@ -127,20 +127,23 @@ namespace VBF.MiniSharp
             return null;
         }
 
-        private void CheckVariableDecl(VarDecl ast)
+        private bool CheckVariableDecl(VarDecl ast)
         {
             //step1, check local parameter & variable definitions
             if (m_currentMethodParameters.Contains(ast.VariableName.Value))
             {
                 m_errorManager.AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Value);
+                return false;
             }
             else if (m_currentMethodVariables.Contains(ast.VariableName.Value))
             {
                 m_errorManager.AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Value);
+                return false;
             }
 
             //step2, resolve type
             ResolveTypeNode(ast.Type);
+            return true;
         }
 
         private TypeBase ResolveTypeRef(TypeRef typeRef)
@@ -377,7 +380,11 @@ namespace VBF.MiniSharp
 
         public override AstNode VisitVarDecl(VarDecl ast)
         {
-            CheckVariableDecl(ast);
+            if (CheckVariableDecl(ast))
+            {
+                //add to current variable table
+                m_currentMethodVariables.Add(new VariableInfo() { Name = ast.VariableName.Value, Type = ast.Type.ResolvedType });
+            }
 
             return ast;
         }

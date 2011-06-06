@@ -13,5 +13,18 @@ namespace VBF.MiniSharp
         public static readonly PrimaryType Void = new PrimaryType() { Name = "void" };
 
         public static readonly PrimaryType Unknown = new PrimaryType() { Name = null };
+
+        public override bool IsAssignableFrom(TypeBase type)
+        {
+            if (this == type)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
     }
 }

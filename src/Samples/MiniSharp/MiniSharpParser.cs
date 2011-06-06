@@ -12,7 +12,7 @@ namespace VBF.MiniSharp
 {
     public class MiniSharpParser : ParserFrame<Ast.Program>
     {
-        public MiniSharpParser() : base(new CompilationErrorManager(), 101, 201, 202) { }
+        public MiniSharpParser(CompilationErrorManager errorManager) : base(errorManager, 101, 201, 202) { }
 
         //keywords
         private Token K_CLASS;

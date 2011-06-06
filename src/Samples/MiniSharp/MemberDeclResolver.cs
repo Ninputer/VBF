@@ -156,6 +156,7 @@ namespace VBF.MiniSharp
             TypeBase resolvedType = ResolveTypeNode(typeNode);
 
             ast.FieldInfo.Type = resolvedType;
+            declType.Fields.Add(ast.FieldInfo);
 
             return ast;
         }
@@ -232,6 +233,7 @@ namespace VBF.MiniSharp
                 }
             }
 
+            declType.Methods.Add(method);
             return ast;
         }
 
