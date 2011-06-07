@@ -528,38 +528,38 @@ namespace VBF.MiniSharp
             switch (ast.Operator)
             {
                 case BinaryOperator.Add:
-                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
-                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Right.ExpressionType != PrimaryType.Int;
 
                     ast.ExpressionType = PrimaryType.Int;
                     break;
                 case BinaryOperator.Substract:
-                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
-                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Right.ExpressionType != PrimaryType.Int;
 
                     ast.ExpressionType = PrimaryType.Int;
                     break;
                 case BinaryOperator.Multiply:
-                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
-                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Right.ExpressionType != PrimaryType.Int;
 
                     ast.ExpressionType = PrimaryType.Int;
                     break;
                 case BinaryOperator.Divide:
-                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
-                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Right.ExpressionType != PrimaryType.Int;
 
                     ast.ExpressionType = PrimaryType.Int;
                     break;
                 case BinaryOperator.Less:
-                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
-                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Right.ExpressionType != PrimaryType.Int;
 
                     ast.ExpressionType = PrimaryType.Boolean;
                     break;
                 case BinaryOperator.Greater:
-                    checkFailed = ast.Left.ExpressionType != PrimaryType.Int;
-                    checkFailed = ast.Right.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Left.ExpressionType != PrimaryType.Int;
+                    checkFailed |= ast.Right.ExpressionType != PrimaryType.Int;
 
                     ast.ExpressionType = PrimaryType.Boolean;
                     break;
@@ -570,23 +570,23 @@ namespace VBF.MiniSharp
                     // 2. array type and array type (compare ref)
                     // 3. int and int (compare value)
                     // 4. bool and bool (compare value)
-                    checkFailed = ast.Left.ExpressionType.GetType() != ast.Right.ExpressionType.GetType();
+                    checkFailed |= ast.Left.ExpressionType.GetType() != ast.Right.ExpressionType.GetType();
                     if (ast.Left.ExpressionType is PrimaryType && ast.Right.ExpressionType is PrimaryType)
                     {
-                        checkFailed = ast.Left.ExpressionType != ast.Right.ExpressionType;
+                        checkFailed |= ast.Left.ExpressionType != ast.Right.ExpressionType;
                     }
 
                     ast.ExpressionType = PrimaryType.Boolean;
                     break;
                 case BinaryOperator.LogicalAnd:
-                    checkFailed = ast.Left.ExpressionType != PrimaryType.Boolean;
-                    checkFailed = ast.Right.ExpressionType != PrimaryType.Boolean;
+                    checkFailed |= ast.Left.ExpressionType != PrimaryType.Boolean;
+                    checkFailed |= ast.Right.ExpressionType != PrimaryType.Boolean;
 
                     ast.ExpressionType = PrimaryType.Boolean;
                     break;
                 case BinaryOperator.LogicalOr:
-                    checkFailed = ast.Left.ExpressionType != PrimaryType.Boolean;
-                    checkFailed = ast.Right.ExpressionType != PrimaryType.Boolean;
+                    checkFailed |= ast.Left.ExpressionType != PrimaryType.Boolean;
+                    checkFailed |= ast.Right.ExpressionType != PrimaryType.Boolean;
 
                     ast.ExpressionType = PrimaryType.Boolean;
                     break;
@@ -631,6 +631,14 @@ namespace VBF.MiniSharp
 
         private void ResolveMethod(Call ast, CodeClassType targetType)
         {
+            if (targetType == null)
+            {
+                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Value);
+                ast.ExpressionType = PrimaryType.Unknown;
+
+                return;
+            }
+
             // step 1: collect candidates from current type
             var candidates = (from m in targetType.Methods
                               where String.Equals(m.Name, ast.Method.MethodName.Value, StringComparison.InvariantCulture) && m.Parameters.Count == ast.Arguments.Count
@@ -638,10 +646,7 @@ namespace VBF.MiniSharp
 
             if (candidates.Length == 0)
             {
-                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Value);
-                ast.ExpressionType = PrimaryType.Unknown;
-
-                return;
+                ResolveMethod(ast, targetType.BaseType);
             }
 
             // step 2: remove unqualifed candidates
@@ -661,10 +666,7 @@ namespace VBF.MiniSharp
 
             if (qualifiedCandidates.Count == 0)
             {
-                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Value);
-                ast.ExpressionType = PrimaryType.Unknown;
-
-                return;
+                ResolveMethod(ast, targetType.BaseType);
             }
 
             // step 3: choose a "best" one
