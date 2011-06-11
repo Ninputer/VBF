@@ -53,7 +53,7 @@ namespace VBF.Compilers.Scanners
             return DefineToken(regex, String.Empty);
         }
 
-        public LexerState DefineSubState()
+        public LexerState CreateSubState()
         {
             return Lexicon.DefineLexerState(this);
         }

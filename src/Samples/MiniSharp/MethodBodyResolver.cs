@@ -32,6 +32,7 @@ namespace VBF.MiniSharp
         private const int c_SE_ExpressionNotArray = 334;
         private const int c_SE_InvalidIntLiteral = 335;
         private const int c_SE_MethodAmbiguous = 336;
+        private const int c_SE_ThisInStaticMethod = 337;
         private const int c_SE_NotSupported = 390;
 
         public void DefineErrors()
@@ -58,7 +59,7 @@ namespace VBF.MiniSharp
                 "Cannot cast from '{0}' to '{1}'.");
 
             m_errorManager.DefineError(c_SE_MethodMissing, 0, CompilationStage.SemanticAnalysis,
-                "Method '{0}' could not be found.");
+                "An applicable method '{0}' could not be found.");
 
             m_errorManager.DefineError(c_SE_MethodAmbiguous, 0, CompilationStage.SemanticAnalysis,
                 "The call is ambiguous between the following two methods: '{0}' and '{1}'.");
@@ -74,6 +75,9 @@ namespace VBF.MiniSharp
 
             m_errorManager.DefineError(c_SE_MethodInvalidArguments, 0, CompilationStage.SemanticAnalysis,
                 "The call to method '{0}' has some invalid arguments.");
+
+            m_errorManager.DefineError(c_SE_ThisInStaticMethod, 0, CompilationStage.SemanticAnalysis,
+                "The keyword 'this' cannot be used in a static method.");
 
             m_errorManager.DefineError(c_SE_NotSupported, 0, CompilationStage.SemanticAnalysis,
                 "The usage is not support by miniSharp language.");
@@ -393,7 +397,10 @@ namespace VBF.MiniSharp
 
         public override AstNode VisitThis(This ast)
         {
-            //nothing to do. really!
+            if (m_currentMethod.IsStatic)
+            {
+                m_errorManager.AddError(c_SE_ThisInStaticMethod, ast.ThisSpan);
+            }
             ast.ExpressionType = m_currentType;
             return ast;
         }
@@ -647,26 +654,30 @@ namespace VBF.MiniSharp
             if (candidates.Length == 0)
             {
                 ResolveMethod(ast, targetType.BaseType);
+                return;
             }
 
             // step 2: remove unqualifed candidates
             List<Method> qualifiedCandidates = new List<Method>();
             foreach (var candidate in candidates)
             {
+                bool isQualified = true;
                 for (int i = 0; i < candidate.Parameters.Count; i++)
                 {
                     if (!candidate.Parameters[i].Type.IsAssignableFrom(ast.Arguments[i].ExpressionType))
                     {
-                        continue;
+                        isQualified = false;
+                        break;
                     }
                 }
 
-                qualifiedCandidates.Add(candidate);
+                if (isQualified) qualifiedCandidates.Add(candidate);
             }
 
             if (qualifiedCandidates.Count == 0)
             {
                 ResolveMethod(ast, targetType.BaseType);
+                return;
             }
 
             // step 3: choose a "best" one

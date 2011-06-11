@@ -32,9 +32,18 @@ class Fac
             num_aux = 1;
         else
             num_aux = num * (this.ComputeFac(num - 1));
+
+        //int c;
+        //c = this.Foo(new Sub(), new Sub());
         return num_aux;
     }
+
+    public int Foo(Base x, Sub y) { return 0; }
+    public int Foo(Sub x, Base y) { return 0; }
 }
+
+class Sub : Base {}
+class Base {}
 ";
             CompilationErrorManager errorManager = new CompilationErrorManager();
             MiniSharpParser p = new MiniSharpParser(errorManager);

@@ -386,7 +386,7 @@ namespace VBF.MiniSharp
 
             PThis.Reference = // this
                 from _this in K_THIS
-                select (Expression)new This();
+                select (Expression)new This(_this.Span);
 
             PVariable.Reference = // id
                 from varName in ID

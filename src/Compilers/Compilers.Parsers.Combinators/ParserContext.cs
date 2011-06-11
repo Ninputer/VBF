@@ -8,9 +8,9 @@ namespace VBF.Compilers.Parsers.Combinators
 {
     public class ParserContext
     {
-        private int m_trimmingThreshold = Int32.MaxValue;
-        private long m_failedSteps = 0L;
-        private long m_succeedSteps = 0L;
+        //private int m_trimmingThreshold = Int32.MaxValue;
+        //private long m_failedSteps = 0L;
+        //private long m_succeedSteps = 0L;
 
         public CompilationErrorManager ErrorManager { get; set; }
         public int InsertionErrorId { get; set; }
@@ -37,54 +37,54 @@ namespace VBF.Compilers.Parsers.Combinators
             ErrorManager.DefineError(InsertionErrorId, errorLevel, CompilationStage.Parsing, "Missing {0}");
         }
 
-        public void ResetFailedStepCount()
-        {
-            m_failedSteps = 0L;
-            m_succeedSteps = 0L;
-            m_trimmingThreshold = Int32.MaxValue;
-        }
+        //public void ResetFailedStepCount()
+        //{
+        //    m_failedSteps = 0L;
+        //    m_succeedSteps = 0L;
+        //    m_trimmingThreshold = Int32.MaxValue;
+        //}
 
         public Result<T> StepResult<T>(int cost, Func<Result<T>> nextResult)
         {
-            if (cost > 0)
-            {
-                m_failedSteps++;
-            }
-            else
-            {
-                m_succeedSteps++;
+            //if (cost > 0)
+            //{
+            //    m_failedSteps++;
+            //}
+            //else
+            //{
+            //    m_succeedSteps++;
 
-                if (m_failedSteps < m_succeedSteps * 6)
-                {
-                    m_trimmingThreshold = Int32.MaxValue;
-                }
-                else if (m_failedSteps < m_succeedSteps * 10)
-                {
-                    m_trimmingThreshold = 1;
-                }
-            }
+            //    if (m_failedSteps < m_succeedSteps * 6)
+            //    {
+            //        m_trimmingThreshold = Int32.MaxValue;
+            //    }
+            //    else if (m_failedSteps < m_succeedSteps * 10)
+            //    {
+            //        m_trimmingThreshold = 1;
+            //    }
+            //}
             return new StepResult<T>(cost, nextResult, null);
         }
 
         public Result<T> StepResult<T>(int cost, Func<Result<T>> nextResult, ErrorCorrection errorCorrection)
         {
-            if (cost > 0)
-            {
-                m_failedSteps++;
+            //if (cost > 0)
+            //{
+            //    m_failedSteps++;
 
-                if (m_failedSteps >= m_succeedSteps * 10)
-                {
-                    m_trimmingThreshold = 0;
-                }
-                else if (m_failedSteps >= m_succeedSteps * 6)
-                {
-                    m_trimmingThreshold = 1;
-                }
-            }
-            else
-            {
-                m_succeedSteps++;
-            }
+            //    if (m_failedSteps >= m_succeedSteps * 10)
+            //    {
+            //        m_trimmingThreshold = 0;
+            //    }
+            //    else if (m_failedSteps >= m_succeedSteps * 6)
+            //    {
+            //        m_trimmingThreshold = 1;
+            //    }
+            //}
+            //else
+            //{
+            //    m_succeedSteps++;
+            //}
 
             return new StepResult<T>(cost, nextResult, errorCorrection);
         }
@@ -123,13 +123,13 @@ namespace VBF.Compilers.Parsers.Combinators
             }
             else
             {
-                if (correctionDepth >= m_trimmingThreshold)
-                {
-                    if (step1.ErrorCorrection != null && step1.ErrorCorrection.Method == CorrectionMethod.Inserted)
-                    {
-                        return step2;
-                    }
-                }
+                //if (correctionDepth >= m_trimmingThreshold)
+                //{
+                //    if (step1.ErrorCorrection != null && step1.ErrorCorrection.Method == CorrectionMethod.Inserted)
+                //    {
+                //        return step2;
+                //    }
+                //}
 
                 return new StepResult<T>(Math.Max(step1.Cost, step2.Cost), () => ChooseBest(step1.NextResult, step2.NextResult, correctionDepth + 1), null);
             }

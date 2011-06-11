@@ -63,8 +63,8 @@ namespace Compilers.UnitTests
         {
             Lexicon lexicon = new Lexicon();
             LexerState global = lexicon.DefaultLexer;
-            LexerState keywords = global.DefineSubState();
-            LexerState xml = keywords.DefineSubState();
+            LexerState keywords = global.CreateSubState();
+            LexerState xml = keywords.CreateSubState();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -270,8 +270,8 @@ namespace Compilers.UnitTests
         {
             Lexicon lexicon = new Lexicon();
             LexerState global = lexicon.DefaultLexer;
-            LexerState keywords = global.DefineSubState();
-            LexerState xml = keywords.DefineSubState();
+            LexerState keywords = global.CreateSubState();
+            LexerState xml = keywords.CreateSubState();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -360,8 +360,8 @@ namespace Compilers.UnitTests
         {
             Lexicon lexicon = new Lexicon();
             LexerState global = lexicon.DefaultLexer;
-            LexerState keywords = global.DefineSubState();
-            LexerState xml = keywords.DefineSubState();
+            LexerState keywords = global.CreateSubState();
+            LexerState xml = keywords.CreateSubState();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -490,8 +490,8 @@ namespace Compilers.UnitTests
         {
             Lexicon lexicon = new Lexicon();
             LexerState global = lexicon.DefaultLexer;
-            LexerState keywords = global.DefineSubState();
-            LexerState xml = keywords.DefineSubState();
+            LexerState keywords = global.CreateSubState();
+            LexerState xml = keywords.CreateSubState();
 
             var lettersCategories = new[] { UnicodeCategory.LetterNumber,
                                             UnicodeCategory.LowercaseLetter,
