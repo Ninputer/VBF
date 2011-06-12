@@ -258,6 +258,19 @@ namespace VBF.MiniSharp
                 from _sc in SEMICOLON
                 select new FieldDecl(type, varName);
 
+            var methodBody =
+                from _1 in LEFT_BR
+                from statements in PStatement.Many()
+                from _return in K_RETURN
+                from returnExp in PExp
+                from _sc in SEMICOLON
+                from _2 in RIGHT_BR
+                select new { Statements = statements, ReturnExp = returnExp };
+
+            var methodNoBody =
+                from _sc in SEMICOLON
+                select new { Statements = default(Statement[]), ReturnExp = default(Expression) };
+
             PMethodDecl.Reference = // public Type id (FormalList) { Statement* return Exp; }
                 from _public in K_PUBLIC
                 from type in PType
@@ -265,13 +278,8 @@ namespace VBF.MiniSharp
                 from _1 in LEFT_PH
                 from formals in PFormalList
                 from _2 in RIGHT_PH
-                from _3 in LEFT_BR
-                from statements in PStatement.Many()
-                from _return in K_RETURN
-                from returnExp in PExp
-                from _sc in SEMICOLON
-                from _4 in RIGHT_BR
-                select new MethodDecl(methodName, type, formals, statements, returnExp);
+                from body in (methodBody | methodNoBody)
+                select new MethodDecl(methodName, type, formals, body.Statements, body.ReturnExp);
 
             var paramFormal =
                 from paramType in PType

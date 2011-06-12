@@ -21,7 +21,7 @@ namespace VBF.MiniSharp.Ast
             Name = name;
             ReturnType = retType;
             Parameters = new ReadOnlyCollection<Formal>(parameters);
-            Statements = new ReadOnlyCollection<Statement>(stmts);
+            Statements = stmts == null ? null : new ReadOnlyCollection<Statement>(stmts);
             ReturnExpression = retExp;
         }
 

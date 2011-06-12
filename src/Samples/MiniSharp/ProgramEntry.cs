@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using VBF.Compilers;
 
+
 namespace VBF.MiniSharp
 {
     class ProgramEntry
@@ -51,6 +52,7 @@ class Base {}
 
             if (errorManager.Errors.Count != 0)
             {
+                ReportErrors(errorManager);
                 return;
             }
 
@@ -66,7 +68,22 @@ class Base {}
             resolver3.DefineErrors();
             resolver3.Visit(ast);
 
-            ;
+            if (errorManager.Errors.Count != 0)
+            {
+                ReportErrors(errorManager);
+                return;
+            }
+        }
+
+        private static void ReportErrors(CompilationErrorManager errorManager)
+        {
+            if (errorManager.Errors.Count > 0)
+            {
+                foreach (var error in errorManager.Errors.OrderBy(e => e.ErrorPosition.StartLocation.CharIndex))
+                {
+                    Console.WriteLine(error.ToString());
+                }
+            }
         }
     }
 }

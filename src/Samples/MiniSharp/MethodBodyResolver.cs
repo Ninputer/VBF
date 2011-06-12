@@ -80,7 +80,7 @@ namespace VBF.MiniSharp
                 "The keyword 'this' cannot be used in a static method.");
 
             m_errorManager.DefineError(c_SE_NotSupported, 0, CompilationStage.SemanticAnalysis,
-                "The usage is not support by miniSharp language.");
+                "The usage is not support by miniSharp language: {0}");
 
             m_errorManager.DefineError(c_SE_InvalidIntLiteral, 0, CompilationStage.SemanticAnalysis,
                 "'{0}' is not a valid integer.");
@@ -228,6 +228,12 @@ namespace VBF.MiniSharp
 
             m_currentMethodVariables = new VariableCollection<VariableInfo>();
 
+            if (ast.Statements == null || ast.ReturnExpression == null)
+            {
+                m_errorManager.AddError(c_SE_NotSupported, ast.Name.Span, "A method must have body defined");
+                return ast;
+            }
+
             foreach (var statement in ast.Statements)
             {
                 Visit(statement);
@@ -366,7 +372,7 @@ namespace VBF.MiniSharp
             }
             else if (arrayType.ElementType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_NotSupported, ast.Array.VariableName.Span);
+                m_errorManager.AddError(c_SE_NotSupported, ast.Array.VariableName.Span, "Arrays rather than int[] are not operatable");
             }
 
             if (ast.Index.ExpressionType != PrimaryType.Int)
@@ -492,7 +498,7 @@ namespace VBF.MiniSharp
             }
             else if (arrayType.ElementType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_NotSupported, ast.LengthSpan);
+                m_errorManager.AddError(c_SE_NotSupported, ast.LengthSpan, "Arrays rather than int[] are not operatable");
             }
 
             ast.ExpressionType = PrimaryType.Int;
@@ -511,7 +517,7 @@ namespace VBF.MiniSharp
             }
             else if (arrayType.ElementType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_NotSupported, ast.IndexSpan);
+                m_errorManager.AddError(c_SE_NotSupported, ast.IndexSpan, "Arrays rather than int[] are not operatable");
             }
 
             Visit(ast.Index);

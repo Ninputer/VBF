@@ -90,7 +90,6 @@
     <Compile Include="Ast\WriteLine.cs" />
     <Compile Include="Ast\FieldDecl.cs" />
     <Compile Include="CodeClassType.cs" />
-    <Compile Include="CodeDomTranslator.cs" />
     <Compile Include="Field.cs" />
     <Compile Include="MemberDeclResolver.cs" />
     <Compile Include="Method.cs" />
