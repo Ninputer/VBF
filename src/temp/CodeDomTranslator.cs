@@ -209,7 +209,7 @@ namespace VBF.MiniSharp
         {
             CodeTypeDeclaration decl = new CodeTypeDeclaration(ast.Type.Name);
 
-            CodeMemberMethod mainMethod = new CodeEntryPointMethod();
+            CodeMemberMethod mainMethod = new CodeMemberMethod();
             mainMethod.Name = "Main";
             mainMethod.Attributes = MemberAttributes.Public | MemberAttributes.Static;
             mainMethod.Parameters.Add(new CodeParameterDeclarationExpression(new CodeTypeReference("System.String", 1), ast.ArgName.Value));
@@ -223,6 +223,8 @@ namespace VBF.MiniSharp
                     mainMethod.Statements.Add(statement);
                 }
             }
+
+            decl.Members.Add(mainMethod);
 
             return decl;
         }
@@ -290,7 +292,7 @@ namespace VBF.MiniSharp
         {
             CodeCompileUnit compileUnit = new CodeCompileUnit();
 
-            CodeNamespace ns = new CodeNamespace("A");
+            CodeNamespace ns = new CodeNamespace();
             compileUnit.Namespaces.Add(ns);
 
             ns.Types.Add(Visit(ast.MainClass) as CodeTypeDeclaration);
