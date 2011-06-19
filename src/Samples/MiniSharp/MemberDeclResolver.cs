@@ -177,6 +177,8 @@ namespace VBF.MiniSharp
             //step 2, resolve parameter types
             bool allValid = true;
             HashSet<string> paramNames = new HashSet<string>();
+
+            int paramIndex = 1; //0 is "this"
             foreach (var parameter in ast.Parameters)
             {
                 var paramTypeNode = parameter.Type;
@@ -187,7 +189,7 @@ namespace VBF.MiniSharp
                     allValid = false;
                 }
 
-                var paramInfo = new Parameter() { Name = parameter.ParameterName.Value, Type = paramType };
+                var paramInfo = new Parameter() { Name = parameter.ParameterName.Value, Type = paramType, Index = paramIndex };
 
                 if (paramNames.Contains(paramInfo.Name))
                 {
@@ -199,6 +201,8 @@ namespace VBF.MiniSharp
                     paramNames.Add(paramInfo.Name);
                     method.Parameters.Add(paramInfo);
                 }
+
+                paramIndex++;
             }
 
             //step 3, check overloading

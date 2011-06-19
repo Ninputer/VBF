@@ -110,6 +110,30 @@ namespace VBF.MiniSharp
 
         protected override void OnDefineLexer(Compilers.Scanners.Lexicon lexicon, ICollection<int> skippedTokens)
         {
+            var lettersCategories = new[] 
+            { 
+                UnicodeCategory.LetterNumber,
+                UnicodeCategory.LowercaseLetter,
+                UnicodeCategory.ModifierLetter,
+                UnicodeCategory.OtherLetter,
+                UnicodeCategory.TitlecaseLetter,
+                UnicodeCategory.UppercaseLetter
+            };
+
+            RE RE_IdChar = null;
+            RE RE_SpaceChar = null;
+            RE RE_InputChar = null;
+            RE RE_NotSlashOrAsterisk = null;
+
+            CharSetExpressionBuilder charSetBuilder = new CharSetExpressionBuilder();
+
+            charSetBuilder.DefineCharSet(c => lettersCategories.Contains(Char.GetUnicodeCategory(c)), re => RE_IdChar = re | RE.Symbol('_'));
+            charSetBuilder.DefineCharSet(c => Char.GetUnicodeCategory(c) == UnicodeCategory.SpaceSeparator, re => RE_SpaceChar = re);
+            charSetBuilder.DefineCharSet(c => !"\u000D\u000A\u0085\u2028\u2029".Contains(c), re => RE_InputChar = re);
+            charSetBuilder.DefineCharSet(c => !"/*".Contains(c), re => RE_NotSlashOrAsterisk = re);
+
+            charSetBuilder.Build();
+
             var lex = lexicon.DefaultLexer;
 
             //keywords
@@ -135,18 +159,6 @@ namespace VBF.MiniSharp
             K_NEW = lex.DefineToken(RE.Literal("new"));
 
             //id & literals
-
-            var lettersCategories = new[] 
-            { 
-                UnicodeCategory.LetterNumber,
-                UnicodeCategory.LowercaseLetter,
-                UnicodeCategory.ModifierLetter,
-                UnicodeCategory.OtherLetter,
-                UnicodeCategory.TitlecaseLetter,
-                UnicodeCategory.UppercaseLetter
-            };
-
-            var RE_IdChar = RE.CharsOf(c => lettersCategories.Contains(Char.GetUnicodeCategory(c))) | RE.Symbol('_');
 
             ID = lex.DefineToken(RE_IdChar >>
                 (RE_IdChar | RE.Range('0', '9')).Many(), "identifier");
@@ -176,9 +188,7 @@ namespace VBF.MiniSharp
             SEMICOLON = lex.DefineToken(RE.Symbol(';'));
             DOT = lex.DefineToken(RE.Symbol('.'));
 
-            //skips
-
-            var RE_SpaceChar = RE.CharsOf(c => Char.GetUnicodeCategory(c) == UnicodeCategory.SpaceSeparator);
+            //skips          
 
             WHITESPACE = lex.DefineToken(RE_SpaceChar | RE.CharSet("\u0009\u000B\u000C"));
 
@@ -187,8 +197,7 @@ namespace VBF.MiniSharp
                 RE.Literal("\r\n")
             );
 
-            var RE_InputChar = RE.CharsOf(c => !"\u000D\u000A\u0085\u2028\u2029".Contains(c));
-            var RE_NotSlashOrAsterisk = RE.CharsOf(c => !"/*".Contains(c));
+            
             var RE_DelimitedCommentSection = RE.Symbol('/') | (RE.Symbol('*').Many() >> RE_NotSlashOrAsterisk);
 
             COMMENT = lex.DefineToken(

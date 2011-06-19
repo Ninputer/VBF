@@ -36,6 +36,14 @@ namespace VBF.MiniSharp
             m_skippedTokens = new List<int>();
         }
 
+        public void ForceInitialize()
+        {
+            if (!m_isInitialized)
+            {
+                Initialize();
+            }
+        }
+
         private void Initialize()
         {
             m_lexicon = new Lexicon();

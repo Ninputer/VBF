@@ -16,6 +16,7 @@ namespace VBF.MiniSharp
         private VariableCollection<VariableInfo> m_currentMethodVariables;
         private CodeClassType m_currentType;
         private Method m_currentMethod;
+        private int m_currentVariableIndex;
 
         private CompilationErrorManager m_errorManager;
         private const int c_SE_VariableDuplicates = 313;
@@ -193,6 +194,7 @@ namespace VBF.MiniSharp
             Debug.Assert(m_currentType.Methods.Count == 0);
             Debug.Assert(m_currentType.StaticMethods.Count == 1);
             m_currentMethod = m_currentType.StaticMethods[0];
+            m_currentVariableIndex = 0;
             m_currentMethodParameters = new VariableCollection<Parameter>() { new Parameter() { Name = ast.ArgName.Value, Type = ArrayType.StrArray } };
             m_currentMethodVariables = new VariableCollection<VariableInfo>();
 
@@ -219,6 +221,7 @@ namespace VBF.MiniSharp
         public override AstNode VisitMethodDecl(MethodDecl ast)
         {
             m_currentMethod = ast.MethodInfo;
+            m_currentVariableIndex = 0;
             m_currentMethodParameters = new VariableCollection<Parameter>();
 
             foreach (var param in m_currentMethod.Parameters)
@@ -393,7 +396,8 @@ namespace VBF.MiniSharp
             if (CheckVariableDecl(ast))
             {
                 //add to current variable table
-                m_currentMethodVariables.Add(new VariableInfo() { Name = ast.VariableName.Value, Type = ast.Type.ResolvedType });
+                m_currentMethodVariables.Add(new VariableInfo() { Name = ast.VariableName.Value, Type = ast.Type.ResolvedType, Index = m_currentVariableIndex });
+                ++m_currentVariableIndex;
             }
 
             return ast;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VBF.Compilers;
+using System.Diagnostics;
 
 
 namespace VBF.MiniSharp
@@ -46,9 +47,13 @@ class Fac
 class Sub : Base {}
 class Base {}
 ";
+            Stopwatch sw = new Stopwatch();
             CompilationErrorManager errorManager = new CompilationErrorManager();
             MiniSharpParser p = new MiniSharpParser(errorManager);
+            p.ForceInitialize();
+
             var ast = p.Parse(source);
+
 
             if (errorManager.Errors.Count != 0)
             {
