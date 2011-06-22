@@ -48,12 +48,21 @@ class Sub : Base {}
 class Base {}
 ";
             Stopwatch sw = new Stopwatch();
+            sw.Start();
+
             CompilationErrorManager errorManager = new CompilationErrorManager();
             MiniSharpParser p = new MiniSharpParser(errorManager);
             p.ForceInitialize();
 
+            sw.Stop();
+            Console.WriteLine("Initialize time: {0} ms", sw.ElapsedMilliseconds);
+            sw.Restart();
+
             var ast = p.Parse(source);
 
+            sw.Stop();
+            Console.WriteLine("Parsing time: {0} ms", sw.ElapsedMilliseconds);
+            sw.Restart();
 
             if (errorManager.Errors.Count != 0)
             {
@@ -72,6 +81,9 @@ class Base {}
             MethodBodyResolver resolver3 = new MethodBodyResolver(errorManager, resolver1.Types);
             resolver3.DefineErrors();
             resolver3.Visit(ast);
+
+            sw.Stop();
+            Console.WriteLine("Semantic analysis time: {0} ms", sw.ElapsedMilliseconds);
 
             if (errorManager.Errors.Count != 0)
             {

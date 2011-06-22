@@ -110,7 +110,7 @@ namespace VBF.MiniSharp
 
         protected override void OnDefineLexer(Compilers.Scanners.Lexicon lexicon, ICollection<int> skippedTokens)
         {
-            var lettersCategories = new[] 
+            var lettersCategories = new HashSet<UnicodeCategory>()
             { 
                 UnicodeCategory.LetterNumber,
                 UnicodeCategory.LowercaseLetter,
@@ -129,8 +129,8 @@ namespace VBF.MiniSharp
 
             charSetBuilder.DefineCharSet(c => lettersCategories.Contains(Char.GetUnicodeCategory(c)), re => RE_IdChar = re | RE.Symbol('_'));
             charSetBuilder.DefineCharSet(c => Char.GetUnicodeCategory(c) == UnicodeCategory.SpaceSeparator, re => RE_SpaceChar = re);
-            charSetBuilder.DefineCharSet(c => !"\u000D\u000A\u0085\u2028\u2029".Contains(c), re => RE_InputChar = re);
-            charSetBuilder.DefineCharSet(c => !"/*".Contains(c), re => RE_NotSlashOrAsterisk = re);
+            charSetBuilder.DefineCharSet(c => "\u000D\u000A\u0085\u2028\u2029".IndexOf(c) < 0, re => RE_InputChar = re);
+            charSetBuilder.DefineCharSet(c => "/*".IndexOf(c) < 0, re => RE_NotSlashOrAsterisk = re);
 
             charSetBuilder.Build();
 

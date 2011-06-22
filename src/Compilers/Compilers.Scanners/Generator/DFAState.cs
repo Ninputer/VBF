@@ -9,13 +9,13 @@ namespace VBF.Compilers.Scanners.Generator
     public class DFAState
     {
         private List<DFAEdge> m_outEdges;
-        private SortedSet<int> m_nfaStateSet;
+        private HashSet<int> m_nfaStateSet;
         public int Index { get; internal set; }
 
         internal DFAState()
         {
             m_outEdges = new List<DFAEdge>();
-            m_nfaStateSet = new SortedSet<int>();
+            m_nfaStateSet = new HashSet<int>();
         }
 
         public ReadOnlyCollection<DFAEdge> OutEdges
