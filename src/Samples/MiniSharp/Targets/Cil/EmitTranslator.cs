@@ -247,7 +247,7 @@ namespace VBF.MiniSharp.Targets.Cil
             return ast;
         }
 
-        private readonly MethodInfo m_WriteLine = typeof(Console).GetMethod("WriteLine", BindingFlags.Public | BindingFlags.Static, System.Type.DefaultBinder, new[] { typeof(int) }, null);
+        private static readonly MethodInfo m_WriteLine = typeof(Console).GetMethod("WriteLine", BindingFlags.Public | BindingFlags.Static, System.Type.DefaultBinder, new[] { typeof(int) }, null);
         public override AstNode VisitWriteLine(WriteLine ast)
         {
             //push argument to e-stack
@@ -554,6 +554,17 @@ namespace VBF.MiniSharp.Targets.Cil
 
             m_ilgen.Emit(OpCodes.Ldc_I4_0);
             m_ilgen.Emit(OpCodes.Ceq);
+
+            return ast;
+        }
+
+        private static readonly MethodInfo ArrayGetLengthMethod = typeof(int[]).GetProperty("Length").GetGetMethod();
+        public override AstNode VisitArrayLength(ArrayLength ast)
+        {
+            //push object to e-stack
+            Visit(ast.Array);
+
+            m_ilgen.EmitCall(OpCodes.Callvirt, ArrayGetLengthMethod, null);
 
             return ast;
         }
