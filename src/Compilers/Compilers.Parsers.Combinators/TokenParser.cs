@@ -55,7 +55,6 @@ namespace VBF.Compilers.Parsers.Combinators
 
                 if (tokenIndex == ExpectedToken.Index && IsSkippedTokenCountValid(l))
                 {
-                    s1.Close();
                     var r = context.StepResult(0, () => future(l)(scanner, context));
                     return r;
                 }

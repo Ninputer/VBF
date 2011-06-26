@@ -466,8 +466,6 @@ namespace Compilers.UnitTests
             Assert.AreEqual(source[5].ToString(), l5a.Value);
             Assert.AreEqual(source[5].ToString(), l5b.Value);
 
-            fscanner.Close();
-
             var l6b = fscanner2.Read();
             var l6a = fscanner3.Read();
 
@@ -475,8 +473,6 @@ namespace Compilers.UnitTests
             Assert.AreEqual(source[6].ToString(), l6b.Value);
 
             var l7a = fscanner2.Read();
-
-            fscanner2.Close();
 
             for (int i = 7; i < 9; i++)
             {

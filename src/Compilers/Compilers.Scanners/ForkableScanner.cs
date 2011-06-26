@@ -2,88 +2,69 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
-    public class ForkableScanner
+    public struct ForkableScanner
     {
-        private ForkNode m_node;
+        private int m_offset;
+        private ForkableScannerCore m_core;
 
         internal static ForkableScanner Create(Scanner masterScanner)
         {
-            ForkNode node = new ForkNode();
-            node.State = new TailHeadState(node);
-            node.MasterScanner = masterScanner;
-
-            return new ForkableScanner(node);
+            return new ForkableScanner(new ForkableScannerCore(masterScanner));
         }
 
-        private ForkableScanner(ForkNode node)
+        private ForkableScanner(ForkableScannerCore core)
         {
-            m_node = node;
+            m_core = core;
+            m_offset = 0;
         }
 
         public Lexeme Read()
         {
-            return m_node.State.Read();
+
+            Lexeme result;
+            Debug.Assert(m_offset <= m_core.LookAheadQueue.Count);
+            if (m_offset < m_core.LookAheadQueue.Count)
+            {
+                //queue is available to fetch tokens
+                result = m_core.LookAheadQueue[m_offset];
+            }
+            else
+            {
+                result = m_core.MasterScanner.Read();
+                m_core.LookAheadQueue.Enqueue(result);
+            }
+
+            m_offset += 1;
+            return result;
+
         }
 
         public ForkableScanner Fork()
         {
-            if (m_node.MasterScanner == null)
-            {
-                throw new ObjectDisposedException(null);
-            }
-
-            var forked = m_node.State.Fork(2);
-
-            m_node = forked[0];
-
-            return new ForkableScanner(forked[1]);
+            //copy instance
+            return this;
         }
 
-        public void Close()
+        public void Join(ForkableScanner scanner)
         {
-            if (m_node.MasterScanner == null)
-            {
-                throw new ObjectDisposedException(null);
-            }
-
-            m_node.Close();
-        }
-
-        public void Join(ForkableScanner child)
-        {
-            CodeContract.RequiresArgumentNotNull(child, "child");
-            CodeContract.Requires(child.m_node.MasterScanner != null, "The scanner to join with has been closed");
-            CodeContract.Requires(child.m_node.Parent == m_node.Parent, "child", "The scanner to join does not share the parent node with current scanner");
-
-            var parent = m_node.Parent;
-
-            //swap "this" with "child"
-            var temp = m_node;
-            m_node = child.m_node;
-            child.m_node = temp;
-
-            //close other children
-            foreach (var otherChild in parent.Children.ToArray())
-            {
-                if (otherChild != m_node)
-                {
-                    otherChild.Close();
-                }
-            }
+            m_core = scanner.m_core;
+            m_offset = scanner.m_offset;
         }
 
         public ScannerInfo ScannerInfo
         {
             get
             {
-                if (m_node.MasterScanner == null)
+                if (m_core == null)
                 {
-                    throw new ObjectDisposedException(null);
+                    throw new InvalidOperationException("The ForkableScanner instance is not valid. Please use ForkableScannerBuilder to create ForkableScanner.");
                 }
-                return m_node.MasterScanner.ScannerInfo;
+
+                return m_core.MasterScanner.ScannerInfo;
             }
         }
     }
