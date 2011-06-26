@@ -50,7 +50,6 @@
     <Compile Include="FiniteAutomationEngine.cs" />
     <Compile Include="ForkableScannerBuilder.cs" />
     <Compile Include="ForkableScannerCore.cs" />
-    <Compile Include="ForkNode.cs" />
     <Compile Include="ForkableScanner.cs" />
     <Compile Include="Generator\CompactCharSetManager.cs" />
     <Compile Include="Generator\DFAEdge.cs" />
