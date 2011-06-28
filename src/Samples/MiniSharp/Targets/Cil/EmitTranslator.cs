@@ -20,6 +20,7 @@ namespace VBF.MiniSharp.Targets.Cil
         private ExtensionTable<System.Type> m_typeTable;
         private ExtensionTable<MethodInfo> m_methodTable;
         private ExtensionTable<FieldInfo> m_fieldTable;
+        private ExtensionTable<ConstructorInfo> m_ctorTable;
 
         public EmitTranslator(AppDomain hostDomain, string name)
         {
@@ -29,7 +30,17 @@ namespace VBF.MiniSharp.Targets.Cil
             m_module = m_assembly.DefineDynamicModule(name + ".dll", true);
             m_typeTable = new ExtensionTable<System.Type>();
             m_methodTable = new ExtensionTable<MethodInfo>();
+            m_ctorTable = new ExtensionTable<ConstructorInfo>();
             m_fieldTable = new ExtensionTable<FieldInfo>();
+        }
+
+        public void Create(Ast.AstNode ast, string url)
+        {
+            Visit(ast);
+
+            Debug.Assert(m_assembly != null);
+
+            m_assembly.Save(url);
         }
 
         private System.Type GetClrType(TypeBase t)
@@ -131,15 +142,76 @@ namespace VBF.MiniSharp.Targets.Cil
             return fb;
         }
 
+        private ConstructorInfo GetClrCtor(TypeBase t)
+        {
+            var ctor = m_ctorTable.Get(t);
+            if (ctor != null)
+            {
+                return ctor;
+            }
 
+            var codeType = t as CodeClassType;
+            if (codeType == null || codeType.IsStatic)
+            {
+                return null;
+            }
+
+            ConstructorInfo baseCtor;
+            if (codeType.BaseType != null)
+            {
+                baseCtor = GetClrType(codeType.BaseType).GetConstructor(new System.Type[0]);
+            }
+            else
+            {
+                baseCtor = typeof(Object).GetConstructor(new System.Type[0]);
+            }
+
+            TypeBuilder type = GetClrType(t) as TypeBuilder;
+
+            const MethodAttributes ctorAttr = MethodAttributes.Public | MethodAttributes.PrivateScope |
+                MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
+
+
+            var ctorb = type.DefineConstructor(ctorAttr, CallingConventions.Standard, new System.Type[0]);
+            var il = ctorb.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Call, baseCtor);
+            il.Emit(OpCodes.Ret);
+
+            ctor = ctorb;
+
+            m_ctorTable.Set(t, ctor);
+            return ctor;
+        }
 
         public override AstNode VisitProgram(Program ast)
         {
-            Visit(ast.MainClass);
-            foreach (var c in ast.Classes)
+            List<ClassDecl> classesInHierarchyOrder = new List<ClassDecl>();
+
+            var topBaseClasses = from c in ast.Classes where c.BaseClass.Type == null select c;
+            classesInHierarchyOrder.AddRange(topBaseClasses);
+
+            while (classesInHierarchyOrder.Count < ast.Classes.Count)
+            {
+                foreach (var c in ast.Classes)
+                {
+                    foreach (var b in classesInHierarchyOrder.ToArray())
+                    {
+                        if (c.BaseClass.Type == b.Type)
+                        {
+                            classesInHierarchyOrder.Add(c);
+                        }
+                    }
+                }
+            }
+
+            foreach (var c in classesInHierarchyOrder)
             {
                 Visit(c);
             }
+
+            Visit(ast.MainClass);
+
             return ast;
         }
 
@@ -155,6 +227,10 @@ namespace VBF.MiniSharp.Targets.Cil
                 Visit(s);
             }
 
+            m_ilgen.Emit(OpCodes.Ret);
+
+            m_currentType.CreateType();
+
             return ast;
         }
 
@@ -166,6 +242,10 @@ namespace VBF.MiniSharp.Targets.Cil
             {
                 Visit(method);
             }
+
+            GetClrCtor(ast.Type);
+
+            m_currentType.CreateType();
 
             return ast;
         }
@@ -505,7 +585,7 @@ namespace VBF.MiniSharp.Targets.Cil
             switch (ast.Value)
             {
                 case -1:
-                     m_ilgen.Emit(OpCodes.Ldc_I4_M1);
+                    m_ilgen.Emit(OpCodes.Ldc_I4_M1);
                     break;
                 case 0:
                     m_ilgen.Emit(OpCodes.Ldc_I4_0);
@@ -569,6 +649,99 @@ namespace VBF.MiniSharp.Targets.Cil
             return ast;
         }
 
+        public override AstNode VisitArrayLookup(ArrayLookup ast)
+        {
+            //push array to e-stack
+            Visit(ast.Array);
 
+            //push index
+            Visit(ast.Index);
+
+            m_ilgen.Emit(OpCodes.Ldelem_I4);
+
+            return ast;
+        }
+
+        public override AstNode VisitBinary(Binary ast)
+        {
+            //push operands
+            Visit(ast.Left);
+            Visit(ast.Right);
+
+            switch (ast.Operator)
+            {
+                case BinaryOperator.Add:
+                    m_ilgen.Emit(OpCodes.Add);
+                    break;
+                case BinaryOperator.Substract:
+                    m_ilgen.Emit(OpCodes.Sub);
+                    break;
+                case BinaryOperator.Multiply:
+                    m_ilgen.Emit(OpCodes.Mul);
+                    break;
+                case BinaryOperator.Divide:
+                    m_ilgen.Emit(OpCodes.Div);
+                    break;
+                case BinaryOperator.Less:
+                    m_ilgen.Emit(OpCodes.Clt);
+                    break;
+                case BinaryOperator.Greater:
+                    m_ilgen.Emit(OpCodes.Cgt);
+                    break;
+                case BinaryOperator.Equal:
+                    m_ilgen.Emit(OpCodes.Ceq);
+                    break;
+                case BinaryOperator.LogicalAnd:
+                    m_ilgen.Emit(OpCodes.And);
+                    break;
+                case BinaryOperator.LogicalOr:
+                    m_ilgen.Emit(OpCodes.Or);
+                    break;
+                default:
+                    m_ilgen.Emit(OpCodes.Pop);
+                    m_ilgen.Emit(OpCodes.Pop);
+                    m_ilgen.Emit(OpCodes.Ldc_I4_0);
+                    break;
+            }
+            return ast;
+        }
+
+        public override AstNode VisitCall(Call ast)
+        {
+            var methodRInfo = GetClrMethod(ast.Method.MethodInfo);
+
+            //push target object
+            Visit(ast.Target);
+
+            //push arguments
+            foreach (var arg in ast.Arguments)
+            {
+                Visit(arg);
+            }
+
+            m_ilgen.EmitCall(OpCodes.Call, methodRInfo, null);
+
+            return ast;
+        }
+
+        public override AstNode VisitNewObject(NewObject ast)
+        {
+            var ctor = GetClrCtor(ast.Type.Type);
+
+            m_ilgen.Emit(OpCodes.Newobj, ctor);
+
+            return ast;
+        }
+
+        public override AstNode VisitNewArray(NewArray ast)
+        {
+            Visit(ast.Length);
+
+            var elementType = typeof(int);
+
+            m_ilgen.Emit(OpCodes.Newarr, elementType);
+
+            return ast;
+        }
     }
 }

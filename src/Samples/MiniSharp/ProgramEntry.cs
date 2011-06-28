@@ -90,6 +90,14 @@ class Base {}
                 ReportErrors(errorManager);
                 return;
             }
+
+            //generate Cil
+            var codegenDomain = AppDomain.CurrentDomain;
+            var cilTrans = new VBF.MiniSharp.Targets.Cil.EmitTranslator(codegenDomain, "test");
+
+            cilTrans.Create(ast, @"test.dll");
+
+            ;
         }
 
         private static void ReportErrors(CompilationErrorManager errorManager)
