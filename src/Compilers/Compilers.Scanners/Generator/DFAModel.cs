@@ -69,7 +69,7 @@ namespace VBF.Compilers.Scanners.Generator
         {
             //Compact transition char set
             CompactCharSetManager = m_lexicon.CreateCompactCharSetManager();
-            NFAConverter converter = new NFAConverter(CompactCharSetManager);            
+            NFAConverter converter = new NFAConverter(CompactCharSetManager);
 
             NFAState entryState = new NFAState();
             NFAModel lexerNFA = new NFAModel();
@@ -211,8 +211,12 @@ namespace VBF.Compilers.Scanners.Generator
             {
                 NFAState nfaState = nfaStates[nfaStateIndex];
 
-                foreach (var edge in nfaState.OutEdges)
+                var outEdges = nfaState.OutEdges;
+                int edgeCount = outEdges.Count;
+                for (int i = 0; i < edgeCount; i++)
                 {
+                    var edge = outEdges[i];
+
                     if (!edge.IsEmpty && symbol == edge.Symbol.Value)
                     {
                         int targetIndex = edge.TargetState.Index;
@@ -239,13 +243,19 @@ namespace VBF.Compilers.Scanners.Generator
             {
                 changed = false;
 
-                List<int> lastStateSet = closure.NFAStateSet.ToList();
+                int[] lastStateSet = new int[closure.NFAStateSet.Count]; 
+                closure.NFAStateSet.CopyTo(lastStateSet, 0);
 
                 foreach (var stateIndex in lastStateSet)
                 {
                     NFAState nfaState = nfaStates[stateIndex];
-                    foreach (var edge in nfaState.OutEdges)
+
+                    var outEdges = nfaState.OutEdges;
+                    int edgeCount = outEdges.Count;
+                    for (int i = 0; i < edgeCount; i++)
                     {
+                        var edge = outEdges[i];
+
                         if (edge.IsEmpty)
                         {
                             NFAState target = edge.TargetState;

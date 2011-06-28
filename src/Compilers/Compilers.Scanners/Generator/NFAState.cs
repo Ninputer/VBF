@@ -11,12 +11,14 @@ namespace VBF.Compilers.Scanners.Generator
     public class NFAState
     {
         private List<NFAEdge> m_outEdges;
+        private ReadOnlyCollection<NFAEdge> m_readonlyOutEdges;
         public int Index { get; internal set; }
         internal int TokenIndex { get; set; }
 
         internal NFAState()
         {
             m_outEdges = new List<NFAEdge>();
+            m_readonlyOutEdges = new ReadOnlyCollection<NFAEdge>(m_outEdges);
 
             //default value -1 means no token is bound with this state
             TokenIndex = -1;
@@ -26,7 +28,7 @@ namespace VBF.Compilers.Scanners.Generator
         {
             get
             {
-                return m_outEdges.AsReadOnly();
+                return m_readonlyOutEdges;
             }
         }
 

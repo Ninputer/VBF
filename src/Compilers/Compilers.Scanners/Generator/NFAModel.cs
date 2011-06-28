@@ -9,6 +9,7 @@ namespace VBF.Compilers.Scanners.Generator
     public class NFAModel
     {
         private List<NFAState> m_states;
+        private ReadOnlyCollection<NFAState> m_readonlyStates;
 
         public NFAState TailState { get; internal set; }
         public NFAEdge EntryEdge { get; internal set; }
@@ -16,13 +17,14 @@ namespace VBF.Compilers.Scanners.Generator
         internal NFAModel()
         {
             m_states = new List<NFAState>();
+            m_readonlyStates = new ReadOnlyCollection<NFAState>(m_states);
         }
 
         public ReadOnlyCollection<NFAState> States
         {
             get
             {
-                return m_states.AsReadOnly();
+                return m_readonlyStates;
             }
         }
 
