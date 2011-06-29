@@ -21,7 +21,7 @@ static class 程序入口
         //hello world
         Fac o;
         o = new Fac();
-        System.Console.WriteLine(o.ComputeFac(123));
+        System.Console.WriteLine(o.ComputeFac(8));
     }
 }
 
@@ -95,7 +95,7 @@ class Base {}
             var codegenDomain = AppDomain.CurrentDomain;
             var cilTrans = new VBF.MiniSharp.Targets.Cil.EmitTranslator(codegenDomain, "test");
 
-            cilTrans.Create(ast, @"test.dll");
+            cilTrans.Create(ast, @"test.exe");
 
             ;
         }

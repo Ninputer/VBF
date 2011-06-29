@@ -17,6 +17,8 @@ namespace VBF.MiniSharp.Targets.Cil
         private MethodBuilder m_currentMethod;
         private ILGenerator m_ilgen;
 
+        private MethodInfo m_mainMethod;
+
         private ExtensionTable<System.Type> m_typeTable;
         private ExtensionTable<MethodInfo> m_methodTable;
         private ExtensionTable<FieldInfo> m_fieldTable;
@@ -27,7 +29,7 @@ namespace VBF.MiniSharp.Targets.Cil
             AssemblyName asmName = new AssemblyName(name);
             m_assembly = hostDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndSave);
 
-            m_module = m_assembly.DefineDynamicModule(name + ".dll", true);
+            m_module = m_assembly.DefineDynamicModule(name + ".exe", true);
             m_typeTable = new ExtensionTable<System.Type>();
             m_methodTable = new ExtensionTable<MethodInfo>();
             m_ctorTable = new ExtensionTable<ConstructorInfo>();
@@ -40,6 +42,7 @@ namespace VBF.MiniSharp.Targets.Cil
 
             Debug.Assert(m_assembly != null);
 
+            m_assembly.SetEntryPoint(m_mainMethod, PEFileKinds.ConsoleApplication);
             m_assembly.Save(url);
         }
 
@@ -117,6 +120,11 @@ namespace VBF.MiniSharp.Targets.Cil
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot,
                 returnType,
                 paramTypes);
+
+            foreach (var param in m.Parameters)
+            {
+                mb.DefineParameter(param.Index, ParameterAttributes.None, param.Name);
+            }
 
             m_methodTable.Set(m, mb);
             return mb;
@@ -230,7 +238,7 @@ namespace VBF.MiniSharp.Targets.Cil
             m_ilgen.Emit(OpCodes.Ret);
 
             m_currentType.CreateType();
-
+            m_mainMethod = m_currentMethod;
             return ast;
         }
 

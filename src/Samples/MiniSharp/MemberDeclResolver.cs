@@ -15,6 +15,7 @@ namespace VBF.MiniSharp
         private CompilationErrorManager m_errorManager;
         internal const int c_SE_TypeNameMissing = 302;
         private const int c_SE_StaticBaseType = 303;
+        private const int c_SE_CyclicBaseType = 304;
         private const int c_SE_FieldDuplicates = 310;
         private const int c_SE_MethodDuplicates = 311;
         private const int c_SE_ParameterDuplicates = 312;
@@ -26,6 +27,9 @@ namespace VBF.MiniSharp
 
             m_errorManager.DefineError(c_SE_StaticBaseType, 0, CompilationStage.SemanticAnalysis,
                 "The type '{0}' is a static class and it can't be used as a base class.");
+
+            m_errorManager.DefineError(c_SE_CyclicBaseType, 0, CompilationStage.SemanticAnalysis,
+                "The type '{0}' cannot be use as the base class because it is the same or one of the parent type of '{1}'.");
 
             m_errorManager.DefineError(c_SE_FieldDuplicates, 0, CompilationStage.SemanticAnalysis,
                 "The type '{0}' has already defined a field named '{1}'.");
@@ -113,6 +117,21 @@ namespace VBF.MiniSharp
                     if (type.IsStatic)
                     {
                         m_errorManager.AddError(c_SE_StaticBaseType, ast.BaseClass.TypeName.Span, baseTypeName);
+                    }
+
+                    //detect cyclic
+                    var currentBase = ast.BaseClass.Type;
+
+                    while (currentBase != null)
+                    {
+                        if (currentBase == ast.Type)
+                        {
+                            m_errorManager.AddError(c_SE_CyclicBaseType, ast.BaseClass.TypeName.Span, baseTypeName, ast.Name.Value);
+                            type = null;
+                            break;
+                        }
+
+                        currentBase = (currentBase as CodeClassType).BaseType;
                     }
 
                     ast.BaseClass.Type = type;
