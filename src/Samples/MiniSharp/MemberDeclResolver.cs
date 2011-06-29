@@ -80,6 +80,25 @@ namespace VBF.MiniSharp
                 Visit(cd);
             }
 
+            foreach (var cd in ast.Classes)
+            {
+                //check cyclic inheritance
+
+                //detect cyclic
+                var currentBase = cd.BaseClass.Type;
+
+                while (currentBase != null)
+                {
+                    if (currentBase == cd.Type)
+                    {
+                        m_errorManager.AddError(c_SE_CyclicBaseType, cd.BaseClass.TypeName.Span, cd.BaseClass.TypeName.Value, cd.Name.Value);
+                        break;
+                    }
+
+                    currentBase = (currentBase as CodeClassType).BaseType;
+                }
+            }
+
             return ast;
         }
 
@@ -117,21 +136,6 @@ namespace VBF.MiniSharp
                     if (type.IsStatic)
                     {
                         m_errorManager.AddError(c_SE_StaticBaseType, ast.BaseClass.TypeName.Span, baseTypeName);
-                    }
-
-                    //detect cyclic
-                    var currentBase = ast.BaseClass.Type;
-
-                    while (currentBase != null)
-                    {
-                        if (currentBase == ast.Type)
-                        {
-                            m_errorManager.AddError(c_SE_CyclicBaseType, ast.BaseClass.TypeName.Span, baseTypeName, ast.Name.Value);
-                            type = null;
-                            break;
-                        }
-
-                        currentBase = (currentBase as CodeClassType).BaseType;
                     }
 
                     ast.BaseClass.Type = type;
