@@ -34,9 +34,9 @@ namespace VBF.Compilers.Parsers.Combinators
         }
 
 
-        public override Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<Lexeme, TFuture> future)
+        public override ParserFunc<TFuture> BuildParser<TFuture>(Future<Lexeme, TFuture> future)
         {
-            Func<ForkableScanner, ParserContext, Result<TFuture>> scan = null;
+            ParserFunc<TFuture> scan = null;
             scan = (scanner, context) =>
             {
                 var s1 = scanner.Fork();

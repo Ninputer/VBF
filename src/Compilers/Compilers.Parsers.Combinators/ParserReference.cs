@@ -10,9 +10,9 @@ namespace VBF.Compilers.Parsers.Combinators
     {
         public Parser<T> Reference { get; set; }
 
-        public override Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future)
+        public override ParserFunc<TFuture> BuildParser<TFuture>(Future<T, TFuture> future)
         {
-            return Reference.Run(future);
+            return Reference.BuildParser(future);
         }
     }
 }

@@ -20,14 +20,14 @@ namespace VBF.Compilers.Parsers.Combinators
             Parser2 = parser2;
         }
 
-        public override Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future)
+        public override ParserFunc<TFuture> BuildParser<TFuture>(Future<T, TFuture> future)
         {
             return (scanner, context) =>
             {
                 var s1 = scanner;
                 var s2 = scanner.Fork();
 
-                return context.ChooseBest(Parser1.Run(future)(s1, context), Parser2.Run(future)(s2, context));
+                return context.ChooseBest(Parser1.BuildParser(future)(s1, context), Parser2.BuildParser(future)(s2, context));
             };
         }
     }

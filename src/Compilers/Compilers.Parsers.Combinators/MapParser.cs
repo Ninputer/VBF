@@ -20,9 +20,9 @@ namespace VBF.Compilers.Parsers.Combinators
             Selector = selector;
         }
 
-        public override Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<TReturn, TFuture> future)
+        public override ParserFunc<TFuture> BuildParser<TFuture>(Future<TReturn, TFuture> future)
         {
-            return (scanner, context) => SourceParser.Run(vsource => future(Selector(vsource)))(scanner, context);
+            return (scanner, context) => SourceParser.BuildParser(vsource => future(Selector(vsource)))(scanner, context);
         }
     }
 }

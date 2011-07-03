@@ -7,11 +7,12 @@ using System.Diagnostics;
 
 namespace VBF.Compilers.Parsers.Combinators
 {
-    public delegate Func<ForkableScanner, ParserContext, Result<TFuture>> Future<T, TFuture>(T value);
+    public delegate Result<T> ParserFunc<T>(ForkableScanner scanner, ParserContext context);
+    public delegate ParserFunc<TFuture> Future<T, TFuture>(T value);
 
     public abstract class Parser<T>
     {
-        public abstract Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future);
+        public abstract ParserFunc<TFuture> BuildParser<TFuture>(Future<T, TFuture> future);
 
         public static Parser<T> operator |(Parser<T> p1, Parser<T> p2)
         {

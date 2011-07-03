@@ -8,9 +8,9 @@ namespace VBF.Compilers.Parsers.Combinators
 {
     public class EndOfStreamParser : Parser<Lexeme>
     {
-        public override Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<Lexeme, TFuture> future)
+        public override ParserFunc<TFuture> BuildParser<TFuture>(Future<Lexeme, TFuture> future)
         {
-            Func<ForkableScanner, ParserContext, Result<TFuture>> scan = null;
+            ParserFunc<TFuture> scan = null;
             scan = (scanner, context) =>
             {
 

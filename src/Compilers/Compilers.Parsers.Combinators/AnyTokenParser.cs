@@ -8,7 +8,7 @@ namespace VBF.Compilers.Parsers.Combinators
 {
     public class AnyTokenParser : Parser<Lexeme>
     {
-        public override Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<Lexeme, TFuture> future)
+        public override ParserFunc<TFuture> BuildParser<TFuture>(Future<Lexeme, TFuture> future)
         {
             return (scanner, context) =>
             {

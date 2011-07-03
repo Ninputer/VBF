@@ -131,7 +131,8 @@ namespace VBF.Compilers.Parsers.Combinators
                 //    }
                 //}
 
-                return new StepResult<T>(Math.Max(step1.Cost, step2.Cost), () => ChooseBest(step1.NextResult, step2.NextResult, correctionDepth + 1), null);
+                return new StepResult<T>(Math.Max(step1.Cost, step2.Cost), 
+                    () => ChooseBest(step1.NextResult, step2.NextResult, correctionDepth + 1), null);
             }
         }
     }

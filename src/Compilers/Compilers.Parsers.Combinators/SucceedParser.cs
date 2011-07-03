@@ -14,7 +14,7 @@ namespace VBF.Compilers.Parsers.Combinators
         {
             Value = value;
         }
-        public override Func<ForkableScanner, ParserContext, Result<TFuture>> Run<TFuture>(Future<T, TFuture> future)
+        public override ParserFunc<TFuture> BuildParser<TFuture>(Future<T, TFuture> future)
         {
             return (scanner, context) => future(Value)(scanner, context);
         }
