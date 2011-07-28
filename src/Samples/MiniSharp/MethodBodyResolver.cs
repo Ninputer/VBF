@@ -658,7 +658,8 @@ namespace VBF.MiniSharp
 
             // step 1: collect candidates from current type
             var candidates = (from m in targetType.Methods
-                              where String.Equals(m.Name, ast.Method.MethodName.Value, StringComparison.InvariantCulture) && m.Parameters.Count == ast.Arguments.Count
+                              where String.Equals(m.Name, ast.Method.MethodName.Value, StringComparison.InvariantCulture) 
+                              && m.Parameters.Count == ast.Arguments.Count
                               select m).ToArray();
 
             if (candidates.Length == 0)
@@ -708,7 +709,8 @@ namespace VBF.MiniSharp
                 else
                 {
                     //ambiguous between first & second
-                    m_errorManager.AddError(c_SE_MethodAmbiguous, ast.Method.MethodName.Span, firstCandidate.GetSignatureString(), secondCandidate.GetSignatureString());
+                    m_errorManager.AddError(c_SE_MethodAmbiguous, ast.Method.MethodName.Span, 
+                        firstCandidate.GetSignatureString(), secondCandidate.GetSignatureString());
                     ast.ExpressionType = PrimaryType.Unknown;
                 }
             }

@@ -74,6 +74,7 @@
     <Compile Include="StringLiteralExpression.cs" />
     <Compile Include="SymbolExpression.cs" />
     <Compile Include="Token.cs" />
+    <Compile Include="TokenInfo.cs" />
     <Compile Include="UnitTestVisibility.cs" />
   </ItemGroup>
   <ItemGroup>

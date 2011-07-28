@@ -110,7 +110,7 @@ namespace VBF.Compilers.Scanners.Generator
                                 let tokenIndex = m_nfa.States[i].TokenIndex
                                 where tokenIndex >= 0
                                 let token = tokens[tokenIndex]
-                                orderby token.Index
+                                orderby token.Tag.Index
                                 group token by token.State.Index into lexerState
                                 orderby lexerStates[lexerState.Key].Level
                                 select lexerState).ToArray();
@@ -122,7 +122,7 @@ namespace VBF.Compilers.Scanners.Generator
 
                 foreach (var acceptState in acceptStates)
                 {
-                    int acceptTokenIndex = acceptState.First().Index;
+                    int acceptTokenIndex = acceptState.First().Tag.Index;
 
                     //set all children lexer state's accept token to current lexer state
                     stateTreeQueue.Clear();

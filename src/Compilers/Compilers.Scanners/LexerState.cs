@@ -8,7 +8,7 @@ namespace VBF.Compilers.Scanners
 {
     public class LexerState
     {
-        private List<Token> m_tokens;
+        private List<TokenInfo> m_tokens;
         public Lexicon Lexicon { get; private set; }
         public LexerState BaseState { get; private set; }
         public int Index { get; private set; }
@@ -22,7 +22,7 @@ namespace VBF.Compilers.Scanners
             Children = new List<LexerState>();
             Lexicon = lexicon;
             BaseState = baseState;
-            m_tokens = new List<Token>();
+            m_tokens = new List<TokenInfo>();
             Index = index;
 
             if (baseState == null)
@@ -42,15 +42,15 @@ namespace VBF.Compilers.Scanners
 
             int indexInState = m_tokens.Count;
 
-            Token token = Lexicon.AddToken(regex, this, indexInState, description);
+            TokenInfo token = Lexicon.AddToken(regex, this, indexInState, description);
             m_tokens.Add(token);
 
-            return token;
+            return token.Tag;
         }
 
         public Token DefineToken(RegularExpression regex)
         {
-            return DefineToken(regex, String.Empty);
+            return DefineToken(regex, null);
         }
 
         public LexerState CreateSubState()

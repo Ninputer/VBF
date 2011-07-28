@@ -49,6 +49,7 @@
     <Compile Include="MapParser.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserContext.cs" />
+    <Compile Include="ParserFrame.cs" />
     <Compile Include="ParserReference.cs" />
     <Compile Include="ParserRunner.cs" />
     <Compile Include="Parsers.cs" />

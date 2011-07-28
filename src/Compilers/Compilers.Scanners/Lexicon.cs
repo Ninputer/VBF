@@ -9,23 +9,24 @@ namespace VBF.Compilers.Scanners
 {
     public class Lexicon
     {
-        private List<Token> m_tokenList;
+        private List<TokenInfo> m_tokenList;
         private readonly LexerState m_defaultState;
         private List<LexerState> m_lexerStates;
 
         public Lexicon()
         {
-            m_tokenList = new List<Token>();
+            m_tokenList = new List<TokenInfo>();
             m_lexerStates = new List<LexerState>();
             m_defaultState = new LexerState(this, 0);
 
             m_lexerStates.Add(m_defaultState);
         }
 
-        internal Token AddToken(RegularExpression definition, LexerState state, int indexInState, string description)
+        internal TokenInfo AddToken(RegularExpression definition, LexerState state, int indexInState, string description)
         {
             int index = m_tokenList.Count;
-            Token token = new Token(definition, this, index, state, description);
+            Token tag = new Token(index, description ?? definition.ToString());
+            TokenInfo token = new TokenInfo(definition, this, state, tag);
             m_tokenList.Add(token);
 
             return token;
@@ -44,7 +45,7 @@ namespace VBF.Compilers.Scanners
             return m_lexerStates.AsReadOnly();
         }
 
-        public ReadOnlyCollection<Token> GetTokens()
+        public ReadOnlyCollection<TokenInfo> GetTokens()
         {
             return m_tokenList.AsReadOnly();
         }

@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using VBF.Compilers.Parsers.Combinators;
 using VBF.Compilers.Scanners;
-using VBF.Compilers;
 using System.IO;
 
-namespace VBF.MiniSharp
+namespace VBF.Compilers.Parsers.Combinators
 {
     public abstract class ParserFrame<T>
     {
@@ -27,6 +25,8 @@ namespace VBF.MiniSharp
 
         protected ParserFrame(CompilationErrorManager errorManager, int lexicalErrorId, int missingTokenErrorId, int unexpectedTokenErrorId)
         {
+            CodeContract.RequiresArgumentNotNull(errorManager, "errorManager");
+
             m_errorManager = errorManager;
 
             m_missingTokenErrorId = missingTokenErrorId;
@@ -36,21 +36,21 @@ namespace VBF.MiniSharp
             m_skippedTokens = new List<int>();
         }
 
-        public void ForceInitialize()
+        public void Initialize()
         {
             if (!m_isInitialized)
             {
-                Initialize();
+                OnInitialize();
             }
         }
 
-        private void Initialize()
+        private void OnInitialize()
         {
             m_lexicon = new Lexicon();
 
             OnDefineLexer(m_lexicon, m_skippedTokens);
 
-            m_scannerInfo = m_lexicon.CreateScannerInfo();
+            m_scannerInfo = OnCreateScannerInfo();
 
             var parser = OnDefineParser();
 
@@ -58,7 +58,7 @@ namespace VBF.MiniSharp
             {
                 throw new InvalidOperationException("Parser not defined");
             }
-            
+
             m_parser = parser.SuffixedBy(Parsers.Eos());
 
             m_context = new ParserContext(m_errorManager, m_unexpectedTokenErrorId, m_missingTokenErrorId);
@@ -74,6 +74,11 @@ namespace VBF.MiniSharp
             m_scannerBuilder.LexicalErrorId = m_lexicalErrorId;
 
             m_isInitialized = true;
+        }
+
+        protected virtual Scanners.ScannerInfo OnCreateScannerInfo()
+        {
+            return m_lexicon.CreateScannerInfo();
         }
 
         protected abstract void OnDefineLexer(Lexicon lexicon, ICollection<int> skippedTokens);
@@ -104,9 +109,11 @@ namespace VBF.MiniSharp
 
         public T Parse(SourceReader source)
         {
+            CodeContract.RequiresArgumentNotNull(source, "source");
+
             if (!m_isInitialized)
             {
-                Initialize();
+                OnInitialize();
             }
 
             ForkableScanner scanner = m_scannerBuilder.Create(source);
@@ -116,11 +123,13 @@ namespace VBF.MiniSharp
 
         public T Parse(TextReader source)
         {
+            CodeContract.RequiresArgumentNotNull(source, "source");
             return Parse(new SourceReader(source));
         }
 
         public T Parse(string source)
         {
+            CodeContract.RequiresArgumentNotNull(source, "source");
             return Parse(new StringReader(source));
         }
     }

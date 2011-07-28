@@ -52,7 +52,7 @@ class Base {}
 
             CompilationErrorManager errorManager = new CompilationErrorManager();
             MiniSharpParser p = new MiniSharpParser(errorManager);
-            p.ForceInitialize();
+            p.Initialize();
 
             sw.Stop();
             Console.WriteLine("Initialize time: {0} ms", sw.ElapsedMilliseconds);

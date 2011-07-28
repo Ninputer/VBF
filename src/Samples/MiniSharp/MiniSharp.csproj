@@ -98,7 +98,6 @@
     <Compile Include="MethodOverloadingComparer.cs" />
     <Compile Include="MiniSharpParser.cs" />
     <Compile Include="Parameter.cs" />
-    <Compile Include="ParserFrame.cs" />
     <Compile Include="PrimaryType.cs" />
     <Compile Include="ProgramEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

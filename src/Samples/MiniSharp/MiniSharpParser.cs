@@ -202,8 +202,8 @@ namespace VBF.MiniSharp
 
             COMMENT = lex.DefineToken(
                 (RE.Literal("//") >> RE_InputChar.Many()) |
-                (RE.Literal("/*") >> RE_DelimitedCommentSection.Many() >> RE.Symbol('*').Many1() >> RE.Symbol('/'))
-            );
+                (RE.Literal("/*") >> RE_DelimitedCommentSection.Many() >> RE.Symbol('*').Many1() >> RE.Symbol('/')),
+                "comment");
 
             skippedTokens.Add(WHITESPACE.Index);
             skippedTokens.Add(LINE_BREAKER.Index);
