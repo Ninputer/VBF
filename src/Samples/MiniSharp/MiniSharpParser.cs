@@ -75,7 +75,6 @@ namespace VBF.MiniSharp
         private ParserReference<FieldDecl> PFieldDecl = new ParserReference<FieldDecl>();
         private ParserReference<MethodDecl> PMethodDecl = new ParserReference<MethodDecl>();
         private ParserReference<Formal[]> PFormalList = new ParserReference<Formal[]>();
-        private ParserReference<Formal> PFormalRest = new ParserReference<Formal>();
         private ParserReference<Ast.Type> PType = new ParserReference<Ast.Type>();
         private ParserReference<Ast.Type> PIntArrayType = new ParserReference<Ast.Type>();
         private ParserReference<Ast.Type> PBoolType = new ParserReference<Ast.Type>();
@@ -106,7 +105,6 @@ namespace VBF.MiniSharp
         private ParserReference<Expression> PNewObj = new ParserReference<Expression>();
         private ParserReference<Expression> PNewArray = new ParserReference<Expression>();
         private ParserReference<Expression[]> PExpList = new ParserReference<Expression[]>();
-        private ParserReference<Expression> PExpRest = new ParserReference<Expression>();
 
         protected override void OnDefineLexer(Compilers.Scanners.Lexicon lexicon, ICollection<int> skippedTokens)
         {
@@ -197,7 +195,7 @@ namespace VBF.MiniSharp
                 RE.Literal("\r\n")
             );
 
-            
+
             var RE_DelimitedCommentSection = RE.Symbol('/') | (RE.Symbol('*').Many() >> RE_NotSlashOrAsterisk);
 
             COMMENT = lex.DefineToken(
@@ -215,7 +213,7 @@ namespace VBF.MiniSharp
             PProgram.Reference = // MainClass ClassDecl*
                 from main in PMainClass
                 from classes in PClassDecl.Many()
-                select new Program(main, classes);
+                select new Program(main, classes.ToArray());
 
             PMainClass.Reference = // static class id { public static void Main(string[] id) { statement }}
                 from _static1 in K_STATIC
@@ -236,14 +234,14 @@ namespace VBF.MiniSharp
                 from statements in PStatement.Many1()
                 from _7 in RIGHT_BR
                 from _8 in RIGHT_BR
-                select new MainClass(className, arg, statements);
+                select new MainClass(className, arg, statements.ToArray());
 
             var classMembers =
                 from _1 in LEFT_BR
                 from varDecls in PFieldDecl.Many()
                 from methodDecls in PMethodDecl.Many()
                 from _2 in RIGHT_BR
-                select new { Fields = varDecls, Methods = methodDecls };
+                select new { Fields = varDecls.ToArray(), Methods = methodDecls.ToArray() };
 
             var classDeclSimple = // { VarDecl* MethodDecl* }
                 from members in classMembers
@@ -274,7 +272,7 @@ namespace VBF.MiniSharp
                 from returnExp in PExp
                 from _sc in SEMICOLON
                 from _2 in RIGHT_BR
-                select new { Statements = statements, ReturnExp = returnExp };
+                select new { Statements = statements.ToArray(), ReturnExp = returnExp };
 
             var methodNoBody =
                 from _sc in SEMICOLON
@@ -296,14 +294,8 @@ namespace VBF.MiniSharp
                 select new Formal(paramType, paramName);
 
             PFormalList.Reference = // Type id FormalRest* | <empty>
-                (from first in paramFormal
-                 from rest in PFormalRest.Many()
-                 select new[] { first }.Concat(rest).ToArray()) |
-                Parsers.Succeed(new Formal[0]);
-
-            PFormalRest.Reference = // , Type id
-                paramFormal.PrefixedBy(COMMA.AsParser());
-
+                 from list in paramFormal.Many(COMMA)
+                 select list.ToArray();
 
             PType.Reference = // int[] | bool | int | id 
                 PIntArrayType | PBoolType | PIntType | PIdType;
@@ -329,7 +321,7 @@ namespace VBF.MiniSharp
             //statements
 
             PStatement.Reference = // { statement*} | ifelse | while | writeline | assign | array assign | var decl
-                (from _1 in LEFT_BR from stmts in PStatement.Many() from _2 in RIGHT_BR select (Statement)new Block(stmts)) |
+                (from _1 in LEFT_BR from stmts in PStatement.Many() from _2 in RIGHT_BR select (Statement)new Block(stmts.ToArray())) |
                 PIfElse |
                 PWhile |
                 PWriteLine |
@@ -528,13 +520,9 @@ namespace VBF.MiniSharp
             PExp.Reference = POr;
 
             PExpList.Reference =
-                (from first in PExp
-                 from rest in PExpRest.Many()
-                 select new[] { first }.Concat(rest).ToArray()) |
-                Parsers.Succeed(new Expression[0]);
+                from list in PExp.Many(COMMA)
+                select list.ToArray();
 
-            PExpRest.Reference =
-                PExp.PrefixedBy(COMMA.AsParser());
 
             return PProgram;
         }
