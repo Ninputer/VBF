@@ -6,12 +6,12 @@ using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers.Combinators
 {
-    public class MapParser<TSource, TReturn> : Parser<TReturn>
+    public class MappingParser<TSource, TReturn> : Parser<TReturn>
     {
         public Parser<TSource> SourceParser { get; private set; }
         public Func<TSource, TReturn> Selector { get; private set; }
 
-        public MapParser(Parser<TSource> sourceParser, Func<TSource, TReturn> selector)
+        public MappingParser(Parser<TSource> sourceParser, Func<TSource, TReturn> selector)
         {
             CodeContract.RequiresArgumentNotNull(sourceParser, "sourceParser");
             CodeContract.RequiresArgumentNotNull(selector, "selector");

@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{57E34138-CEE5-422B-8EA2-CB7A9574805D}</ProjectGuid>
+    <ProjectGuid>{323A8312-8E82-4A81-91CC-2D60F85AE751}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VBF.Compilers.Parsers.Combinators</RootNamespace>
-    <AssemblyName>VBF.Compilers.Parsers.Combinators</AssemblyName>
+    <RootNamespace>VBF.Compilers.Parsers</RootNamespace>
+    <AssemblyName>VBF.Compilers.Parsers</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\bin\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -41,24 +41,19 @@
     <Compile Include="..\Compilers.Common\CodeContract.cs">
       <Link>CodeContract.cs</Link>
     </Compile>
-    <Compile Include="AlternationParser.cs" />
-    <Compile Include="AnyTokenParser.cs" />
-    <Compile Include="ConcatenationParser.cs" />
-    <Compile Include="EndOfStreamParser.cs" />
-    <Compile Include="ErrorCorrection.cs" />
-    <Compile Include="MappingParser.cs" />
-    <Compile Include="Parser.cs" />
-    <Compile Include="ParserContext.cs" />
-    <Compile Include="ParserFrame.cs" />
-    <Compile Include="ParserReference.cs" />
-    <Compile Include="ParserRunner.cs" />
-    <Compile Include="Parsers.cs" />
+    <Compile Include="AlternationProduction.cs" />
+    <Compile Include="ConcatenationProduction.cs" />
+    <Compile Include="EmptyProduction.cs" />
+    <Compile Include="Grammar.cs" />
+    <Compile Include="IProductionVisitor.cs" />
+    <Compile Include="MappingProduction.cs" />
+    <Compile Include="Production.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RepeatParserListNode.cs" />
-    <Compile Include="Result.cs" />
-    <Compile Include="SucceedParser.cs" />
-    <Compile Include="TokenParser.cs" />
+    <Compile Include="ShiftReduce\Generator\LR1State.cs" />
+    <Compile Include="ShiftReduce\Generator\LRStateCore.cs" />
+    <Compile Include="Terminal.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Compilers.Common\Compilers.Common.csproj">
       <Project>{283A7585-ECF4-405A-824F-AF926C16C78C}</Project>

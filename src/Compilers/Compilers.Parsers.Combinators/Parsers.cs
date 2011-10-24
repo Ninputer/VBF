@@ -56,7 +56,7 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(parser, "parser");
             CodeContract.RequiresArgumentNotNull(selector, "selector");
 
-            return new MapParser<TSource, TResult>(parser, selector);
+            return new MappingParser<TSource, TResult>(parser, selector);
         }
 
         public static Parser<TResult> Select<TResult>(this Token token, Func<Lexeme, TResult> selector)
@@ -64,7 +64,7 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(token, "token");
             CodeContract.RequiresArgumentNotNull(selector, "selector");
 
-            return new MapParser<Lexeme, TResult>(token.AsParser(), selector);
+            return new MappingParser<Lexeme, TResult>(token.AsParser(), selector);
         }
 
         public static Parser<TResult> SelectMany<T1, T2, TResult>(this Parser<T1> parser, Func<T1, Parser<T2>> parserSelector, Func<T1, T2, TResult> resultSelector)

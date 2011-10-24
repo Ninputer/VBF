@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.Parsers.Combinato
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.Common", "Compilers.Common\Compilers.Common.csproj", "{283A7585-ECF4-405A-824F-AF926C16C78C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.Parsers", "Compilers.Parsers\Compilers.Parsers.csproj", "{323A8312-8E82-4A81-91CC-2D60F85AE751}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{283A7585-ECF4-405A-824F-AF926C16C78C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{283A7585-ECF4-405A-824F-AF926C16C78C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{283A7585-ECF4-405A-824F-AF926C16C78C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{323A8312-8E82-4A81-91CC-2D60F85AE751}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{323A8312-8E82-4A81-91CC-2D60F85AE751}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{323A8312-8E82-4A81-91CC-2D60F85AE751}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{323A8312-8E82-4A81-91CC-2D60F85AE751}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
