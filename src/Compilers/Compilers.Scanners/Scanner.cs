@@ -20,6 +20,7 @@ namespace VBF.Compilers.Scanners
         private int m_lastState;
         private SourceLocation m_lastTokenStart;
         private StringBuilder m_lexemeValueBuilder;
+        private List<Lexeme> m_triviaCache;
 
         private int[] m_tokenAttributes;
 
@@ -34,6 +35,8 @@ namespace VBF.Compilers.Scanners
             m_engine = new FiniteAutomationEngine(m_scannerInfo.TransitionTable, m_scannerInfo.CharClassTable);
             m_lexemeValueBuilder = new StringBuilder();
             m_tokenAttributes = new int[scannerInfo.TokenCount];
+
+            m_triviaCache = new List<Lexeme>();
 
             Initialize();
         }
@@ -53,13 +56,13 @@ namespace VBF.Compilers.Scanners
             Initialize();
         }
 
-        public void SetSkipTokens(params int[] skipTokenIndices)
+        public void SetTriviaTokens(params int[] triviaTokenIndices)
         {
             Array.Clear(m_tokenAttributes, 0, m_tokenAttributes.Length);
 
-            for (int i = 0; i < skipTokenIndices.Length; i++)
+            for (int i = 0; i < triviaTokenIndices.Length; i++)
             {
-                int skipIndex = skipTokenIndices[i];
+                int skipIndex = triviaTokenIndices[i];
 
                 if (skipIndex >= 0 && skipIndex < m_tokenAttributes.Length)
                 {
@@ -75,7 +78,8 @@ namespace VBF.Compilers.Scanners
 
         public Lexeme Read()
         {
-            int skippedTokenCount = -1;
+            m_triviaCache.Clear();
+            bool isLastSkipped = false;
 
             do
             {
@@ -83,14 +87,14 @@ namespace VBF.Compilers.Scanners
                 m_engine.Reset();
                 m_lastTokenStart = m_source.PeekLocation();
                 m_lastState = 0;
-                skippedTokenCount++;
+
                 m_lexemeValueBuilder.Clear();
 
                 if (m_source.PeekChar() < 0)
                 {
                     //return End Of Stream token
                     return new Lexeme(m_scannerInfo, m_scannerInfo.EndOfStreamState,
-                        new SourceSpan(m_lastTokenStart, m_lastTokenStart), null, skippedTokenCount);
+                        new SourceSpan(m_lastTokenStart, m_lastTokenStart), null, m_triviaCache);
                 }
 
                 while (true)
@@ -121,10 +125,18 @@ namespace VBF.Compilers.Scanners
                 }
 
                 //skip tokens that marked with "Skip" attribute
-            } while (IsLastTokenSkippable());
+                isLastSkipped = IsLastTokenSkippable();
+
+                if (isLastSkipped)
+                {
+                    m_triviaCache.Add(new Lexeme(m_scannerInfo, m_lastState,
+                        new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString(), null));
+                }
+
+            } while (isLastSkipped);
 
             return new Lexeme(m_scannerInfo, m_lastState,
-                new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString(), skippedTokenCount);
+                new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString(), m_triviaCache);
         }
 
         private bool IsLastTokenSkippable()
@@ -135,12 +147,12 @@ namespace VBF.Compilers.Scanners
             {
                 //eat one char to continue
                 m_lexemeValueBuilder.Append((char)m_source.ReadChar());
-                
+
                 if (ErrorManager != null)
-                {                 
+                {
                     ErrorManager.AddError(LexicalErrorId, new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString());
                 }
-                
+
                 return true;
             }
 

@@ -28,7 +28,7 @@ namespace Compilers.UnitTests
 
             var p1 = from i in ID
                      from g in GREATER
-                     from g2 in GREATER.AsParser(true)
+                     from g2 in GREATER.AsParser(l => l.Trivia.Count == 0)
                      from n in NUM
                      select "A";
 
@@ -43,7 +43,7 @@ namespace Compilers.UnitTests
 
             var info = test.CreateScannerInfo();
             ForkableScannerBuilder builder = new ForkableScannerBuilder(info);
-            builder.SetSkipTokens(WHITESPACE.Index);
+            builder.SetTriviaTokens(WHITESPACE.Index);
 
             var errorManager = new CompilationErrorManager();
             var context = new ParserContext(errorManager, 1, 2);

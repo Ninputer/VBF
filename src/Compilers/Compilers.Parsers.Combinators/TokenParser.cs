@@ -8,31 +8,35 @@ namespace VBF.Compilers.Parsers.Combinators
 {
     public class TokenParser : Parser<Lexeme>
     {
+        private Func<Lexeme, bool> m_qualificationPredicate;
+
         public Token ExpectedToken { get; private set; }
         public string MissingCorrection { get; private set; }
-        public bool DisallowSkippingTokens { get; private set; }
         public int? LexerStateIndex { get; private set; }
 
-        public TokenParser(Token expected, int? lexerState, bool disallowSkipping, string missingCorrection)
+        public TokenParser(Token expected, int? lexerState, Func<Lexeme, bool> qualificationPredicate, string missingCorrection)
         {
             CodeContract.RequiresArgumentNotNull(expected, "expected");
+            CodeContract.RequiresArgumentNotNull(qualificationPredicate, "qualificationPredicate");
 
             ExpectedToken = expected;
             MissingCorrection = missingCorrection;
-            DisallowSkippingTokens = disallowSkipping;
+            m_qualificationPredicate = qualificationPredicate;
             LexerStateIndex = lexerState;
         }
 
-        public TokenParser(Token expected, int? lexerState, bool disallowSkipping)
+        public TokenParser(Token expected, int? lexerState, Func<Lexeme, bool> qualificationPredicate)
         {
             CodeContract.RequiresArgumentNotNull(expected, "expected");
+            CodeContract.RequiresArgumentNotNull(qualificationPredicate, "qualificationPredicate");
 
             ExpectedToken = expected;
             MissingCorrection = expected.ToString();
-            DisallowSkippingTokens = disallowSkipping;
+            m_qualificationPredicate = qualificationPredicate;
             LexerStateIndex = lexerState;
         }
 
+        public TokenParser(Token expected, int? lexerState) : this(expected, lexerState, l => true) { }
 
         public override ParserFunc<TFuture> BuildParser<TFuture>(Future<Lexeme, TFuture> future)
         {
@@ -53,7 +57,7 @@ namespace VBF.Compilers.Parsers.Combinators
                     tokenIndex = l.TokenIndex;
                 }
 
-                if (tokenIndex == ExpectedToken.Index && IsSkippedTokenCountValid(l))
+                if (tokenIndex == ExpectedToken.Index && m_qualificationPredicate(l))
                 {
                     var r = context.StepResult(0, () => future(l)(scanner, context));
                     return r;
@@ -78,18 +82,6 @@ namespace VBF.Compilers.Parsers.Combinators
             };
 
             return scan;
-        }
-
-        private bool IsSkippedTokenCountValid(Lexeme l)
-        {
-            if (DisallowSkippingTokens)
-            {
-                return l.SkippedTokenCount == 0;
-            }
-            else
-            {
-                return true;
-            }
         }
     }
 }

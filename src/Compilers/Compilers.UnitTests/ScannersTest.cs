@@ -381,28 +381,28 @@ namespace Compilers.UnitTests
             StringReader sr = new StringReader(source);
 
             scanner.SetSource(new SourceReader(sr));
-            scanner.SetSkipTokens(WHITESPACE.Index, ERROR.Index);
+            scanner.SetTriviaTokens(WHITESPACE.Index, ERROR.Index);
             info.LexerStateIndex = xml.Index;
 
             Lexeme l1 = scanner.Read();
             Assert.AreEqual(ID.Index, l1.TokenIndex);
             Assert.AreEqual("asdf04a", l1.Value);
-            Assert.AreEqual(0, l1.SkippedTokenCount);
+            Assert.AreEqual(0, l1.Trivia.Count);
 
             Lexeme l2 = scanner.Read();
             Assert.AreEqual(NUM.Index, l2.TokenIndex);
             Assert.AreEqual("1107", l2.Value);
-            Assert.AreEqual(1, l2.SkippedTokenCount);
+            Assert.AreEqual(1, l2.Trivia.Count);
 
             Lexeme l3 = scanner.Read();
             Assert.AreEqual(ELSE.Index, l3.TokenIndex);
             Assert.AreEqual("else", l3.Value);
-            Assert.AreEqual(1, l2.SkippedTokenCount);
+            Assert.AreEqual(1, l2.Trivia.Count);
 
             Lexeme l4 = scanner.Read();
             Assert.AreEqual(IF.Index, l4.TokenIndex);
             Assert.AreEqual("if", l4.Value);
-            Assert.AreEqual(3, l4.SkippedTokenCount);
+            Assert.AreEqual(3, l4.Trivia.Count);
             
 
             int p1 = scanner.Peek();
@@ -519,7 +519,7 @@ namespace Compilers.UnitTests
             SourceReader sr = new SourceReader(new StringReader(source));
 
             s.SetSource(sr);
-            s.SetSkipTokens(WHITESPACE.Index);
+            s.SetTriviaTokens(WHITESPACE.Index);
 
             var l1 = s.Read();
             Assert.AreEqual(XMLNS.Index, l1.TokenIndex);
@@ -560,7 +560,7 @@ namespace Compilers.UnitTests
             StringReader sr = new StringReader(source);
 
             scanner.SetSource(new SourceReader(sr));
-            scanner.SetSkipTokens(WHITESPACE.Index);
+            scanner.SetTriviaTokens(WHITESPACE.Index);
             scanner.RecoverErrors = true;
 
             CompilationErrorManager em = new CompilationErrorManager();

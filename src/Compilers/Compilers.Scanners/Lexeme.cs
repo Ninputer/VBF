@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
 
 namespace VBF.Compilers.Scanners
 {
@@ -11,18 +12,34 @@ namespace VBF.Compilers.Scanners
     {
         private ScannerInfo m_scannerInfo;
         private int m_stateIndex;
+        private readonly Lexeme[] m_triviaArray;
+        private readonly ReadOnlyCollection<Lexeme> m_trivia;
+
+        private static readonly Lexeme[] s_emptyTrivia = new Lexeme[0];
 
         public SourceSpan Span { get; private set; }
         public string Value { get; private set; }
-        public int SkippedTokenCount { get; private set; }
 
-        internal Lexeme(ScannerInfo scannerInfo, int state, SourceSpan span, string value, int skippedTokenCount)
+        internal Lexeme(ScannerInfo scannerInfo, int state, SourceSpan span, string value, List<Lexeme> trivia)
         {
             m_scannerInfo = scannerInfo;
             m_stateIndex = state;
             Span = span;
             Value = value;
-            SkippedTokenCount = skippedTokenCount;
+
+            if (trivia != null)
+            {
+                m_triviaArray = trivia.ToArray();
+                m_trivia = new ReadOnlyCollection<Lexeme>(m_triviaArray);
+
+            }
+            else
+            {
+                m_triviaArray = null;
+                m_trivia = new ReadOnlyCollection<Lexeme>(s_emptyTrivia);
+            }
+
+            
         }
 
         public int TokenIndex
@@ -30,6 +47,14 @@ namespace VBF.Compilers.Scanners
             get
             {
                 return m_scannerInfo.GetTokenIndex(m_stateIndex);
+            }
+        }
+
+        public ReadOnlyCollection<Lexeme> Trivia
+        {
+            get
+            {
+                return m_trivia;
             }
         }
 
@@ -51,7 +76,7 @@ namespace VBF.Compilers.Scanners
             int state = m_scannerInfo.GetStateIndex(expectedTokenIndex);
             if (state < 0) throw new ArgumentException("Expected token index is invalid", "expectedTokenIndex");
 
-            return new Lexeme(m_scannerInfo, state, new SourceSpan(Span.StartLocation, Span.StartLocation), expectedValue, 0);
+            return new Lexeme(m_scannerInfo, state, new SourceSpan(Span.StartLocation, Span.StartLocation), expectedValue, null);
         }
     }
 }

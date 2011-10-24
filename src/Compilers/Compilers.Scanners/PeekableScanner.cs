@@ -85,14 +85,14 @@ namespace VBF.Compilers.Scanners
             m_masterScanner.SetSource(source);
         }
 
-        public void SetSkipTokens(params int[] skipTokenIndices)
+        public void SetTriviaTokens(params int[] triviaTokenIndices)
         {
             if (m_lookAheadQueue.Count > 0)
             {
                 throw new InvalidOperationException("The skip tokens are not allowed to be set when the look ahead queue not empty");
             }
 
-            m_masterScanner.SetSkipTokens(skipTokenIndices);
+            m_masterScanner.SetTriviaTokens(triviaTokenIndices);
         }
 
         public CompilationErrorManager ErrorManager

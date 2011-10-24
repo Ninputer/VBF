@@ -16,14 +16,14 @@ namespace VBF.Compilers.Scanners
 
         private ScannerInfo m_info;
 
-        private int[] m_skipTokens;
+        private int[] m_triviaTokens;
 
         public ForkableScannerBuilder(ScannerInfo info)
         {
             CodeContract.RequiresArgumentNotNull(info, "info");
 
             m_info = info;
-            m_skipTokens = new int[0];
+            m_triviaTokens = new int[0];
         }
 
         public ScannerInfo ScannerInfo
@@ -39,9 +39,9 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        public void SetSkipTokens(params int[] skipTokenIndices)
+        public void SetTriviaTokens(params int[] triviaTokenIndices)
         {
-            m_skipTokens = skipTokenIndices;
+            m_triviaTokens = triviaTokenIndices;
         }
 
         public ForkableScanner Create(SourceReader source)
@@ -50,7 +50,7 @@ namespace VBF.Compilers.Scanners
 
             Scanner masterScanner = new Scanner(ScannerInfo);
             masterScanner.SetSource(source);
-            masterScanner.SetSkipTokens(m_skipTokens);
+            masterScanner.SetTriviaTokens(m_triviaTokens);
             masterScanner.ErrorManager = ErrorManager;
             masterScanner.RecoverErrors = RecoverErrors;
             masterScanner.LexicalErrorId = LexicalErrorId;
