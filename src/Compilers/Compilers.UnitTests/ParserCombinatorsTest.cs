@@ -28,7 +28,7 @@ namespace Compilers.UnitTests
 
             var p1 = from i in ID
                      from g in GREATER
-                     from g2 in GREATER.AsParser(l => l.Trivia.Count == 0)
+                     from g2 in GREATER.AsParser(l => l.PrefixTrivia.Count == 0)
                      from n in NUM
                      select "A";
 

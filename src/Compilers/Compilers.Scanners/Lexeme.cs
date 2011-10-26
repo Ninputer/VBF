@@ -50,7 +50,7 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        public ReadOnlyCollection<Lexeme> Trivia
+        public ReadOnlyCollection<Lexeme> PrefixTrivia
         {
             get
             {

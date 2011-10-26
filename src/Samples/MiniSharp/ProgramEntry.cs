@@ -18,7 +18,6 @@ static class 程序入口
     //中文注释
     public static void Main(string[] args)
     {
-        //hello world
         Fac o;
         o = new Fac();
         System.Console.WriteLine(o.ComputeFac(8));
@@ -35,17 +34,10 @@ class Fac
         else
             num_aux = num * (this.ComputeFac(num - 1));
 
-        //int c;
-        //c = this.Foo(new Sub(), new Sub());
         return num_aux;
     }
-
-    public int Foo(Base x, Sub y) { return 0; }
-    public int Foo(Sub x, Base y) { return 0; }
 }
 
-class Sub : Base {}
-class Base {}
 ";
             Stopwatch sw = new Stopwatch();
             sw.Start();
