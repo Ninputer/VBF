@@ -164,11 +164,11 @@ namespace VBF.Compilers.Parsers.Combinators
             return parser.Many1().Union(Succeed(new RepeatParserListNode<T>() as IEnumerable<T>));
         }
 
-        public static Parser<IEnumerable<T>> Many<T, TSeperator>(this Parser<T> parser, Parser<TSeperator> seperator)
+        public static Parser<IEnumerable<T>> Many<T, TSeparator>(this Parser<T> parser, Parser<TSeparator> separator)
         {
             CodeContract.RequiresArgumentNotNull(parser, "parser");
 
-            return parser.Many1(seperator).Union(Succeed(new RepeatParserListNode<T>() as IEnumerable<T>));
+            return parser.Many1(separator).Union(Succeed(new RepeatParserListNode<T>() as IEnumerable<T>));
         }
 
         public static Parser<IEnumerable<Lexeme>> Many(this Token token)
@@ -178,25 +178,25 @@ namespace VBF.Compilers.Parsers.Combinators
             return token.AsParser().Many();
         }
 
-        public static Parser<IEnumerable<Lexeme>> Many<T, TSeperator>(this Token token, Parser<TSeperator> seperator)
+        public static Parser<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Parser<TSeparator> separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "parser");
 
-            return token.AsParser().Many(seperator);
+            return token.AsParser().Many(separator);
         }
 
-        public static Parser<IEnumerable<T>> Many<T>(this Parser<T> parser, Token seperator)
+        public static Parser<IEnumerable<T>> Many<T>(this Parser<T> parser, Token separator)
         {
             CodeContract.RequiresArgumentNotNull(parser, "parser");
 
-            return parser.Many(seperator.AsParser());
+            return parser.Many(separator.AsParser());
         }
 
-        public static Parser<IEnumerable<Lexeme>> Many<T, TSeperator>(this Token token, Token seperator)
+        public static Parser<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Token separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "parser");
 
-            return token.AsParser().Many(seperator.AsParser());
+            return token.AsParser().Many(separator.AsParser());
         }
 
         public static Parser<IEnumerable<T>> Many1<T>(this Parser<T> parser)
@@ -215,12 +215,12 @@ namespace VBF.Compilers.Parsers.Combinators
             return token.AsParser().Many1();
         }
 
-        public static Parser<IEnumerable<T>> Many1<T, TSeperator>(this Parser<T> parser, Parser<TSeperator> seperator)
+        public static Parser<IEnumerable<T>> Many1<T, TSeparator>(this Parser<T> parser, Parser<TSeparator> separator)
         {
             CodeContract.RequiresArgumentNotNull(parser, "parser");
 
             return from r in parser
-                   from rm in parser.PrefixedBy(seperator).Many()
+                   from rm in parser.PrefixedBy(separator).Many()
                    select new RepeatParserListNode<T>(r, rm as RepeatParserListNode<T>) as IEnumerable<T>;
         }
 
@@ -231,18 +231,18 @@ namespace VBF.Compilers.Parsers.Combinators
             return parser.Many1(seperator.AsParser());
         }
 
-        public static Parser<IEnumerable<Lexeme>> Many1<TSeperator>(this Token token, Parser<TSeperator> seperator)
+        public static Parser<IEnumerable<Lexeme>> Many1<TSeparator>(this Token token, Parser<TSeparator> separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "parser");
 
-            return token.AsParser().Many1(seperator);
+            return token.AsParser().Many1(separator);
         }
 
-        public static Parser<IEnumerable<Lexeme>> Many1(this Token token, Token seperator)
+        public static Parser<IEnumerable<Lexeme>> Many1(this Token token, Token separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "parser");
 
-            return token.AsParser().Many1(seperator.AsParser());
+            return token.AsParser().Many1(separator.AsParser());
         }
 
         public static Parser<T> Optional<T>(this Parser<T> parser)
