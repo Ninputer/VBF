@@ -33,7 +33,7 @@ namespace VBF.Compilers.Scanners
             m_scannerInfo = scannerInfo;
 
             m_engine = new FiniteAutomationEngine(m_scannerInfo.TransitionTable, m_scannerInfo.CharClassTable);
-            m_lexemeValueBuilder = new StringBuilder();
+            m_lexemeValueBuilder = new StringBuilder(32);
             m_tokenAttributes = new int[scannerInfo.TokenCount];
 
             m_triviaCache = new List<Lexeme>();
