@@ -12,10 +12,10 @@ namespace VBF.Compilers.Scanners
     {
         public Token Tag { get; private set; }
         public Lexicon Lexicon { get; private set; }
-        public LexerState State { get; private set; }
+        public Lexer State { get; private set; }
         public RegularExpression Definition { get; private set; }
 
-        internal TokenInfo(RegularExpression definition, Lexicon lexicon, LexerState state, Token tag)
+        internal TokenInfo(RegularExpression definition, Lexicon lexicon, Lexer state, Token tag)
         {
             Lexicon = lexicon;
             Definition = definition;

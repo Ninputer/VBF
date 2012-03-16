@@ -106,7 +106,7 @@ namespace VBF.MiniSharp
         private ParserReference<Expression> PNewArray = new ParserReference<Expression>();
         private ParserReference<Expression[]> PExpList = new ParserReference<Expression[]>();
 
-        protected override void OnDefineLexer(Compilers.Scanners.Lexicon lexicon, ICollection<int> skippedTokens)
+        protected override void OnDefineLexer(Compilers.Scanners.Lexicon lexicon, ICollection<Token> skippedTokens)
         {
             var lettersCategories = new HashSet<UnicodeCategory>()
             { 
@@ -132,7 +132,7 @@ namespace VBF.MiniSharp
 
             charSetBuilder.Build();
 
-            var lex = lexicon.DefaultLexer;
+            var lex = lexicon.Lexer;
 
             //keywords
             K_CLASS = lex.DefineToken(RE.Literal("class"));
@@ -203,9 +203,9 @@ namespace VBF.MiniSharp
                 (RE.Literal("/*") >> RE_DelimitedCommentSection.Many() >> RE.Symbol('*').Many1() >> RE.Symbol('/')),
                 "comment");
 
-            skippedTokens.Add(WHITESPACE.Index);
-            skippedTokens.Add(LINE_BREAKER.Index);
-            skippedTokens.Add(COMMENT.Index);
+            skippedTokens.Add(WHITESPACE);
+            skippedTokens.Add(LINE_BREAKER);
+            skippedTokens.Add(COMMENT);
         }
 
         protected override Compilers.Parsers.Combinators.Parser<Ast.Program> OnDefineParser()

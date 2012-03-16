@@ -19,12 +19,12 @@ namespace Compilers.UnitTests
         {
             Lexicon test = new Lexicon();
 
-            var ID = test.DefaultLexer.DefineToken(RE.Range('a', 'z').Concat(
+            var ID = test.Lexer.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
-            var NUM = test.DefaultLexer.DefineToken(RE.Range('0', '9').Many1());
-            var GREATER = test.DefaultLexer.DefineToken(RE.Symbol('>'));
+            var NUM = test.Lexer.DefineToken(RE.Range('0', '9').Many1());
+            var GREATER = test.Lexer.DefineToken(RE.Symbol('>'));
 
-            var WHITESPACE = test.DefaultLexer.DefineToken(RE.Symbol(' ').Union(RE.Symbol('\t')));
+            var WHITESPACE = test.Lexer.DefineToken(RE.Symbol(' ').Union(RE.Symbol('\t')));
 
             var p1 = from i in ID
                      from g in GREATER

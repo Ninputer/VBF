@@ -26,7 +26,7 @@ namespace Compilers.UnitTests
             //var RE_NUM = RE.Range('0', '9').Many1();
             //var RE_ERROR = RE.Range(Char.MinValue, (char)255);
             Lexicon lexicon = new Lexicon();
-            var ID = lexicon.DefaultLexer.DefineToken(RE_ID);
+            var ID = lexicon.Lexer.DefineToken(RE_ID);
 
             NFAConverter nfaConverter = new NFAConverter(lexicon.CreateCompactCharSetManager());
 
@@ -62,9 +62,9 @@ namespace Compilers.UnitTests
         public void LexerStateToDFATest()
         {
             Lexicon lexicon = new Lexicon();
-            LexerState global = lexicon.DefaultLexer;
-            LexerState keywords = global.CreateSubState();
-            LexerState xml = keywords.CreateSubState();
+            Lexer global = lexicon.Lexer;
+            Lexer keywords = global.CreateSubLexer();
+            Lexer xml = keywords.CreateSubLexer();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -110,7 +110,7 @@ namespace Compilers.UnitTests
             Assert.IsTrue(engine.IsAtStoppedState);
 
             engine.Reset();
-            si.LexerStateIndex = keywords.Index;
+            si.CurrentLexerIndex = keywords.Index;
             engine.InputString("if");
             Assert.AreEqual(IF.Index, si.GetTokenIndex(engine.CurrentState));
 
@@ -123,7 +123,7 @@ namespace Compilers.UnitTests
             Assert.AreEqual(ID.Index, si.GetTokenIndex(engine.CurrentState));
 
             engine.Reset();
-            si.LexerStateIndex = xml.Index;
+            si.CurrentLexerIndex = xml.Index;
             engine.InputString("if");
             Assert.AreEqual(IF.Index, si.GetTokenIndex(engine.CurrentState));
 
@@ -269,9 +269,9 @@ namespace Compilers.UnitTests
         public void ScannerTest()
         {
             Lexicon lexicon = new Lexicon();
-            LexerState global = lexicon.DefaultLexer;
-            LexerState keywords = global.CreateSubState();
-            LexerState xml = keywords.CreateSubState();
+            Lexer global = lexicon.Lexer;
+            Lexer keywords = global.CreateSubLexer();
+            Lexer xml = keywords.CreateSubLexer();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -359,9 +359,9 @@ namespace Compilers.UnitTests
         public void SkipTokenTest()
         {
             Lexicon lexicon = new Lexicon();
-            LexerState global = lexicon.DefaultLexer;
-            LexerState keywords = global.CreateSubState();
-            LexerState xml = keywords.CreateSubState();
+            Lexer global = lexicon.Lexer;
+            Lexer keywords = global.CreateSubLexer();
+            Lexer xml = keywords.CreateSubLexer();
 
             var ID = global.DefineToken(RE.Range('a', 'z').Concat(
                 (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
@@ -382,7 +382,7 @@ namespace Compilers.UnitTests
 
             scanner.SetSource(new SourceReader(sr));
             scanner.SetTriviaTokens(WHITESPACE.Index, ERROR.Index);
-            info.LexerStateIndex = xml.Index;
+            info.CurrentLexerIndex = xml.Index;
 
             Lexeme l1 = scanner.Read();
             Assert.AreEqual(ID.Index, l1.TokenIndex);
@@ -430,7 +430,7 @@ namespace Compilers.UnitTests
         public void ForkableScannerTest()
         {
             Lexicon lexicon = new Lexicon();
-            var A = lexicon.DefaultLexer.DefineToken(RE.Range('a', 'z'));
+            var A = lexicon.Lexer.DefineToken(RE.Range('a', 'z'));
 
             ScannerInfo si = lexicon.CreateScannerInfo();
             string source = "abcdefghijklmnopqrstuvwxyz";
@@ -485,9 +485,9 @@ namespace Compilers.UnitTests
         public void CompactCharSetTest()
         {
             Lexicon lexicon = new Lexicon();
-            LexerState global = lexicon.DefaultLexer;
-            LexerState keywords = global.CreateSubState();
-            LexerState xml = keywords.CreateSubState();
+            Lexer global = lexicon.Lexer;
+            Lexer keywords = global.CreateSubLexer();
+            Lexer xml = keywords.CreateSubLexer();
 
             var lettersCategories = new[] { UnicodeCategory.LetterNumber,
                                             UnicodeCategory.LowercaseLetter,
@@ -510,7 +510,7 @@ namespace Compilers.UnitTests
             var XMLNS = xml.DefineToken(RE.Literal("xmlns"));
 
             var scannerInfo = lexicon.CreateScannerInfo();
-            scannerInfo.LexerStateIndex = xml.Index;
+            scannerInfo.CurrentLexerIndex = xml.Index;
 
             Scanner s = new Scanner(scannerInfo);
 
@@ -545,7 +545,7 @@ namespace Compilers.UnitTests
         public void ErrorRecoveryTest()
         {
             Lexicon lexicon = new Lexicon();
-            LexerState global = lexicon.DefaultLexer;
+            Lexer global = lexicon.Lexer;
 
 
             var ID = global.DefineToken(RE.Range('a', 'z').Concat(

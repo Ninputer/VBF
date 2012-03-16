@@ -21,7 +21,7 @@ namespace VBF.Compilers.Parsers.Combinators
         private readonly int m_lexicalErrorId;
 
         private bool m_isInitialized = false;
-        private List<int> m_triviaTokens;
+        private List<Token> m_triviaTokens;
 
         protected ParserFrame(CompilationErrorManager errorManager, int lexicalErrorId, int missingTokenErrorId, int unexpectedTokenErrorId)
         {
@@ -33,7 +33,7 @@ namespace VBF.Compilers.Parsers.Combinators
             m_unexpectedTokenErrorId = unexpectedTokenErrorId;
             m_lexicalErrorId = lexicalErrorId;
 
-            m_triviaTokens = new List<int>();
+            m_triviaTokens = new List<Token>();
         }
 
         public void Initialize()
@@ -68,7 +68,7 @@ namespace VBF.Compilers.Parsers.Combinators
             m_parserRunner = new ParserRunner<T>(m_parser, m_context);
 
             m_scannerBuilder = new ForkableScannerBuilder(m_scannerInfo);
-            m_scannerBuilder.SetTriviaTokens(m_triviaTokens.ToArray());
+            m_scannerBuilder.SetTriviaTokens(m_triviaTokens.Select(t => t.Index).ToArray());
             m_scannerBuilder.ErrorManager = m_errorManager;
             m_scannerBuilder.RecoverErrors = true;
             m_scannerBuilder.LexicalErrorId = m_lexicalErrorId;
@@ -81,7 +81,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return m_lexicon.CreateScannerInfo();
         }
 
-        protected abstract void OnDefineLexer(Lexicon lexicon, ICollection<int> triviaTokens);
+        protected abstract void OnDefineLexer(Lexicon lexicon, ICollection<Token> triviaTokens);
 
         protected virtual void OnDefineParserErrors(CompilationErrorManager errorManager)
         {

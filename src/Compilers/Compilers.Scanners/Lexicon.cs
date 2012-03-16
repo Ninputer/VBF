@@ -10,19 +10,19 @@ namespace VBF.Compilers.Scanners
     public class Lexicon
     {
         private List<TokenInfo> m_tokenList;
-        private readonly LexerState m_defaultState;
-        private List<LexerState> m_lexerStates;
+        private readonly Lexer m_defaultState;
+        private List<Lexer> m_lexerStates;
 
         public Lexicon()
         {
             m_tokenList = new List<TokenInfo>();
-            m_lexerStates = new List<LexerState>();
-            m_defaultState = new LexerState(this, 0);
+            m_lexerStates = new List<Lexer>();
+            m_defaultState = new Lexer(this, 0);
 
             m_lexerStates.Add(m_defaultState);
         }
 
-        internal TokenInfo AddToken(RegularExpression definition, LexerState state, int indexInState, string description)
+        internal TokenInfo AddToken(RegularExpression definition, Lexer state, int indexInState, string description)
         {
             int index = m_tokenList.Count;
             Token tag = new Token(index, description ?? definition.ToString());
@@ -32,7 +32,7 @@ namespace VBF.Compilers.Scanners
             return token;
         }
 
-        public LexerState DefaultLexer
+        public Lexer Lexer
         {
             get
             {
@@ -40,7 +40,7 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        public ReadOnlyCollection<LexerState> GetLexerStates()
+        public ReadOnlyCollection<Lexer> GetLexers()
         {
             return m_lexerStates.AsReadOnly();
         }
@@ -50,7 +50,7 @@ namespace VBF.Compilers.Scanners
             return m_tokenList.AsReadOnly();
         }
 
-        public int LexerStateCount
+        public int LexerCount
         {
             get
             {
@@ -66,10 +66,10 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        internal LexerState DefineLexerState(LexerState baseState)
+        internal Lexer DefineLexer(Lexer baseLexer)
         {
             int index = m_lexerStates.Count;
-            LexerState newState = new LexerState(this, index, baseState);
+            Lexer newState = new Lexer(this, index, baseLexer);
             m_lexerStates.Add(newState);
 
             return newState;

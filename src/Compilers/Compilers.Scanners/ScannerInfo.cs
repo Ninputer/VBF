@@ -58,7 +58,7 @@ namespace VBF.Compilers.Scanners
             get { return m_detail.AcceptTables.Length; }
         }
 
-        public int LexerStateIndex
+        public int CurrentLexerIndex
         {
             get
             {
@@ -66,7 +66,7 @@ namespace VBF.Compilers.Scanners
             }
             set
             {
-                CodeContract.RequiresArgumentInRange(value >= 0 && value < m_detail.AcceptTables.Length, "value", "Invalid lexer state index");
+                CodeContract.RequiresArgumentInRange(value >= 0 && value < m_detail.AcceptTables.Length, "value", "Invalid lexer index");
                 m_lexerState = value;
             }
         }

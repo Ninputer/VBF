@@ -21,7 +21,7 @@ namespace VBF.Compilers.Scanners.Generator
             m_dfaStates = new List<DFAState>();
 
             //initialize accept table
-            int stateCount = lexicon.LexerStateCount;
+            int stateCount = lexicon.LexerCount;
             m_acceptTables = new List<int>[stateCount];
             for (int i = 0; i < stateCount; i++)
             {
@@ -104,7 +104,7 @@ namespace VBF.Compilers.Scanners.Generator
             }
 
             var tokens = m_lexicon.GetTokens();
-            var lexerStates = m_lexicon.GetLexerStates();
+            var lexerStates = m_lexicon.GetLexers();
             //check accept states
             var acceptStates = (from i in state.NFAStateSet
                                 let tokenIndex = m_nfa.States[i].TokenIndex
@@ -118,7 +118,7 @@ namespace VBF.Compilers.Scanners.Generator
 
             if (acceptStates != null && acceptStates.Length > 0)
             {
-                Queue<LexerState> stateTreeQueue = new Queue<LexerState>();
+                Queue<Lexer> stateTreeQueue = new Queue<Lexer>();
 
                 foreach (var acceptState in acceptStates)
                 {

@@ -6,33 +6,33 @@ using VBF.Compilers.Scanners.Generator;
 
 namespace VBF.Compilers.Scanners
 {
-    public class LexerState
+    public class Lexer
     {
         private List<TokenInfo> m_tokens;
         public Lexicon Lexicon { get; private set; }
-        public LexerState BaseState { get; private set; }
+        public Lexer BaseLexer { get; private set; }
         public int Index { get; private set; }
         internal int Level { get; private set; }
-        internal List<LexerState> Children { get; private set; }
+        internal List<Lexer> Children { get; private set; }
 
-        internal LexerState(Lexicon lexicon, int index) : this(lexicon, index, null) { }
+        internal Lexer(Lexicon lexicon, int index) : this(lexicon, index, null) { }
 
-        internal LexerState(Lexicon lexicon, int index, LexerState baseState)
+        internal Lexer(Lexicon lexicon, int index, Lexer baseLexer)
         {
-            Children = new List<LexerState>();
+            Children = new List<Lexer>();
             Lexicon = lexicon;
-            BaseState = baseState;
+            BaseLexer = baseLexer;
             m_tokens = new List<TokenInfo>();
             Index = index;
 
-            if (baseState == null)
+            if (baseLexer == null)
             {
                 Level = 0;
             }
             else
             {
-                Level = baseState.Level + 1;
-                baseState.Children.Add(this);
+                Level = baseLexer.Level + 1;
+                baseLexer.Children.Add(this);
             }
         }
 
@@ -53,9 +53,9 @@ namespace VBF.Compilers.Scanners
             return DefineToken(regex, null);
         }
 
-        public LexerState CreateSubState()
+        public Lexer CreateSubLexer()
         {
-            return Lexicon.DefineLexerState(this);
+            return Lexicon.DefineLexer(this);
         }
 
     }
