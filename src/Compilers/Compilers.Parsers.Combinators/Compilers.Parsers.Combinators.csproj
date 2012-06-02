@@ -43,6 +43,7 @@
     </Compile>
     <Compile Include="AlternationParser.cs" />
     <Compile Include="AnyTokenParser.cs" />
+    <Compile Include="ConvertHelper.cs" />
     <Compile Include="ConcatenationParser.cs" />
     <Compile Include="EndOfStreamParser.cs" />
     <Compile Include="ErrorCorrection.cs" />

@@ -18,5 +18,20 @@ namespace VBF.Compilers.Parsers.Combinators
         {
             return new AlternationParser<T>(p1, p2);
         }
+
+        public Parser<TResult> Convert<TResult>()
+        {
+            CodeContract.RequiresArgumentNotNull(this, "parser");
+
+            return new MappingParser<T, TResult>(this, t => ConvertHelper<T, TResult>.Convert(t));
+        }
+
+        public Parser<TResult> TryCast<TResult>()
+            where TResult : class
+        {
+            CodeContract.RequiresArgumentNotNull(this, "parser");
+
+            return new MappingParser<T, TResult>(this, t => t as TResult);
+        }
     }
 }
