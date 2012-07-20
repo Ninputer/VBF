@@ -1,0 +1,9 @@
+# Build and Release Folders
+TestResults/
+src/Compilers/packages/
+obj
+bin
+
+# Project property files
+*.suo
+*.user
