@@ -7,3 +7,4 @@ bin
 # Project property files
 *.suo
 *.user
+*.docstates
