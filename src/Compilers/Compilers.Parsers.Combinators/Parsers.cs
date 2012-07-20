@@ -15,25 +15,11 @@ namespace VBF.Compilers.Parsers.Combinators
             return new TokenParser(token, null);
         }
 
-        public static Parser<Lexeme> AsParser(this Token token, Func<Lexeme, bool> qualificationPredicate)
-        {
-            CodeContract.RequiresArgumentNotNull(token, "token");
-
-            return new TokenParser(token, null, qualificationPredicate);
-        }
-
         public static Parser<Lexeme> AsParser(this Token token, int lexerStateIndex)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
 
             return new TokenParser(token, lexerStateIndex);
-        }
-
-        public static Parser<Lexeme> AsParser(this Token token, int lexerStateIndex, Func<Lexeme, bool> qualificationPredicate)
-        {
-            CodeContract.RequiresArgumentNotNull(token, "token");
-
-            return new TokenParser(token, lexerStateIndex, qualificationPredicate);
         }
 
         public static Parser<Lexeme> Eos()
@@ -101,6 +87,14 @@ namespace VBF.Compilers.Parsers.Combinators
             CodeContract.RequiresArgumentNotNull(resultSelector, "resultSelector");
 
             return new ConcatenationParser<Lexeme, Lexeme, TResult>(token.AsParser(), v => parserSelector(v).AsParser(), resultSelector);
+        }
+
+        public static Parser<Lexeme> Where(this Token token, Func<Lexeme, bool> predicate)
+        {
+            CodeContract.RequiresArgumentNotNull(token, "token");
+            CodeContract.RequiresArgumentNotNull(predicate, "predicate");
+
+            return new TokenParser(token, null, predicate);
         }
 
         public static Parser<T> Union<T>(this Parser<T> parser1, Parser<T> parser2)
