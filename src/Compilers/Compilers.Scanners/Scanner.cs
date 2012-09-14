@@ -136,7 +136,7 @@ namespace VBF.Compilers.Scanners
             } while (isLastSkipped);
 
             return new Lexeme(m_scannerInfo, m_lastState,
-                new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString(), m_triviaCache);
+                new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString(), m_triviaCache.Count == 0 ? null : m_triviaCache);
         }
 
         private bool IsLastTokenSkippable()
