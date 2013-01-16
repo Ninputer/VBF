@@ -6,20 +6,16 @@ using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers
 {
-    public class Terminal : Production<Lexeme>
+    public class EndOfStream : Production<Lexeme>
     {
-        public Token Token { get; private set; }
-
-        public Terminal(Token token)
+        public EndOfStream()
         {
-            CodeContract.RequiresArgumentNotNull(token, "token");
 
-            Token = token;
         }
 
         protected internal override void Accept<TResult>(IProductionVisitor<TResult> visitor)
         {
-            visitor.VisitTerminal(this);
+            throw new NotImplementedException();
         }
     }
 }

@@ -44,11 +44,13 @@
     <Compile Include="AlternationProduction.cs" />
     <Compile Include="ConcatenationProduction.cs" />
     <Compile Include="EmptyProduction.cs" />
+    <Compile Include="EndOfStream.cs" />
     <Compile Include="Grammar.cs" />
     <Compile Include="IProductionVisitor.cs" />
     <Compile Include="MappingProduction.cs" />
     <Compile Include="Production.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RepeatParserListNode.cs" />
     <Compile Include="ShiftReduce\Generator\LR1State.cs" />
     <Compile Include="ShiftReduce\Generator\LRStateCore.cs" />
     <Compile Include="Terminal.cs" />

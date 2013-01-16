@@ -7,5 +7,6 @@ namespace VBF.Compilers.Parsers
 {
     public interface IProductionVisitor<TResult>
     {
+        void VisitTerminal(Terminal terminal);
     }
 }
