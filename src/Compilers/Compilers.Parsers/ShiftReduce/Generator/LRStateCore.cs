@@ -7,5 +7,9 @@ namespace VBF.Compilers.Parsers.ShiftReduce.Generator
 {
     class LRStateCore
     {
+        public IProduction Production { get; private set; }
+        public int Location { get; private set; }
+
+
     }
 }

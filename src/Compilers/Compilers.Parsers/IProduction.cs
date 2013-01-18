@@ -5,8 +5,8 @@ using System.Text;
 
 namespace VBF.Compilers.Parsers
 {
-    public abstract class Production<T> : IProduction
+    public interface IProduction
     {
-        public abstract void Accept(IProductionVisitor visitor);
+        void Accept(IProductionVisitor visitor);
     }
 }

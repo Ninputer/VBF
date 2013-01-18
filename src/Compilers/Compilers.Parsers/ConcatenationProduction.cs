@@ -22,9 +22,9 @@ namespace VBF.Compilers.Parsers
             Selector = selector;
         }
 
-        protected internal override void Accept<TResult>(IProductionVisitor<TResult> visitor)
+        public override void Accept(IProductionVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.VisitConcatenation(this);
         }
     }
 }

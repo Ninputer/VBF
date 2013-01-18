@@ -17,7 +17,7 @@ namespace VBF.Compilers.Parsers
             Token = token;
         }
 
-        protected internal override void Accept<TResult>(IProductionVisitor<TResult> visitor)
+        public override void Accept(IProductionVisitor visitor)
         {
             visitor.VisitTerminal(this);
         }

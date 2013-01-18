@@ -19,9 +19,9 @@ namespace VBF.Compilers.Parsers
             Production2 = production2;
         }
 
-        protected internal override void Accept<TResult>(IProductionVisitor<TResult> visitor)
+        public override void Accept(IProductionVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.VisitAlternation(this);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace VBF.Compilers.Parsers
             return new EndOfStream();
         }
 
-        public static Production<T> Succeed<T>(T value)
+        public static Production<T> Empty<T>(T value)
         {
             return new EmptyProduction<T>(value);
         }
@@ -77,36 +77,36 @@ namespace VBF.Compilers.Parsers
             return new ConcatenationProduction<Lexeme, Lexeme, TResult>(token.AsTerminal(), v => productionSelector(v).AsTerminal(), resultSelector);
         }
 
-        public static Production<T> Union<T>(this Production<T> parser1, Production<T> parser2)
+        public static Production<T> Union<T>(this Production<T> production1, Production<T> production2)
         {
-            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
-            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
+            CodeContract.RequiresArgumentNotNull(production1, "production1");
+            CodeContract.RequiresArgumentNotNull(production2, "production2");
 
-            return new AlternationProduction<T>(parser1, parser2);
+            return new AlternationProduction<T>(production1, production2);
         }
 
-        public static Production<Tuple<T1, T2>> Concat<T1, T2>(this Production<T1> parser1, Production<T2> parser2)
+        public static Production<Tuple<T1, T2>> Concat<T1, T2>(this Production<T1> production1, Production<T2> production2)
         {
-            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
-            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
+            CodeContract.RequiresArgumentNotNull(production1, "production1");
+            CodeContract.RequiresArgumentNotNull(production2, "production2");
 
-            return from v1 in parser1 from v2 in parser2 select Tuple.Create(v1, v2);
+            return from v1 in production1 from v2 in production2 select Tuple.Create(v1, v2);
         }
 
-        public static Production<Tuple<Lexeme, T2>> Concat<T2>(this Token token1, Production<T2> parser2)
+        public static Production<Tuple<Lexeme, T2>> Concat<T2>(this Token token1, Production<T2> production2)
         {
             CodeContract.RequiresArgumentNotNull(token1, "token1");
-            CodeContract.RequiresArgumentNotNull(parser2, "parser2");
+            CodeContract.RequiresArgumentNotNull(production2, "production2");
 
-            return from v1 in token1 from v2 in parser2 select Tuple.Create(v1, v2);
+            return from v1 in token1 from v2 in production2 select Tuple.Create(v1, v2);
         }
 
-        public static Production<Tuple<T1, Lexeme>> Concat<T1>(this Production<T1> parser1, Token token2)
+        public static Production<Tuple<T1, Lexeme>> Concat<T1>(this Production<T1> production1, Token token2)
         {
-            CodeContract.RequiresArgumentNotNull(parser1, "parser1");
+            CodeContract.RequiresArgumentNotNull(production1, "production1");
             CodeContract.RequiresArgumentNotNull(token2, "token2");
 
-            return from v1 in parser1 from v2 in token2 select Tuple.Create(v1, v2);
+            return from v1 in production1 from v2 in token2 select Tuple.Create(v1, v2);
         }
 
         public static Production<Tuple<Lexeme, Lexeme>> Concat(this Token token1, Token token2)
@@ -117,32 +117,32 @@ namespace VBF.Compilers.Parsers
             return from v1 in token1 from v2 in token2 select Tuple.Create(v1, v2);
         }
 
-        public static Production<T1> First<T1, T2>(this Production<Tuple<T1, T2>> tupleParser)
+        public static Production<T1> First<T1, T2>(this Production<Tuple<T1, T2>> tupleProduction)
         {
-            CodeContract.RequiresArgumentNotNull(tupleParser, "tupleParser");
+            CodeContract.RequiresArgumentNotNull(tupleProduction, "tupleProduction");
 
-            return tupleParser.Select(t => t.Item1);
+            return tupleProduction.Select(t => t.Item1);
         }
 
-        public static Production<T2> Second<T1, T2>(this Production<Tuple<T1, T2>> tupleParser)
+        public static Production<T2> Second<T1, T2>(this Production<Tuple<T1, T2>> tupleProduction)
         {
-            CodeContract.RequiresArgumentNotNull(tupleParser, "tupleParser");
+            CodeContract.RequiresArgumentNotNull(tupleProduction, "tupleProduction");
 
-            return tupleParser.Select(t => t.Item2);
+            return tupleProduction.Select(t => t.Item2);
         }
 
-        public static Production<IEnumerable<T>> Many<T>(this Production<T> parser)
+        public static Production<IEnumerable<T>> Many<T>(this Production<T> production)
         {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
+            CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return parser.Many1().Union(Succeed(new RepeatParserListNode<T>() as IEnumerable<T>));
+            return production.Many1().Union(Empty(new RepeatParserListNode<T>() as IEnumerable<T>));
         }
 
-        public static Production<IEnumerable<T>> Many<T, TSeparator>(this Production<T> parser, Production<TSeparator> separator)
+        public static Production<IEnumerable<T>> Many<T, TSeparator>(this Production<T> production, Production<TSeparator> separator)
         {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
+            CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return parser.Many1(separator).Union(Succeed(new RepeatParserListNode<T>() as IEnumerable<T>));
+            return production.Many1(separator).Union(Empty(new RepeatParserListNode<T>() as IEnumerable<T>));
         }
 
         public static Production<IEnumerable<Lexeme>> Many(this Token token)
@@ -154,31 +154,31 @@ namespace VBF.Compilers.Parsers
 
         public static Production<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Production<TSeparator> separator)
         {
-            CodeContract.RequiresArgumentNotNull(token, "parser");
+            CodeContract.RequiresArgumentNotNull(token, "token");
 
             return token.AsTerminal().Many(separator);
         }
 
-        public static Production<IEnumerable<T>> Many<T>(this Production<T> parser, Token separator)
+        public static Production<IEnumerable<T>> Many<T>(this Production<T> production, Token separator)
         {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
+            CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return parser.Many(separator.AsTerminal());
+            return production.Many(separator.AsTerminal());
         }
 
         public static Production<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Token separator)
         {
-            CodeContract.RequiresArgumentNotNull(token, "parser");
+            CodeContract.RequiresArgumentNotNull(token, "token");
 
             return token.AsTerminal().Many(separator.AsTerminal());
         }
 
-        public static Production<IEnumerable<T>> Many1<T>(this Production<T> parser)
+        public static Production<IEnumerable<T>> Many1<T>(this Production<T> production)
         {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
+            CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return from r in parser
-                   from rm in parser.Many()
+            return from r in production
+                   from rm in production.Many()
                    select new RepeatParserListNode<T>(r, rm as RepeatParserListNode<T>) as IEnumerable<T>;
         }
 
@@ -189,41 +189,41 @@ namespace VBF.Compilers.Parsers
             return token.AsTerminal().Many1();
         }
 
-        public static Production<IEnumerable<T>> Many1<T, TSeparator>(this Production<T> parser, Production<TSeparator> separator)
+        public static Production<IEnumerable<T>> Many1<T, TSeparator>(this Production<T> production, Production<TSeparator> separator)
         {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
+            CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return from r in parser
-                   from rm in parser.PrefixedBy(separator).Many()
+            return from r in production
+                   from rm in production.PrefixedBy(separator).Many()
                    select new RepeatParserListNode<T>(r, rm as RepeatParserListNode<T>) as IEnumerable<T>;
         }
 
-        public static Production<IEnumerable<T>> Many1<T>(this Production<T> parser, Token seperator)
+        public static Production<IEnumerable<T>> Many1<T>(this Production<T> production, Token seperator)
         {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
+            CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return parser.Many1(seperator.AsTerminal());
+            return production.Many1(seperator.AsTerminal());
         }
 
         public static Production<IEnumerable<Lexeme>> Many1<TSeparator>(this Token token, Production<TSeparator> separator)
         {
-            CodeContract.RequiresArgumentNotNull(token, "parser");
+            CodeContract.RequiresArgumentNotNull(token, "token");
 
             return token.AsTerminal().Many1(separator);
         }
 
         public static Production<IEnumerable<Lexeme>> Many1(this Token token, Token separator)
         {
-            CodeContract.RequiresArgumentNotNull(token, "parser");
+            CodeContract.RequiresArgumentNotNull(token, "token");
 
             return token.AsTerminal().Many1(separator.AsTerminal());
         }
 
-        public static Production<T> Optional<T>(this Production<T> parser)
+        public static Production<T> Optional<T>(this Production<T> production)
         {
-            CodeContract.RequiresArgumentNotNull(parser, "parser");
+            CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return parser.Union(Succeed(default(T)));
+            return production.Union(Empty(default(T)));
         }
 
         public static Production<Lexeme> Optional(this Token token)
@@ -233,14 +233,14 @@ namespace VBF.Compilers.Parsers
             return token.AsTerminal().Optional();
         }
 
-        public static Production<T> PrefixedBy<T, TPrefix>(this Production<T> parser, Production<TPrefix> prefix)
+        public static Production<T> PrefixedBy<T, TPrefix>(this Production<T> production, Production<TPrefix> prefix)
         {
-            return prefix.Concat(parser).Second();
+            return prefix.Concat(production).Second();
         }
 
-        public static Production<T> PrefixedBy<T>(this Production<T> parser, Token prefix)
+        public static Production<T> PrefixedBy<T>(this Production<T> production, Token prefix)
         {
-            return prefix.Concat(parser).Second();
+            return prefix.Concat(production).Second();
         }
     }
 }

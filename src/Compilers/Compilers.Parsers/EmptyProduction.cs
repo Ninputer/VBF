@@ -14,9 +14,9 @@ namespace VBF.Compilers.Parsers
             Value = value;
         }
 
-        protected internal override void Accept<TResult>(IProductionVisitor<TResult> visitor)
+        public override void Accept(IProductionVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.VisitEmpty(this);
         }
     }
 }
