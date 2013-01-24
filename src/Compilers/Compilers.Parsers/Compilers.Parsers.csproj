@@ -55,7 +55,7 @@
     <Compile Include="Production.cs" />
     <Compile Include="ProductionBase.cs" />
     <Compile Include="ProductionInfo.cs" />
-    <Compile Include="ProductionServices.cs" />
+    <Compile Include="ProductionInfoService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepeatParserListNode.cs" />
     <Compile Include="ShiftReduce\Generator\LRStateCore.cs" />

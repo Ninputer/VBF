@@ -18,31 +18,58 @@ namespace Compilers.UnitTests
         {
             Lexicon test = new Lexicon();
 
-            var ID = test.Lexer.DefineToken(RE.Range('a', 'z').Concat(
-                (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
-            var NUM = test.Lexer.DefineToken(RE.Range('0', '9').Many1());
-            var GREATER = test.Lexer.DefineToken(RE.Symbol('>'));
-
-            var WHITESPACE = test.Lexer.DefineToken(RE.Symbol(' ').Union(RE.Symbol('\t')));
+            var A = test.Lexer.DefineToken(RE.Symbol('a'));
+            var D = test.Lexer.DefineToken(RE.Symbol('d'));
+            var C = test.Lexer.DefineToken(RE.Symbol('c'));
 
             Production<object> X = new Production<object>(), Y = new Production<object>(), Z = new Production<object>();
-            Z.Rule = (from id in ID select id as object).Union(
+            Z.Rule = (from d in D select d as object).Union(
                 from x in X
                 from y in Y
                 from z in Z
                 select new { x, y, z } as object);
 
             Y.Rule = Grammar.Empty(new object()).Union(
-                from num in NUM select num as object);
+                from c in C select c as object);
 
             X.Rule = Y.Union(
-                from greater in GREATER select greater as object);
+                from a in A select a as object);
 
-            ProductionInfoServices pis = new ProductionInfoServices();
+            ProductionInfoService pis = new ProductionInfoService(Z);
 
-            pis.Visit(Z);
+            var xInfo = pis.GetInfo(X);
+            var yInfo = pis.GetInfo(Y);
+            var zInfo = pis.GetInfo(Z);
 
-            ;
+            Assert.IsTrue(xInfo.IsNullable, "X should be nullable");
+            Assert.IsTrue(yInfo.IsNullable, "Y should be nullable");
+            Assert.IsFalse(zInfo.IsNullable, "Z should not be nullable");
+
+            Assert.AreEqual(xInfo.First.Count, 2);
+            Assert.AreEqual(xInfo.Follow.Count, 3);
+
+            Assert.IsTrue(xInfo.First.Contains(A.AsTerminal()));
+            Assert.IsTrue(xInfo.First.Contains(C.AsTerminal()));
+
+            Assert.IsTrue(xInfo.Follow.Contains(A.AsTerminal()));
+            Assert.IsTrue(xInfo.Follow.Contains(C.AsTerminal()));
+            Assert.IsTrue(xInfo.Follow.Contains(D.AsTerminal()));
+
+            Assert.AreEqual(yInfo.First.Count, 1);
+            Assert.AreEqual(yInfo.Follow.Count, 3);
+
+            Assert.IsTrue(yInfo.First.Contains(C.AsTerminal()));
+
+            Assert.IsTrue(yInfo.Follow.Contains(A.AsTerminal()));
+            Assert.IsTrue(yInfo.Follow.Contains(C.AsTerminal()));
+            Assert.IsTrue(yInfo.Follow.Contains(D.AsTerminal()));
+            
+            Assert.AreEqual(zInfo.First.Count, 3);
+            Assert.AreEqual(zInfo.Follow.Count, 0);
+
+            Assert.IsTrue(zInfo.First.Contains(A.AsTerminal()));
+            Assert.IsTrue(zInfo.First.Contains(C.AsTerminal()));
+            Assert.IsTrue(zInfo.First.Contains(D.AsTerminal()));
         }
     }
 }

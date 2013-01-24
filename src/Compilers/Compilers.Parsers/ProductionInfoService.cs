@@ -7,11 +7,11 @@ using VBF.Compilers.Scanners;
 namespace VBF.Compilers.Parsers
 {
 
-    internal class ProductionAggregationService : IProductionVisitor
+    internal class ProductionAggregationVisitor : IProductionVisitor
     {
         public ISet<IProduction> Productions { get; private set; }
 
-        public ProductionAggregationService()
+        public ProductionAggregationVisitor()
         {
             Productions = new HashSet<IProduction>();
         }
@@ -106,29 +106,10 @@ namespace VBF.Compilers.Parsers
         }
     }
 
-    public class ProductionInfoServices : IProductionVisitor
+    internal class ProductionInfoVisitor : IProductionVisitor
     {
 
-        private bool IsChanged;
-
-        public void Visit(IProduction production)
-        {
-
-            var aggregator = new ProductionAggregationService();
-            production.Accept(aggregator);
-
-
-            do
-            {
-                IsChanged = false;
-
-                foreach (var p in aggregator.Productions)
-                {
-                    p.Accept(this);
-                }
-
-            } while (IsChanged);
-        }
+        public bool IsChanged { get; set; }        
 
         void IProductionVisitor.VisitTerminal(Terminal terminal)
         {
@@ -208,6 +189,47 @@ namespace VBF.Compilers.Parsers
                 info.IsNullable = isNullable;
             }
 
+        }
+    }
+
+    public class ProductionInfoService
+    {
+        private IProduction[] productions;
+
+        public IReadOnlyList<IProduction> Productions
+        {
+            get
+            {
+                return productions;
+            }
+        }
+
+        public ProductionInfo GetInfo(IProduction production)
+        {
+            return (production as ProductionBase).Info;
+        }
+
+        public ProductionInfoService(IProduction root)
+        {
+            CodeContract.RequiresArgumentNotNull(root, "root");
+
+            var aggregator = new ProductionAggregationVisitor();
+            root.Accept(aggregator);
+
+            productions = aggregator.Productions.ToArray();
+
+            var infoVisitor = new ProductionInfoVisitor();
+
+            do
+            {
+                infoVisitor.IsChanged = false;
+
+                foreach (var p in productions)
+                {
+                    p.Accept(infoVisitor);
+                }
+
+            } while (infoVisitor.IsChanged);
         }
     }
 }
