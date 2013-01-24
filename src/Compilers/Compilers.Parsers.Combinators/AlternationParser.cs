@@ -30,5 +30,6 @@ namespace VBF.Compilers.Parsers.Combinators
                 return context.ChooseBest(Parser1.BuildParser(future)(s1, context), Parser2.BuildParser(future)(s2, context));
             };
         }
+
     }
 }

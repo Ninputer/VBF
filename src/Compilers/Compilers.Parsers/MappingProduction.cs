@@ -5,12 +5,12 @@ using System.Text;
 
 namespace VBF.Compilers.Parsers
 {
-    public class MappingProduction<TSource, TReturn> : Production<TReturn>
+    public class MappingProduction<TSource, TReturn> : ProductionBase<TReturn>
     {
-        public Production<TSource> SourceProduction { get; private set; }
+        public ProductionBase<TSource> SourceProduction { get; private set; }
         public Func<TSource, TReturn> Selector { get; private set; }
 
-        public MappingProduction(Production<TSource> sourceProduction, Func<TSource, TReturn> selector)
+        public MappingProduction(ProductionBase<TSource> sourceProduction, Func<TSource, TReturn> selector)
         {
             CodeContract.RequiresArgumentNotNull(sourceProduction, "sourceProduction");
             CodeContract.RequiresArgumentNotNull(selector, "selector");

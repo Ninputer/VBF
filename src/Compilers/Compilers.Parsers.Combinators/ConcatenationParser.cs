@@ -30,5 +30,6 @@ namespace VBF.Compilers.Parsers.Combinators
                     left => ParserRightSelector(left).BuildParser(
                         right => future(Selector(left, right))))(scanner, context);
         }
+        
     }
 }

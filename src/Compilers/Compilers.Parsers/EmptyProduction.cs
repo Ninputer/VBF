@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VBF.Compilers.Parsers
 {
-    public class EmptyProduction<T> : Production<T>
+    public class EmptyProduction<T> : ProductionBase<T>
     {
         public T Value { get; private set; }
 
