@@ -56,10 +56,10 @@
     <Compile Include="ProductionBase.cs" />
     <Compile Include="ProductionInfo.cs" />
     <Compile Include="ProductionInfoService.cs" />
+    <Compile Include="ProductionInfoVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepeatParserListNode.cs" />
     <Compile Include="ShiftReduce\Generator\LRStateCore.cs" />
-    <Compile Include="StandardForm.cs" />
     <Compile Include="Terminal.cs" />
   </ItemGroup>
   <ItemGroup />

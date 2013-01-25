@@ -23,17 +23,21 @@ namespace Compilers.UnitTests
             var C = test.Lexer.DefineToken(RE.Symbol('c'));
 
             Production<object> X = new Production<object>(), Y = new Production<object>(), Z = new Production<object>();
-            Z.Rule = (from d in D select d as object).Union(
-                from x in X
-                from y in Y
-                from z in Z
-                select new { x, y, z } as object);
+            
+            Z.Rule =
+                (from d in D select d as object) |
+                (from x in X
+                 from y in Y
+                 from z in Z
+                 select new { x, y, z } as object);
 
-            Y.Rule = Grammar.Empty(new object()).Union(
-                from c in C select c as object);
+            Y.Rule =
+                Grammar.Empty(new object()) |
+                (from c in C select c as object);
 
-            X.Rule = Y.Union(
-                from a in A select a as object);
+            X.Rule =
+                Y |
+                (from a in A select a as object);
 
             ProductionInfoService pis = new ProductionInfoService(Z);
 
@@ -63,7 +67,7 @@ namespace Compilers.UnitTests
             Assert.IsTrue(yInfo.Follow.Contains(A.AsTerminal()));
             Assert.IsTrue(yInfo.Follow.Contains(C.AsTerminal()));
             Assert.IsTrue(yInfo.Follow.Contains(D.AsTerminal()));
-            
+
             Assert.AreEqual(zInfo.First.Count, 3);
             Assert.AreEqual(zInfo.Follow.Count, 0);
 

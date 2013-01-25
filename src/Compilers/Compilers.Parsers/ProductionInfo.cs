@@ -12,24 +12,15 @@ namespace VBF.Compilers.Parsers
         public ISet<IProduction> Follow { get; private set; }
         public bool IsNullable { get; set; }
 
+        internal int Index { get; set; }
+        internal int DotPosition { get; set; }
+
         public ProductionInfo()
         {
             First = new HashSet<IProduction>();
             Follow = new HashSet<IProduction>();
             IsNullable = false;
-        }
-
-        public static bool UnionSet<T>(ISet<T> set, IEnumerable<T> toUnion)
-        {
-            bool changed = false;
-
-            foreach (var item in toUnion)
-            {
-                changed = set.Add(item) || changed;
-            }
-
-            return changed;
-        }
+        }        
     }
     
 }
