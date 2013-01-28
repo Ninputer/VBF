@@ -26,6 +26,7 @@ namespace VBF.Compilers.Parsers
             terminal.Info.First.Add(terminal);
 
             terminal.Info.Index = Productions.Count;
+            terminal.Info.SymbolCount = 1;
             Productions.Add(terminal);
         }
 
@@ -40,6 +41,7 @@ namespace VBF.Compilers.Parsers
             mappingProduction.SourceProduction.Accept(this);
 
             mappingProduction.Info.Index = Productions.Count;
+            mappingProduction.Info.SymbolCount = 1;
             Productions.Add(mappingProduction);
         }
 
@@ -54,6 +56,7 @@ namespace VBF.Compilers.Parsers
             endOfStream.Info.First.Add(endOfStream);
 
             endOfStream.Info.Index = Productions.Count;
+            endOfStream.Info.SymbolCount = 1;
             Productions.Add(endOfStream);
         }
 
@@ -68,6 +71,7 @@ namespace VBF.Compilers.Parsers
             emptyProduction.Info.IsNullable = true;
 
             emptyProduction.Info.Index = Productions.Count;
+            emptyProduction.Info.SymbolCount = 0;
             Productions.Add(emptyProduction);
         }
 
@@ -84,6 +88,7 @@ namespace VBF.Compilers.Parsers
             alternationProduction.Production2.Accept(this);
 
             alternationProduction.Info.Index = Productions.Count;
+            alternationProduction.Info.SymbolCount = 1;
             Productions.Add(alternationProduction);
         }
 
@@ -100,6 +105,7 @@ namespace VBF.Compilers.Parsers
             concatenationProduction.ProductionRight.Accept(this);
 
             concatenationProduction.Info.Index = Productions.Count;
+            concatenationProduction.Info.SymbolCount = 2;
             Productions.Add(concatenationProduction);
         }
     }
@@ -202,19 +208,10 @@ namespace VBF.Compilers.Parsers
         }
     }
 
-    internal class ClosureVisitor : IProductionVisitor
+    internal class LRItemVisitor : IProductionVisitor
     {
-        public ISet<int> Closure { get; private set; }
 
-        public ClosureVisitor()
-        {
-            Closure = new SortedSet<int>();
-        }
-
-        public void Reset()
-        {
-            Closure.Clear();
-        }
+        public IProduction Symbol { get; private set; }
 
         void IProductionVisitor.VisitTerminal(Terminal terminal)
         {
@@ -223,7 +220,15 @@ namespace VBF.Compilers.Parsers
 
         void IProductionVisitor.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
         {
-
+            if (mappingProduction.Info.DotPosition == 0)
+            {
+                Symbol = mappingProduction.SourceProduction;
+            }
+            else
+            {
+                //no symbol at position
+                Symbol = null;
+            }
         }
 
         void IProductionVisitor.VisitEndOfStream(EndOfStream endOfStream)
@@ -233,17 +238,29 @@ namespace VBF.Compilers.Parsers
 
         void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
         {
-
+            Symbol = null;
         }
 
         void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
         {
-
+            throw new NotSupportedException("Alternation production is not supported");
         }
 
         void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
         {
-
+            switch (concatenationProduction.Info.DotPosition)
+            {
+                case 0:
+                    Symbol = concatenationProduction.ProductionLeft;
+                    break;
+                case 1:
+                    Symbol = concatenationProduction.ProductionRight;
+                    break;
+                default:
+                    //no symbol at position
+                    Symbol = null;
+                    break;
+            }
         }
     }
 }

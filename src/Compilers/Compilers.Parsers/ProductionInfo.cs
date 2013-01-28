@@ -14,6 +14,7 @@ namespace VBF.Compilers.Parsers
 
         internal int Index { get; set; }
         internal int DotPosition { get; set; }
+        internal int SymbolCount { get; set; }
 
         public ProductionInfo()
         {
