@@ -59,7 +59,8 @@
     <Compile Include="ProductionInfoVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepeatParserListNode.cs" />
-    <Compile Include="ShiftReduce\Generator\LRStateCore.cs" />
+    <Compile Include="SetHelpers.cs" />
+    <Compile Include="ShiftReduce\LR0Item.cs" />
     <Compile Include="Terminal.cs" />
   </ItemGroup>
   <ItemGroup />

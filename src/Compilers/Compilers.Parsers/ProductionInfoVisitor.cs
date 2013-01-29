@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VBF.Compilers.Parsers.ShiftReduce;
 
 namespace VBF.Compilers.Parsers
 {
@@ -124,8 +125,8 @@ namespace VBF.Compilers.Parsers
         {
             var source = mappingProduction.SourceProduction;
 
-            IsChanged = UnionSet(mappingProduction.Info.First, source.Info.First) || IsChanged;
-            IsChanged = UnionSet(source.Info.Follow, mappingProduction.Info.Follow) || IsChanged;
+            IsChanged = mappingProduction.Info.First.UnionCheck(source.Info.First) || IsChanged;
+            IsChanged = source.Info.Follow.UnionCheck(mappingProduction.Info.Follow) || IsChanged;
         }
 
         void IProductionVisitor.VisitEndOfStream(EndOfStream endOfStream)
@@ -146,11 +147,11 @@ namespace VBF.Compilers.Parsers
             var info2 = alternationProduction.Production2.Info;
 
 
-            IsChanged = UnionSet(info.First, info1.First) || IsChanged;
-            IsChanged = UnionSet(info.First, info2.First) || IsChanged;
+            IsChanged = info.First.UnionCheck(info1.First) || IsChanged;
+            IsChanged = info.First.UnionCheck(info2.First) || IsChanged;
 
-            IsChanged = UnionSet(info1.Follow, info.Follow) || IsChanged;
-            IsChanged = UnionSet(info2.Follow, info.Follow) || IsChanged;
+            IsChanged = info1.Follow.UnionCheck(info.Follow) || IsChanged;
+            IsChanged = info2.Follow.UnionCheck(info.Follow) || IsChanged;
 
             bool isNullable = info1.IsNullable || info2.IsNullable;
 
@@ -170,20 +171,20 @@ namespace VBF.Compilers.Parsers
             var info1 = p1.Info;
             var info2 = p2.Info;
 
-            IsChanged = UnionSet(info.First, info1.First) || IsChanged;
+            IsChanged = info.First.UnionCheck(info1.First) || IsChanged;
 
             if (info1.IsNullable)
             {
-                IsChanged = UnionSet(info.First, info2.First) || IsChanged;
+                IsChanged = info.First.UnionCheck(info2.First) || IsChanged;
             }
 
             if (info2.IsNullable)
             {
-                IsChanged = UnionSet(info1.Follow, info.Follow) || IsChanged;
+                IsChanged = info1.Follow.UnionCheck(info.Follow) || IsChanged;
             }
 
-            IsChanged = UnionSet(info2.Follow, info.Follow) || IsChanged;
-            IsChanged = UnionSet(info1.Follow, info2.First) || IsChanged;
+            IsChanged = info2.Follow.UnionCheck(info.Follow) || IsChanged;
+            IsChanged = info1.Follow.UnionCheck(info2.First) || IsChanged;
 
             bool isNullable = info1.IsNullable && info2.IsNullable;
 
@@ -195,55 +196,46 @@ namespace VBF.Compilers.Parsers
 
         }
 
-        internal static bool UnionSet<T>(ISet<T> set, IEnumerable<T> toUnion)
-        {
-            bool changed = false;
 
-            foreach (var item in toUnion)
-            {
-                changed = set.Add(item) || changed;
-            }
-
-            return changed;
-        }
     }
 
     internal class LRItemVisitor : IProductionVisitor
     {
 
-        public IProduction Symbol { get; private set; }
+        public bool IsChanged { get; set; }
+
+        public ISet<LR0Item> LR0ItemSet { get; set; }
 
         void IProductionVisitor.VisitTerminal(Terminal terminal)
         {
-            throw new NotSupportedException("Terminal production is not supported");
+            //do nothing, make set unchanged
         }
 
         void IProductionVisitor.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
         {
             if (mappingProduction.Info.DotPosition == 0)
             {
-                Symbol = mappingProduction.SourceProduction;
-            }
-            else
-            {
-                //no symbol at position
-                Symbol = null;
+                IsChanged = LR0ItemSet.Add(new LR0Item(mappingProduction.SourceProduction.Info.Index, 0)) || IsChanged;
             }
         }
 
         void IProductionVisitor.VisitEndOfStream(EndOfStream endOfStream)
         {
-            throw new NotSupportedException("End of stream production is not supported");
+            //do nothing, make set unchanged
         }
 
         void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
         {
-            Symbol = null;
+            //do nothing, make set unchanged
         }
 
         void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
         {
-            throw new NotSupportedException("Alternation production is not supported");
+            if (alternationProduction.Info.DotPosition == 0)
+            {
+                IsChanged = LR0ItemSet.Add(new LR0Item(alternationProduction.Production1.Info.Index, 0)) || IsChanged;
+                IsChanged = LR0ItemSet.Add(new LR0Item(alternationProduction.Production2.Info.Index, 0)) || IsChanged;
+            }
         }
 
         void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
@@ -251,14 +243,13 @@ namespace VBF.Compilers.Parsers
             switch (concatenationProduction.Info.DotPosition)
             {
                 case 0:
-                    Symbol = concatenationProduction.ProductionLeft;
+                    IsChanged = LR0ItemSet.Add(new LR0Item(concatenationProduction.ProductionLeft.Info.Index, 0)) || IsChanged;
                     break;
                 case 1:
-                    Symbol = concatenationProduction.ProductionRight;
+                    IsChanged = LR0ItemSet.Add(new LR0Item(concatenationProduction.ProductionRight.Info.Index, 0)) || IsChanged;
                     break;
                 default:
-                    //no symbol at position
-                    Symbol = null;
+                    //no symbol at position                    
                     break;
             }
         }
