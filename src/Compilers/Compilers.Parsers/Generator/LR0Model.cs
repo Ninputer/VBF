@@ -11,6 +11,7 @@ namespace VBF.Compilers.Parsers.Generator
         private ProductionInfoManager m_infoManager;
         private List<LR0State> m_states;
         private ClosureVisitor m_closureVisitor = new ClosureVisitor();
+        private DotSymbolVisitor m_dotSymbolVisitor = new DotSymbolVisitor();
 
         public LR0Model(ProductionInfoManager infoManager)
         {
@@ -32,31 +33,36 @@ namespace VBF.Compilers.Parsers.Generator
 
             m_states.Add(initState);
 
-            DotSymbolVisitor dotSymbol = new DotSymbolVisitor();
-            List<LR0State> statesToAdd = new List<LR0State>();
+
             bool isChanged = false;
 
             //build shifts and gotos
             do
             {
                 isChanged = false;
-                statesToAdd.Clear();
 
-                foreach (var state in m_states)
+                foreach (var state in m_states.ToArray())
                 {
                     foreach (var item in state.ItemSet)
                     {
                         var production = m_infoManager.Productions[item.ProductionIndex];
                         var info = m_infoManager.GetInfo(production);
 
-                        dotSymbol.DotLocation = item.DotLocation;
-                        production.Accept(dotSymbol);
-                        foreach (var symbol in dotSymbol.Symbols)
+                        m_dotSymbolVisitor.DotLocation = item.DotLocation;
+                        production.Accept(m_dotSymbolVisitor);
+                        foreach (var symbol in m_dotSymbolVisitor.Symbols)
                         {
+                            if (symbol.IsEos)
+                            {
+                                //accept
+                                state.IsAcceptState = true;
+                                continue;
+                            }
+
                             var targetStateSet = GetGoto(state.ItemSet, symbol);
                             LR0State targetState;
                             //check if the target state is exist
-                            bool exist = CheckExist(statesToAdd, targetStateSet, out targetState);
+                            bool exist = CheckExist(targetStateSet, out targetState);
 
                             if (exist)
                             {
@@ -70,20 +76,14 @@ namespace VBF.Compilers.Parsers.Generator
                                 //create new state
                                 targetState = new LR0State(targetStateSet);
 
-                                statesToAdd.Add(targetState);
+                                targetState.Index = m_states.Count;
+                                m_states.Add(targetState);
 
                                 //create edge for it
                                 state.AddEdge(symbol, targetState);
                             }
                         }
                     }
-                }
-
-                //add new states
-                for (int i = 0; i < statesToAdd.Count; i++)
-                {
-                    statesToAdd[i].Index = m_states.Count;
-                    m_states.Add(statesToAdd[i]);
                 }
 
             } while (isChanged);
@@ -110,22 +110,12 @@ namespace VBF.Compilers.Parsers.Generator
             }
         }
 
-        private bool CheckExist(IList<LR0State> addingStates, ISet<LR0Item> set, out LR0State targetState)
+        private bool CheckExist(ISet<LR0Item> set, out LR0State targetState)
         {
             bool exist = false;
             targetState = null;
 
             foreach (var state in m_states)
-            {
-                if (set.SetEquals(state.ItemSet))
-                {
-                    exist = true;
-                    targetState = state;
-                    break;
-                }
-            }
-
-            foreach (var state in addingStates)
             {
                 if (set.SetEquals(state.ItemSet))
                 {
@@ -158,15 +148,29 @@ namespace VBF.Compilers.Parsers.Generator
         private ISet<LR0Item> GetGoto(IEnumerable<LR0Item> state, IProduction symbol)
         {
             ISet<LR0Item> resultSet = new HashSet<LR0Item>();
+            var symbolIndex = m_infoManager.GetInfo(symbol).Index;
 
             foreach (var item in state)
             {
                 var production = m_infoManager.Productions[item.ProductionIndex];
                 var info = m_infoManager.GetInfo(production);
 
-                if (item.DotLocation < info.SymbolCount)
+                m_dotSymbolVisitor.DotLocation = item.DotLocation;
+                production.Accept(m_dotSymbolVisitor);
+
+                var dotSymbols = m_dotSymbolVisitor.Symbols;
+
+
+                if (dotSymbols.Count == 1 && m_infoManager.GetInfo(dotSymbols[0]).Index == symbolIndex)
                 {
                     resultSet.Add(new LR0Item(info.Index, item.DotLocation + 1));
+                }
+                else if (dotSymbols.Count == 2)
+                {
+                    if (m_infoManager.GetInfo(dotSymbols[0]).Index == symbolIndex || m_infoManager.GetInfo(dotSymbols[1]).Index == symbolIndex)
+                    {
+                        resultSet.Add(new LR0Item(info.Index, item.DotLocation + 1));
+                    }
                 }
             }
 

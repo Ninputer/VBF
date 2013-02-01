@@ -42,5 +42,13 @@ namespace VBF.Compilers.Parsers
                 return true;
             }
         }
+
+        public override bool IsEos
+        {
+            get
+            {
+                return true;
+            }
+        }
     }
 }

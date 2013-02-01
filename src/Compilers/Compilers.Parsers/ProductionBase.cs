@@ -15,6 +15,11 @@ namespace VBF.Compilers.Parsers
         {
             get { return false; }
         }
+
+        public virtual bool IsEos
+        {
+            get { return false; }
+        }
     }
 
     public abstract class ProductionBase<T> : ProductionBase

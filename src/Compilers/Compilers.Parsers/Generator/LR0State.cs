@@ -19,6 +19,8 @@ namespace VBF.Compilers.Parsers.Generator
         //index in transition table (row number)
         public int Index { get; internal set; }
 
+        public bool IsAcceptState { get; internal set; }
+
         public IEnumerable<LR0Item> ItemSet
         {
             get

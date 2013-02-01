@@ -24,7 +24,7 @@ namespace Compilers.UnitTests
             var C = test.Lexer.DefineToken(RE.Symbol('c'));
 
             Production<object> X = new Production<object>(), Y = new Production<object>(), Z = new Production<object>();
-            
+
             Z.Rule =
                 (from d in D select d as object) |
                 (from x in X
@@ -82,28 +82,22 @@ namespace Compilers.UnitTests
         {
             Lexicon test = new Lexicon();
 
-            var A = test.Lexer.DefineToken(RE.Symbol('a'));
-            var D = test.Lexer.DefineToken(RE.Symbol('d'));
-            var C = test.Lexer.DefineToken(RE.Symbol('c'));
+            var X = test.Lexer.DefineToken(RE.Symbol('x'));
+            var PLUS = test.Lexer.DefineToken(RE.Symbol('+'));
 
-            Production<object> X = new Production<object>(), Y = new Production<object>(), Z = new Production<object>();
+            Production<object> E = new Production<object>(), T = new Production<object>();
 
-            Z.Rule =
-                (from d in D select d as object) |
-                (from x in X
-                 from y in Y
-                 from z in Z
-                 select new { x, y, z } as object);
+            E.Rule =
+                (from t in T
+                 from plus in PLUS
+                 from e in E
+                 select new object()) | T;
 
-            Y.Rule =
-                Grammar.Empty(new object()) |
-                (from c in C select c as object);
+            T.Rule =
+                from x in X
+                select new object();
 
-            X.Rule =
-                Y |
-                (from a in A select a as object);
-
-            ProductionInfoManager pim = new ProductionInfoManager(Z.SuffixedBy(Grammar.Eos()));
+            ProductionInfoManager pim = new ProductionInfoManager(E.SuffixedBy(Grammar.Eos()));
 
             LR0Model lr0 = new LR0Model(pim);
             lr0.BuildModel();

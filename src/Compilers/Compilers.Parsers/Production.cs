@@ -40,6 +40,14 @@ namespace VBF.Compilers.Parsers
             }
         }
 
+        public override bool IsEos
+        {
+            get
+            {
+                return Rule.IsEos;
+            }
+        }
+
         public override bool Equals(object obj)
         {
             return Rule.Equals(obj);

@@ -276,10 +276,6 @@ namespace VBF.Compilers.Parsers
         public int DotLocation { get; set; }
         public IReadOnlyList<IProduction> Symbols { get; private set; }
 
-        private IProduction[] m_twoResults = new IProduction[2];
-        private IProduction[] m_oneResult = new IProduction[1];
-        private IProduction[] m_noResult = new IProduction[0];
-
         void IProductionVisitor.VisitTerminal(Terminal terminal)
         {
             throw new InvalidOperationException("Terminals are not allowed in LR states");
@@ -289,12 +285,11 @@ namespace VBF.Compilers.Parsers
         {
             if (DotLocation == 0)
             {
-                m_oneResult[0] = mappingProduction.SourceProduction;
-                Symbols = m_oneResult;
+                Symbols = new IProduction[1] { mappingProduction.SourceProduction };
             }
             else
             {
-                Symbols = m_noResult;
+                Symbols = new IProduction[0];
             }
         }
 
@@ -305,21 +300,18 @@ namespace VBF.Compilers.Parsers
 
         void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
         {
-            Symbols = m_noResult;
+            Symbols = new IProduction[0];
         }
 
         void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
         {
             if (DotLocation == 0)
             {
-                m_twoResults[0] = alternationProduction.Production1;
-                m_twoResults[1] = alternationProduction.Production2;
-
-                Symbols = m_twoResults;
+                Symbols = new IProduction[2] { alternationProduction.Production1, alternationProduction.Production2 };
             }
             else
             {
-                Symbols = m_noResult;
+                Symbols = new IProduction[0];
             }
         }
 
@@ -328,13 +320,13 @@ namespace VBF.Compilers.Parsers
             switch (DotLocation)
             {
                 case 0:
-                    m_oneResult[0] = concatenationProduction.ProductionLeft;
+                    Symbols = new IProduction[1] { concatenationProduction.ProductionLeft };
                     break;
                 case 1:
-                    m_oneResult[0] = concatenationProduction.ProductionRight;
+                    Symbols = new IProduction[1] { concatenationProduction.ProductionRight };
                     break;
                 default:
-                    Symbols = m_noResult;
+                    Symbols = new IProduction[0];
                     break;
             }
         }
