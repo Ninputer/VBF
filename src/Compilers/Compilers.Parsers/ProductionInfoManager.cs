@@ -6,9 +6,11 @@ using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers
 {
-    public class ProductionInfoService
+    public class ProductionInfoManager
     {
         private IProduction[] productions;
+
+        public IProduction RootProduction { get; private set; }
 
         public IReadOnlyList<IProduction> Productions
         {
@@ -23,7 +25,7 @@ namespace VBF.Compilers.Parsers
             return (production as ProductionBase).Info;
         }
 
-        public ProductionInfoService(IProduction root)
+        public ProductionInfoManager(IProduction root)
         {
             CodeContract.RequiresArgumentNotNull(root, "root");
 
@@ -31,6 +33,7 @@ namespace VBF.Compilers.Parsers
             root.Accept(aggregator);
 
             productions = aggregator.Productions.ToArray();
+            RootProduction = root;
 
             var ffVisitor = new FirstFollowVisitor();
 

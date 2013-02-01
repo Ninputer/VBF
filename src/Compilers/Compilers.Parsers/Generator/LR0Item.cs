@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VBF.Compilers.Parsers.ShiftReduce
+namespace VBF.Compilers.Parsers.Generator
 {
     public struct LR0Item : IEquatable<LR0Item>
     {
         public int ProductionIndex { get; set; }
-        public int ItemLocation { get; set; }
+        public int DotLocation { get; set; }
 
-        public LR0Item(int productionIndex, int itemLocation)
+        public LR0Item(int productionIndex, int dotLocation) : this()
         {
             ProductionIndex = productionIndex;
-            ItemLocation = itemLocation;
+            DotLocation = dotLocation;
         }
 
         public override bool Equals(object obj)
@@ -29,12 +29,12 @@ namespace VBF.Compilers.Parsers.ShiftReduce
 
         public bool Equals(LR0Item other)
         {
-            return ProductionIndex == other.ProductionIndex && ItemLocation == other.ItemLocation;
+            return ProductionIndex == other.ProductionIndex && DotLocation == other.DotLocation;
         }
 
         public override int GetHashCode()
         {
-            return (ItemLocation << 16) ^ ProductionIndex;
+            return (DotLocation << 16) ^ ProductionIndex;
         }
     }
 }

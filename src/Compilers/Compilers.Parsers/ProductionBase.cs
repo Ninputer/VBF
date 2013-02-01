@@ -10,7 +10,11 @@ namespace VBF.Compilers.Parsers
         internal virtual ProductionInfo Info { get; set; }
 
         public abstract void Accept(IProductionVisitor visitor);
-       
+
+        public virtual bool IsTerminal
+        {
+            get { return false; }
+        }
     }
 
     public abstract class ProductionBase<T> : ProductionBase

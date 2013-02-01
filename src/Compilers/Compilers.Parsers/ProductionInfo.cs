@@ -10,10 +10,9 @@ namespace VBF.Compilers.Parsers
     {
         public ISet<IProduction> First { get; private set; }
         public ISet<IProduction> Follow { get; private set; }
-        public bool IsNullable { get; set; }
+        public bool IsNullable { get; internal set; }
 
         internal int Index { get; set; }
-        internal int DotPosition { get; set; }
         internal int SymbolCount { get; set; }
 
         public ProductionInfo()

@@ -8,5 +8,6 @@ namespace VBF.Compilers.Parsers
     public interface IProduction
     {
         void Accept(IProductionVisitor visitor);
+        bool IsTerminal { get; }
     }
 }

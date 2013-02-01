@@ -59,5 +59,13 @@ namespace VBF.Compilers.Parsers
             }
 
         }
+
+        public override bool IsTerminal
+        {
+            get
+            {
+                return true;
+            }
+        }
     }
 }

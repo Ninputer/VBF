@@ -34,5 +34,13 @@ namespace VBF.Compilers.Parsers
         {
             return -3177;
         }
+
+        public override bool IsTerminal
+        {
+            get
+            {
+                return true;
+            }
+        }
     }
 }

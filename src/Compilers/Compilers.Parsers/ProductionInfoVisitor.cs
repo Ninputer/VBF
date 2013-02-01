@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VBF.Compilers.Parsers.ShiftReduce;
+using VBF.Compilers.Parsers.Generator;
 
 namespace VBF.Compilers.Parsers
 {
@@ -28,6 +28,7 @@ namespace VBF.Compilers.Parsers
 
             terminal.Info.Index = Productions.Count;
             terminal.Info.SymbolCount = 1;
+
             Productions.Add(terminal);
         }
 
@@ -58,6 +59,7 @@ namespace VBF.Compilers.Parsers
 
             endOfStream.Info.Index = Productions.Count;
             endOfStream.Info.SymbolCount = 1;
+
             Productions.Add(endOfStream);
         }
 
@@ -199,10 +201,11 @@ namespace VBF.Compilers.Parsers
 
     }
 
-    internal class LRItemVisitor : IProductionVisitor
+    internal class ClosureVisitor : IProductionVisitor
     {
 
         public bool IsChanged { get; set; }
+        public int DotLocation { get; set; }
 
         public ISet<LR0Item> LR0ItemSet { get; set; }
 
@@ -213,7 +216,7 @@ namespace VBF.Compilers.Parsers
 
         void IProductionVisitor.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
         {
-            if (mappingProduction.Info.DotPosition == 0)
+            if (DotLocation == 0 && !mappingProduction.SourceProduction.IsTerminal)
             {
                 IsChanged = LR0ItemSet.Add(new LR0Item(mappingProduction.SourceProduction.Info.Index, 0)) || IsChanged;
             }
@@ -231,25 +234,107 @@ namespace VBF.Compilers.Parsers
 
         void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
         {
-            if (alternationProduction.Info.DotPosition == 0)
+            if (DotLocation == 0)
             {
-                IsChanged = LR0ItemSet.Add(new LR0Item(alternationProduction.Production1.Info.Index, 0)) || IsChanged;
-                IsChanged = LR0ItemSet.Add(new LR0Item(alternationProduction.Production2.Info.Index, 0)) || IsChanged;
+                if (!alternationProduction.Production1.IsTerminal)
+                {
+                    IsChanged = LR0ItemSet.Add(new LR0Item(alternationProduction.Production1.Info.Index, 0)) || IsChanged;
+                }
+
+                if (!alternationProduction.Production2.IsTerminal)
+                {
+                    IsChanged = LR0ItemSet.Add(new LR0Item(alternationProduction.Production2.Info.Index, 0)) || IsChanged;
+                }
             }
         }
 
         void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
         {
-            switch (concatenationProduction.Info.DotPosition)
+            switch (DotLocation)
             {
                 case 0:
-                    IsChanged = LR0ItemSet.Add(new LR0Item(concatenationProduction.ProductionLeft.Info.Index, 0)) || IsChanged;
+                    if (!concatenationProduction.ProductionLeft.IsTerminal)
+                    {
+                        IsChanged = LR0ItemSet.Add(new LR0Item(concatenationProduction.ProductionLeft.Info.Index, 0)) || IsChanged;
+                    }
                     break;
                 case 1:
-                    IsChanged = LR0ItemSet.Add(new LR0Item(concatenationProduction.ProductionRight.Info.Index, 0)) || IsChanged;
+                    if (!concatenationProduction.ProductionRight.IsTerminal)
+                    {
+                        IsChanged = LR0ItemSet.Add(new LR0Item(concatenationProduction.ProductionRight.Info.Index, 0)) || IsChanged;
+                    }
                     break;
                 default:
                     //no symbol at position                    
+                    break;
+            }
+        }
+    }
+
+    internal class DotSymbolVisitor : IProductionVisitor
+    {
+        public int DotLocation { get; set; }
+        public IReadOnlyList<IProduction> Symbols { get; private set; }
+
+        private IProduction[] m_twoResults = new IProduction[2];
+        private IProduction[] m_oneResult = new IProduction[1];
+        private IProduction[] m_noResult = new IProduction[0];
+
+        void IProductionVisitor.VisitTerminal(Terminal terminal)
+        {
+            throw new InvalidOperationException("Terminals are not allowed in LR states");
+        }
+
+        void IProductionVisitor.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
+        {
+            if (DotLocation == 0)
+            {
+                m_oneResult[0] = mappingProduction.SourceProduction;
+                Symbols = m_oneResult;
+            }
+            else
+            {
+                Symbols = m_noResult;
+            }
+        }
+
+        void IProductionVisitor.VisitEndOfStream(EndOfStream endOfStream)
+        {
+            throw new InvalidOperationException("Terminal EOS is not allowed in LR states");
+        }
+
+        void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
+        {
+            Symbols = m_noResult;
+        }
+
+        void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
+        {
+            if (DotLocation == 0)
+            {
+                m_twoResults[0] = alternationProduction.Production1;
+                m_twoResults[1] = alternationProduction.Production2;
+
+                Symbols = m_twoResults;
+            }
+            else
+            {
+                Symbols = m_noResult;
+            }
+        }
+
+        void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
+        {
+            switch (DotLocation)
+            {
+                case 0:
+                    m_oneResult[0] = concatenationProduction.ProductionLeft;
+                    break;
+                case 1:
+                    m_oneResult[0] = concatenationProduction.ProductionRight;
+                    break;
+                default:
+                    Symbols = m_noResult;
                     break;
             }
         }

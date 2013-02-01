@@ -48,6 +48,7 @@
     <Compile Include="ConcatenationProduction.cs" />
     <Compile Include="EmptyProduction.cs" />
     <Compile Include="EndOfStream.cs" />
+    <Compile Include="Generator\SymbolConversion.cs" />
     <Compile Include="Grammar.cs" />
     <Compile Include="IProduction.cs" />
     <Compile Include="IProductionVisitor.cs" />
@@ -55,12 +56,16 @@
     <Compile Include="Production.cs" />
     <Compile Include="ProductionBase.cs" />
     <Compile Include="ProductionInfo.cs" />
-    <Compile Include="ProductionInfoService.cs" />
+    <Compile Include="ProductionInfoManager.cs" />
     <Compile Include="ProductionInfoVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepeatParserListNode.cs" />
     <Compile Include="SetHelpers.cs" />
-    <Compile Include="ShiftReduce\LR0Item.cs" />
+    <Compile Include="Generator\LR0Edge.cs" />
+    <Compile Include="Generator\LR0Item.cs" />
+    <Compile Include="Generator\LR0Model.cs" />
+    <Compile Include="Generator\LR0State.cs" />
+    <Compile Include="Generator\ReduceAction.cs" />
     <Compile Include="Terminal.cs" />
   </ItemGroup>
   <ItemGroup />

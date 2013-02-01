@@ -32,6 +32,14 @@ namespace VBF.Compilers.Parsers
             Rule.Accept(visitor);
         }
 
+        public override bool IsTerminal
+        {
+            get
+            {
+                return Rule.IsTerminal;
+            }
+        }
+
         public override bool Equals(object obj)
         {
             return Rule.Equals(obj);

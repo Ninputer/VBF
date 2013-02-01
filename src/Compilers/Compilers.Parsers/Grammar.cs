@@ -242,5 +242,15 @@ namespace VBF.Compilers.Parsers
         {
             return prefix.Concat(production).Second();
         }
+
+        public static ProductionBase<T> SuffixedBy<T, TSuffix>(this ProductionBase<T> parser, ProductionBase<TSuffix> suffix)
+        {
+            return parser.Concat(suffix).First();
+        }
+
+        public static ProductionBase<T> SuffixedBy<T>(this ProductionBase<T> parser, Token suffix)
+        {
+            return parser.Concat(suffix).First();
+        }
     }
 }

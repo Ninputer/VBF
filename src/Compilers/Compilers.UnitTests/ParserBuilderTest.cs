@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using VBF.Compilers.Scanners;
 using VBF.Compilers.Parsers;
 using RE = VBF.Compilers.Scanners.RegularExpression;
+using VBF.Compilers.Parsers.Generator;
 
 namespace Compilers.UnitTests
 {
@@ -14,7 +15,7 @@ namespace Compilers.UnitTests
     public class ParserBuilderTest
     {
         [Test]
-        public void ProductionInfoServiceTest()
+        public void ProductionInfoManagerTest()
         {
             Lexicon test = new Lexicon();
 
@@ -39,7 +40,7 @@ namespace Compilers.UnitTests
                 Y |
                 (from a in A select a as object);
 
-            ProductionInfoService pis = new ProductionInfoService(Z);
+            ProductionInfoManager pis = new ProductionInfoManager(Z);
 
             var xInfo = pis.GetInfo(X);
             var yInfo = pis.GetInfo(Y);
@@ -74,6 +75,40 @@ namespace Compilers.UnitTests
             Assert.IsTrue(zInfo.First.Contains(A.AsTerminal()));
             Assert.IsTrue(zInfo.First.Contains(C.AsTerminal()));
             Assert.IsTrue(zInfo.First.Contains(D.AsTerminal()));
+        }
+
+        [Test]
+        public void LR0Model_BuildModelTest()
+        {
+            Lexicon test = new Lexicon();
+
+            var A = test.Lexer.DefineToken(RE.Symbol('a'));
+            var D = test.Lexer.DefineToken(RE.Symbol('d'));
+            var C = test.Lexer.DefineToken(RE.Symbol('c'));
+
+            Production<object> X = new Production<object>(), Y = new Production<object>(), Z = new Production<object>();
+
+            Z.Rule =
+                (from d in D select d as object) |
+                (from x in X
+                 from y in Y
+                 from z in Z
+                 select new { x, y, z } as object);
+
+            Y.Rule =
+                Grammar.Empty(new object()) |
+                (from c in C select c as object);
+
+            X.Rule =
+                Y |
+                (from a in A select a as object);
+
+            ProductionInfoManager pim = new ProductionInfoManager(Z.SuffixedBy(Grammar.Eos()));
+
+            LR0Model lr0 = new LR0Model(pim);
+            lr0.BuildModel();
+
+            ;
         }
     }
 }
