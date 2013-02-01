@@ -276,6 +276,8 @@ namespace VBF.Compilers.Parsers
         public int DotLocation { get; set; }
         public IReadOnlyList<IProduction> Symbols { get; private set; }
 
+        private static readonly IProduction[] s_empty = new IProduction[0];
+
         void IProductionVisitor.VisitTerminal(Terminal terminal)
         {
             throw new InvalidOperationException("Terminals are not allowed in LR states");
@@ -289,7 +291,7 @@ namespace VBF.Compilers.Parsers
             }
             else
             {
-                Symbols = new IProduction[0];
+                Symbols = s_empty;
             }
         }
 
@@ -300,7 +302,7 @@ namespace VBF.Compilers.Parsers
 
         void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
         {
-            Symbols = new IProduction[0];
+            Symbols = s_empty;
         }
 
         void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
@@ -311,7 +313,7 @@ namespace VBF.Compilers.Parsers
             }
             else
             {
-                Symbols = new IProduction[0];
+                Symbols = s_empty;
             }
         }
 
@@ -326,7 +328,7 @@ namespace VBF.Compilers.Parsers
                     Symbols = new IProduction[1] { concatenationProduction.ProductionRight };
                     break;
                 default:
-                    Symbols = new IProduction[0];
+                    Symbols = s_empty;
                     break;
             }
         }
