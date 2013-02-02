@@ -18,5 +18,18 @@ namespace VBF.Compilers.Parsers
         {
             visitor.VisitEmpty(this);
         }
+
+        public override string ToString()
+        {
+            return DebugName + " ::= ε";
+        }
+
+        public override string DebugName
+        {
+            get
+            {
+                return "E" + Info.Index;
+            }
+        }
     }
 }

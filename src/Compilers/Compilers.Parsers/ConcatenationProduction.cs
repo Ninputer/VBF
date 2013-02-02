@@ -26,5 +26,18 @@ namespace VBF.Compilers.Parsers
         {
             visitor.VisitConcatenation(this);
         }
+
+        public override string DebugName
+        {
+            get
+            {
+                return "C" + Info.Index;
+            }
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0} ::= {1} {2}", DebugName, ProductionLeft.DebugName, ProductionRight.DebugName);
+        }
     }
 }

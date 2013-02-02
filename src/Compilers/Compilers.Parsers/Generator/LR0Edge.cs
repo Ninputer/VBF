@@ -42,5 +42,29 @@ namespace VBF.Compilers.Parsers.Generator
         {
             return (m_sourceStateIndex << 24) ^ (m_symbolIndex << 12) ^ m_targetStateIndex;
         }
+
+        public int SymbolIndex
+        {
+            get
+            {
+                return m_symbolIndex;
+            }
+        }
+
+        public int SourceStateIndex
+        {
+            get
+            {
+                return m_sourceStateIndex;
+            }
+        }
+
+        public int TargetStateIndex
+        {
+            get
+            {
+                return m_targetStateIndex;
+            }
+        }
     }
 }

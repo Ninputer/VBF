@@ -50,5 +50,18 @@ namespace VBF.Compilers.Parsers
                 return true;
             }
         }
+
+        public override string DebugName
+        {
+            get
+            {
+                return "$";
+            }
+        }
+
+        public override string ToString()
+        {
+            return "$";
+        }
     }
 }

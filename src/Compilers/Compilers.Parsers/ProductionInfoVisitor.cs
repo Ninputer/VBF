@@ -333,4 +333,78 @@ namespace VBF.Compilers.Parsers
             }
         }
     }
+
+    internal class ItemStringVisitor : IProductionVisitor
+    {
+        public int DotLocation { get; set; }
+
+        private string m_itemString;
+
+        public override string ToString()
+        {
+            return m_itemString;
+        }
+
+        public void VisitTerminal(Terminal terminal)
+        {
+            throw new NotSupportedException("Terminals do not have item strings");
+        }
+
+        public void VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
+        {
+            if (DotLocation == 0)
+            {
+                m_itemString = mappingProduction.DebugName + " ::=." + mappingProduction.SourceProduction.DebugName;
+            }
+            else
+            {
+                m_itemString = mappingProduction.DebugName + " ::= " + mappingProduction.SourceProduction.DebugName + '.';
+            }
+        }
+
+        public void VisitEndOfStream(EndOfStream endOfStream)
+        {
+            throw new NotSupportedException("Terminal EOS does not have an item string");
+        }
+
+        public void VisitEmpty<T>(EmptyProduction<T> emptyProduction)
+        {
+            m_itemString = emptyProduction.ToString() + '.';
+        }
+
+        public void VisitAlternation<T>(AlternationProduction<T> alternationProduction)
+        {
+            if (DotLocation == 0)
+            {
+                m_itemString = alternationProduction.DebugName + " ::=." + alternationProduction.Production1.DebugName + "\\n";
+                m_itemString += alternationProduction.DebugName + " ::=." + alternationProduction.Production2.DebugName;
+
+            }
+            else
+            {
+                m_itemString = alternationProduction.DebugName + " ::= " + alternationProduction.Production1.DebugName + ".\\n";
+                m_itemString += alternationProduction.DebugName + " ::= " + alternationProduction.Production2.DebugName + '.';
+            }
+        }
+
+        public void VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
+        {
+            switch (DotLocation)
+            {
+                case 0:
+                    m_itemString = String.Format("{0} ::=.{1} {2}", concatenationProduction.DebugName,
+                        concatenationProduction.ProductionLeft.DebugName,
+                        concatenationProduction.ProductionRight.DebugName);
+                    break;
+                case 1:
+                    m_itemString = String.Format("{0} ::= {1}.{2}", concatenationProduction.DebugName,
+                        concatenationProduction.ProductionLeft.DebugName,
+                        concatenationProduction.ProductionRight.DebugName);
+                    break;
+                default:
+                    m_itemString = concatenationProduction.ToString() + '.';
+                    break;
+            }
+        }
+    }
 }

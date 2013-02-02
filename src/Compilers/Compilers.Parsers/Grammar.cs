@@ -235,22 +235,22 @@ namespace VBF.Compilers.Parsers
 
         public static ProductionBase<T> PrefixedBy<T, TPrefix>(this ProductionBase<T> production, ProductionBase<TPrefix> prefix)
         {
-            return prefix.Concat(production).Second();
+            return from pr in prefix from p in production select p;
         }
 
         public static ProductionBase<T> PrefixedBy<T>(this ProductionBase<T> production, Token prefix)
         {
-            return prefix.Concat(production).Second();
+            return from pr in prefix from p in production select p;
         }
 
-        public static ProductionBase<T> SuffixedBy<T, TSuffix>(this ProductionBase<T> parser, ProductionBase<TSuffix> suffix)
+        public static ProductionBase<T> SuffixedBy<T, TSuffix>(this ProductionBase<T> production, ProductionBase<TSuffix> suffix)
         {
-            return parser.Concat(suffix).First();
+            return from p in production from s in suffix select p;
         }
 
-        public static ProductionBase<T> SuffixedBy<T>(this ProductionBase<T> parser, Token suffix)
+        public static ProductionBase<T> SuffixedBy<T>(this ProductionBase<T> production, Token suffix)
         {
-            return parser.Concat(suffix).First();
+            return from p in production from s in suffix select p;
         }
     }
 }

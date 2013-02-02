@@ -23,5 +23,18 @@ namespace VBF.Compilers.Parsers
         {
             visitor.VisitAlternation(this);
         }
+
+        public override string DebugName
+        {
+            get
+            {
+                return "A" + Info.Index;
+            }
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0} ::= {1} | {2}", DebugName, Production1.DebugName, Production2.DebugName);
+        }
     }
 }

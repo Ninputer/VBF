@@ -8,15 +8,29 @@ namespace VBF.Compilers.Parsers.Generator
 {
     public class ReduceAction
     {
-        private IProduction reduceProduction;
-        private IProduction reduceSymbol;
-        
+        private IProduction m_reduceProduction;
+        private IProduction m_reduceTerminal;
 
-        public ReduceAction(IProduction reduceSymbol, IProduction reduceProduction)
+        internal ReduceAction(IProduction reduceTerminl, IProduction reduceProduction)
         {
-            // TODO: Complete member initialization
-            this.reduceSymbol = reduceSymbol;
-            this.reduceProduction = reduceProduction;
+            this.m_reduceTerminal = reduceTerminl;
+            this.m_reduceProduction = reduceProduction;
+        }
+
+        public IProduction ReduceTerminal
+        {
+            get
+            {
+                return m_reduceTerminal;
+            }
+        }
+
+        public IProduction ReduceProduction
+        {
+            get
+            {
+                return m_reduceProduction;
+            }
         }
     }
 }

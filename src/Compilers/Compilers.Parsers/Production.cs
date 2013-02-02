@@ -57,5 +57,18 @@ namespace VBF.Compilers.Parsers
         {
             return Rule.GetHashCode();
         }
+
+        public override string DebugName
+        {
+            get
+            {
+                return Rule.DebugName;
+            }
+        }
+
+        public override string ToString()
+        {
+            return Rule.ToString();
+        }
     }
 }

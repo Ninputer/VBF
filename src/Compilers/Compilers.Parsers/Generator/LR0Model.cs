@@ -176,5 +176,84 @@ namespace VBF.Compilers.Parsers.Generator
 
             return GetClosure(resultSet);
         }
+
+        /// <summary>
+        /// Generates dot commands to be visualized using graphviz
+        /// </summary>
+        /// <returns>A string contains dot commands</returns>
+        public override string ToString()
+        {
+            StringBuilder dotCommand = new StringBuilder();
+
+            dotCommand.AppendLine("digraph LR0 {");
+            dotCommand.AppendLine("node[shape=record, fontname=Courier]");
+            dotCommand.AppendLine("edge[fontname=Courier]");
+
+            foreach (var state in m_states)
+            {
+                foreach (var edge in state.Edges)
+                {
+                    dotCommand.Append("state");
+                    dotCommand.Append(edge.SourceStateIndex);
+                    dotCommand.Append(" -> ");
+                    dotCommand.Append("state");
+                    dotCommand.Append(edge.TargetStateIndex);
+                    dotCommand.Append("[label=\"");
+                    //label of edge
+                    dotCommand.Append((m_infoManager.Productions[edge.SymbolIndex] as ProductionBase).DebugName);
+                    dotCommand.Append("\" ");
+
+                    if (m_infoManager.Productions[edge.SymbolIndex].IsTerminal)
+                    {
+                        dotCommand.Append(",color=blue, fontcolor=blue");
+                    }
+
+                    dotCommand.AppendLine("];");
+                }
+
+                //state labels
+                dotCommand.Append("state");
+                dotCommand.Append(state.Index);
+                dotCommand.Append("[label=\"{");
+
+                ItemStringVisitor isv = new ItemStringVisitor();
+                foreach (var item in state.ItemSet)
+                {
+                    isv.DotLocation = item.DotLocation;
+                    m_infoManager.Productions[item.ProductionIndex].Accept(isv);
+
+                    dotCommand.Append(isv.ToString());
+
+                    dotCommand.Append("\\n");
+                }
+
+                if (state.Reduces.Count > 0)
+                {
+                    dotCommand.Append('|');
+
+                    foreach (var reduce in state.Reduces)
+                    {
+                        dotCommand.Append((reduce.ReduceTerminal as ProductionBase).DebugName);
+                        dotCommand.Append(" Reduce ");
+                        dotCommand.Append((reduce.ReduceProduction as ProductionBase).DebugName);
+                        dotCommand.Append("\\n");
+                    }
+                }
+
+                if (state.IsAcceptState)
+                {
+                    dotCommand.Append("| $ Accept \\n");
+                }
+
+                dotCommand.Append("}\"");
+                dotCommand.AppendLine("];");
+            }
+
+
+
+            dotCommand.AppendLine("}");
+
+            return dotCommand.ToString();
+        }
     }
 }

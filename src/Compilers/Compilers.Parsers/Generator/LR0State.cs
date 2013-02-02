@@ -29,6 +29,22 @@ namespace VBF.Compilers.Parsers.Generator
             }
         }
 
+        public IEnumerable<LR0Edge> Edges
+        {
+            get
+            {
+                return m_edges;
+            }
+        }
+
+        public IReadOnlyList<ReduceAction> Reduces
+        {
+            get
+            {
+                return m_reduces;
+            }
+        }
+
         internal LR0State(ISet<LR0Item> itemSet)
         {
             m_itemSet = itemSet;
@@ -46,6 +62,11 @@ namespace VBF.Compilers.Parsers.Generator
         internal void AddReduce(IProduction reduceSymbol, IProduction reduceProduction)
         {
             m_reduces.Add(new ReduceAction(reduceSymbol, reduceProduction));
+        }
+
+        public override string ToString()
+        {
+            return "state" + Index;
         }
     }
 }

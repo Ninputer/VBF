@@ -102,6 +102,8 @@ namespace Compilers.UnitTests
             LR0Model lr0 = new LR0Model(pim);
             lr0.BuildModel();
 
+            var dot = lr0.ToString();
+
             ;
         }
     }
