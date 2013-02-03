@@ -376,14 +376,16 @@ namespace VBF.Compilers.Parsers
         {
             if (DotLocation == 0)
             {
-                m_itemString = alternationProduction.DebugName + " ::=." + alternationProduction.Production1.DebugName + "\\n";
-                m_itemString += alternationProduction.DebugName + " ::=." + alternationProduction.Production2.DebugName;
+                m_itemString = String.Format("{0} ::=.({1}\\|{2})", alternationProduction.DebugName,
+                        alternationProduction.Production1.DebugName,
+                        alternationProduction.Production2.DebugName);
 
             }
             else
             {
-                m_itemString = alternationProduction.DebugName + " ::= " + alternationProduction.Production1.DebugName + ".\\n";
-                m_itemString += alternationProduction.DebugName + " ::= " + alternationProduction.Production2.DebugName + '.';
+                m_itemString = String.Format("{0} ::= ({1}\\|{2}).", alternationProduction.DebugName,
+                        alternationProduction.Production1.DebugName,
+                        alternationProduction.Production2.DebugName);
             }
         }
 
