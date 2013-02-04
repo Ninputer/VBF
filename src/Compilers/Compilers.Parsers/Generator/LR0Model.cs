@@ -13,6 +13,22 @@ namespace VBF.Compilers.Parsers.Generator
         private ClosureVisitor m_closureVisitor = new ClosureVisitor();
         private DotSymbolVisitor m_dotSymbolVisitor = new DotSymbolVisitor();
 
+        public IReadOnlyList<LR0State> States
+        {
+            get
+            {
+                return m_states;
+            }
+        }
+
+        public ProductionInfoManager ProductionInfoManager
+        {
+            get
+            {
+                return m_infoManager;
+            }
+        }
+
         public LR0Model(ProductionInfoManager infoManager)
         {
             CodeContract.RequiresArgumentNotNull(infoManager, "infoManager");

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VBF.Compilers.Parsers.Generator;
 
 namespace VBF.Compilers.Parsers
 {
@@ -32,6 +33,21 @@ namespace VBF.Compilers.Parsers
             get
             {
                 return "P";
+            }
+        }
+
+        protected string DebugNameSuffix
+        {
+            get
+            {
+                if (Info != null)
+                {
+                    return Info.Index.ToString();
+                }
+                else
+                {
+                    return String.Empty;
+                }
             }
         }
     }

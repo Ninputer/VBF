@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using VBF.Compilers.Scanners;
 
-namespace VBF.Compilers.Parsers
+namespace VBF.Compilers.Parsers.Generator
 {
     public class ProductionInfoManager
     {

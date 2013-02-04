@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VBF.Compilers.Parsers
+namespace VBF.Compilers.Parsers.Generator
 {
     public class ProductionInfo
     {
@@ -14,6 +14,7 @@ namespace VBF.Compilers.Parsers
 
         internal int Index { get; set; }
         internal int SymbolCount { get; set; }
+        internal int NonTerminalIndex { get; set; }
 
         public ProductionInfo()
         {

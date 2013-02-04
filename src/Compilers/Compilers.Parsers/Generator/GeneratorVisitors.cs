@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using VBF.Compilers.Parsers.Generator;
 
-namespace VBF.Compilers.Parsers
+namespace VBF.Compilers.Parsers.Generator
 {
     internal class ProductionAggregationVisitor : IProductionVisitor
     {

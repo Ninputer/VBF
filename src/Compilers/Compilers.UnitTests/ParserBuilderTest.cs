@@ -106,5 +106,39 @@ namespace Compilers.UnitTests
 
             ;
         }
+
+        [Test]
+        public void TransitionTable_CreateTest()
+        {
+            Lexicon test = new Lexicon();
+
+            var X = test.Lexer.DefineToken(RE.Symbol('x'));
+            var PLUS = test.Lexer.DefineToken(RE.Symbol('+'));
+
+            var scannerinfo = test.CreateScannerInfo();
+
+            Production<object> E = new Production<object>(), T = new Production<object>();
+
+            E.Rule =
+                (from t in T
+                 from plus in PLUS
+                 from e in E
+                 select new object()) | T;
+
+            T.Rule =
+                from x in X
+                select new object();
+
+            ProductionInfoManager pim = new ProductionInfoManager(E.SuffixedBy(Grammar.Eos()));
+
+            LR0Model lr0 = new LR0Model(pim);
+            lr0.BuildModel();
+
+            string dot = lr0.ToString();
+
+            TransitionTable tt = TransitionTable.Create(lr0, scannerinfo);
+
+            ;
+        }
     }
 }

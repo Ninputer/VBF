@@ -28,7 +28,7 @@ namespace VBF.Compilers.Parsers
         {
             get
             {
-                return "M" + Info.Index;
+                return "M" + DebugNameSuffix;
             }
         }
 

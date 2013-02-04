@@ -14,7 +14,7 @@ namespace VBF.Compilers.Parsers.Generator
 
         //top stack symbol conversion rules
         //executes at goto action
-        private List<SymbolConversion> m_conversions;
+        //private List<SymbolConversion> m_conversions;
 
         //index in transition table (row number)
         public int Index { get; internal set; }
