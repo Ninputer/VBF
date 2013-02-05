@@ -9,7 +9,7 @@ namespace VBF.Compilers.Parsers.Generator
 {
 
 
-    class ActionListNode<T> : IEnumerable<T>
+    public class ActionListNode<T> : IEnumerable<T>
     {
         public T Value { get; private set; }
         private ActionListNode<T> m_nextNode;
@@ -23,6 +23,11 @@ namespace VBF.Compilers.Parsers.Generator
         {
             m_nextNode = next;
 
+            return m_nextNode;
+        }
+
+        public ActionListNode<T> GetNext()
+        {
             return m_nextNode;
         }
 
@@ -68,6 +73,7 @@ namespace VBF.Compilers.Parsers.Generator
         public int TokenCount { get; private set; }
         public int StateCount { get; private set; }
         public int ProductionCount { get; private set; }
+        public int EndOfStreamTokenIndex { get; private set; }
 
         private ActionListNode<int>[,] m_gotoTable;
         private ActionListNode<int>[,] m_shiftTable;
@@ -81,6 +87,29 @@ namespace VBF.Compilers.Parsers.Generator
             m_gotoTable = new ActionListNode<int>[stateCount, productionCount];
             m_shiftTable = new ActionListNode<int>[stateCount, tokenCount];
             m_reduceTable = new ActionListNode<int>[stateCount, tokenCount];
+        }
+
+        public ActionListNode<int> GetShift(int state, int tokenIndex)
+        {
+            return m_shiftTable[state, tokenIndex];
+        }
+
+        public ActionListNode<int> GetGoto(int state, int nonterminalIndex)
+        {
+            return m_gotoTable[state, nonterminalIndex];
+        }
+
+        public ActionListNode<int> GetReduce(int state, int tokenIndex)
+        {
+            return m_reduceTable[state, tokenIndex];
+        }
+
+        public IReadOnlyList<IProduction> NonTerminals
+        {
+            get
+            {
+                return m_nonTerminals;
+            }
         }
 
         public static TransitionTable Create(LR0Model model, ScannerInfo scannerInfo)
@@ -150,6 +179,8 @@ namespace VBF.Compilers.Parsers.Generator
                 {
                     ActionListNode<int>.AppendToLast(ref table.m_reduceTable[i, scannerInfo.EndOfStreamTokenIndex], table.m_acceptProductionIndex);
                 }
+
+                table.EndOfStreamTokenIndex = scannerInfo.EndOfStreamTokenIndex;
 
             }
 

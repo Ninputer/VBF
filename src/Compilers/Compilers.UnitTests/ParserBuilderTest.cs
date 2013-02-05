@@ -8,6 +8,7 @@ using VBF.Compilers.Scanners;
 using VBF.Compilers.Parsers;
 using RE = VBF.Compilers.Scanners.RegularExpression;
 using VBF.Compilers.Parsers.Generator;
+using System.IO;
 
 namespace Compilers.UnitTests
 {
@@ -123,11 +124,11 @@ namespace Compilers.UnitTests
                 (from t in T
                  from plus in PLUS
                  from e in E
-                 select new object()) | T;
+                 select (object)(((int)t) + ((int)e))) | T;
 
             T.Rule =
                 from x in X
-                select new object();
+                select (object)1;
 
             ProductionInfoManager pim = new ProductionInfoManager(E.SuffixedBy(Grammar.Eos()));
 
@@ -138,7 +139,54 @@ namespace Compilers.UnitTests
 
             TransitionTable tt = TransitionTable.Create(lr0, scannerinfo);
 
-            ;
+            ParserHead ph = new ParserHead(tt);
+
+            ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
+            builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
+            var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x+x")));
+
+            bool isConsumed = false;
+
+            var z1 = scanner.Read();
+
+            ph.Input(z1);
+
+            var z2 = scanner.Read();
+
+            do
+            {
+                isConsumed = ph.Input(z2);
+            } while (!isConsumed);
+
+            var z3 = scanner.Read();
+
+            do
+            {
+                isConsumed = ph.Input(z3);
+            } while (!isConsumed);
+
+            var z4 = scanner.Read();
+
+            do
+            {
+                isConsumed = ph.Input(z4);
+            } while (!isConsumed);
+
+            var z5 = scanner.Read();
+
+            do
+            {
+                isConsumed = ph.Input(z5);
+            } while (!isConsumed);
+
+            var z6 = scanner.Read();
+
+            do
+            {
+                isConsumed = ph.Input(z6); 
+            } while (!isConsumed);
+
+            
         }
     }
 }

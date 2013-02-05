@@ -54,12 +54,15 @@
     <Compile Include="IProduction.cs" />
     <Compile Include="IProductionVisitor.cs" />
     <Compile Include="MappingProduction.cs" />
+    <Compile Include="ParserDriver.cs" />
+    <Compile Include="ParserHead.cs" />
     <Compile Include="Production.cs" />
     <Compile Include="ProductionBase.cs" />
     <Compile Include="Generator\ProductionInfo.cs" />
     <Compile Include="Generator\ProductionInfoManager.cs" />
     <Compile Include="Generator\GeneratorVisitors.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReduceVisitor.cs" />
     <Compile Include="RepeatParserListNode.cs" />
     <Compile Include="SetHelpers.cs" />
     <Compile Include="Generator\LR0Edge.cs" />
@@ -67,6 +70,7 @@
     <Compile Include="Generator\LR0Model.cs" />
     <Compile Include="Generator\LR0State.cs" />
     <Compile Include="Generator\ReduceAction.cs" />
+    <Compile Include="StackNode.cs" />
     <Compile Include="Terminal.cs" />
   </ItemGroup>
   <ItemGroup />
