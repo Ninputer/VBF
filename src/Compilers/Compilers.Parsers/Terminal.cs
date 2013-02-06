@@ -8,7 +8,7 @@ namespace VBF.Compilers.Parsers
 {
     public class Terminal : ProductionBase<Lexeme>
     {
-        static Dictionary<Token, Terminal> s_tokenDict = new Dictionary<Token,Terminal>();
+        //static Dictionary<Token, Terminal> s_tokenDict = new Dictionary<Token,Terminal>();
 
         public Token Token { get; private set; }
 
@@ -20,6 +20,8 @@ namespace VBF.Compilers.Parsers
         public static Terminal GetTerminal(Token token)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
+
+            /*
             Terminal terminal = null;
 
 
@@ -32,6 +34,9 @@ namespace VBF.Compilers.Parsers
             s_tokenDict.Add(token, terminal);
 
             return terminal;
+            //*/
+
+            return new Terminal(token);
         }
 
         public override void Accept(IProductionVisitor visitor)

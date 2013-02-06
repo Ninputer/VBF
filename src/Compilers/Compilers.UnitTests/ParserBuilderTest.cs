@@ -79,37 +79,83 @@ namespace Compilers.UnitTests
         }
 
         [Test]
-        public void LR0Model_BuildModelTest()
+        public void ParserDriverConflictTest()
         {
             Lexicon test = new Lexicon();
 
             var X = test.Lexer.DefineToken(RE.Symbol('x'));
             var PLUS = test.Lexer.DefineToken(RE.Symbol('+'));
+            var ASTERISK = test.Lexer.DefineToken(RE.Symbol('*'));
+
+            var scannerinfo = test.CreateScannerInfo();
 
             Production<object> E = new Production<object>(), T = new Production<object>();
 
             E.Rule =
-                (from t in T
+                (from e1 in E
                  from plus in PLUS
-                 from e in E
-                 select new object()) | T;
+                 from e2 in E
+                 select (object)(((int)e1) + ((int)e2))) |
+                (from e1 in E
+                 from mul in ASTERISK
+                 from e2 in E
+                 select (object)(((int)e1) * ((int)e2))) | T;
 
             T.Rule =
                 from x in X
-                select new object();
+                select (object)2;
 
             ProductionInfoManager pim = new ProductionInfoManager(E.SuffixedBy(Grammar.Eos()));
 
             LR0Model lr0 = new LR0Model(pim);
             lr0.BuildModel();
 
-            var dot = lr0.ToString();
+            string dot = lr0.ToString();
 
-            ;
+            TransitionTable tt = TransitionTable.Create(lr0, scannerinfo);
+
+            ParserDriver driver = new ParserDriver(tt);
+
+            ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
+            builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
+            var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x*x")));
+
+            var z1 = scanner.Read();
+
+            driver.Input(z1);
+
+            var z2 = scanner.Read();
+
+            driver.Input(z2);
+
+            var z3 = scanner.Read();
+
+            driver.Input(z3);
+
+            var z4 = scanner.Read();
+
+            driver.Input(z4);
+
+            var z5 = scanner.Read();
+
+            driver.Input(z5);
+
+            var z6 = scanner.Read();
+
+            driver.Input(z6);
+
+            Assert.AreEqual(0, driver.CurrentStackCount);
+            Assert.AreEqual(2, driver.AcceptedCount);
+
+            var results = new[] { (int)driver.GetResult(0), (int)driver.GetResult(1) };
+
+            Assert.IsTrue(results.Contains(8));
+            Assert.IsTrue(results.Contains(6));
+            
         }
 
         [Test]
-        public void TransitionTable_CreateTest()
+        public void ParserDriverSimpleTest()
         {
             Lexicon test = new Lexicon();
 
@@ -139,54 +185,39 @@ namespace Compilers.UnitTests
 
             TransitionTable tt = TransitionTable.Create(lr0, scannerinfo);
 
-            ParserHead ph = new ParserHead(tt);
+            ParserDriver driver = new ParserDriver(tt);
 
             ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
             builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
             var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x+x")));
 
-            bool isConsumed = false;
-
             var z1 = scanner.Read();
 
-            ph.Input(z1);
+            driver.Input(z1);
 
             var z2 = scanner.Read();
 
-            do
-            {
-                isConsumed = ph.Input(z2);
-            } while (!isConsumed);
+            driver.Input(z2);
 
             var z3 = scanner.Read();
 
-            do
-            {
-                isConsumed = ph.Input(z3);
-            } while (!isConsumed);
+            driver.Input(z3);
 
             var z4 = scanner.Read();
 
-            do
-            {
-                isConsumed = ph.Input(z4);
-            } while (!isConsumed);
+            driver.Input(z4);
 
             var z5 = scanner.Read();
 
-            do
-            {
-                isConsumed = ph.Input(z5);
-            } while (!isConsumed);
+            driver.Input(z5);
 
             var z6 = scanner.Read();
 
-            do
-            {
-                isConsumed = ph.Input(z6); 
-            } while (!isConsumed);
+            driver.Input(z6);
 
-            
+            Assert.AreEqual(0, driver.CurrentStackCount);
+            Assert.AreEqual(1, driver.AcceptedCount);
+            Assert.AreEqual(3, driver.GetResult(0));
         }
     }
 }

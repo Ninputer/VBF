@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VBF.Compilers.Parsers.Generator;
 
 namespace VBF.Compilers.Parsers
 {
+
     internal class ReduceVisitor : IProductionVisitor
     {
         private TransitionTable m_transitions;
