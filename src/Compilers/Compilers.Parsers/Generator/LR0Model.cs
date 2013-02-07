@@ -231,7 +231,8 @@ namespace VBF.Compilers.Parsers.Generator
                 dotCommand.Append("state");
                 dotCommand.Append(state.Index);
                 dotCommand.Append("[label=\"{");
-
+                dotCommand.Append(state.Index);
+                dotCommand.Append("\\n");
                 ItemStringVisitor isv = new ItemStringVisitor();
                 foreach (var item in state.ItemSet)
                 {

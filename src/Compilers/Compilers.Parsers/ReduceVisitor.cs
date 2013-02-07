@@ -65,10 +65,7 @@ namespace VBF.Compilers.Parsers
             Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
 
             //perform goto
-            StackNode reduceNode = topStack; //new StackNode();
-            reduceNode.StateIndex = gotoAction.Value;
-            reduceNode.ReducedValue = result;
-            //reduceNode.PrevNode = poppedTopStack;
+            StackNode reduceNode = new StackNode(gotoAction.Value, poppedTopStack, result);
 
             NewTopStack = reduceNode;
         }
@@ -92,19 +89,14 @@ namespace VBF.Compilers.Parsers
             Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
 
             //perform goto
-            StackNode reduceNode = new StackNode();
-            reduceNode.StateIndex = gotoAction.Value;
-            reduceNode.ReducedValue = result;
-            reduceNode.PrevNode = TopStack;
+            StackNode reduceNode = new StackNode(gotoAction.Value, TopStack, result);
 
             NewTopStack = reduceNode;
         }
 
         void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
         {
-            //do not really do reducing
-            //just convert the stack state
-
+           
             var info = ((ProductionBase)alternationProduction).Info;            
 
             //compute goto
@@ -114,9 +106,9 @@ namespace VBF.Compilers.Parsers
             Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
 
             //perform goto
-            TopStack.StateIndex = gotoAction.Value;
+            StackNode reduceNode = new StackNode(gotoAction.Value, TopStack.PrevNode, TopStack.ReducedValue);
 
-            NewTopStack = TopStack;
+            NewTopStack = reduceNode;
         }
 
         void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
@@ -145,10 +137,7 @@ namespace VBF.Compilers.Parsers
             Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
 
             //perform goto
-            StackNode reduceNode = new StackNode();
-            reduceNode.StateIndex = gotoAction.Value;
-            reduceNode.ReducedValue = result;
-            reduceNode.PrevNode = poppedTopStack;
+            StackNode reduceNode = new StackNode(gotoAction.Value, poppedTopStack, result);
 
             NewTopStack = reduceNode;
         }

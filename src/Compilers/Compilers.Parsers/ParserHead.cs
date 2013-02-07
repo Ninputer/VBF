@@ -1,4 +1,8 @@
-﻿using System;
+﻿#if DEBUG
+#define HISTORY
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -21,6 +25,10 @@ namespace VBF.Compilers.Parsers
 
         public bool IsAccepted { get; private set; }
         public int Priority { get; set; }
+
+#if HISTORY
+        public List<string> History = new List<string>();
+#endif
 
         public int TopStackStateIndex
         {
@@ -72,16 +80,26 @@ namespace VBF.Compilers.Parsers
 
         public void Shift(Lexeme z, int targetStateIndex)
         {
-            StackNode shiftNode = new StackNode();
-            shiftNode.ReducedValue = z;
-            shiftNode.StateIndex = targetStateIndex;
-            shiftNode.PrevNode = m_topStack;
+#if HISTORY
+            var from = m_topStack.StateIndex;
+#endif
+
+            StackNode shiftNode = new StackNode(targetStateIndex, m_topStack, z);            
 
             m_topStack = shiftNode;
+
+#if HISTORY
+            var to = m_topStack.StateIndex;
+            History.Add(String.Format("S{0}:{1}", from, to));
+#endif
         }
 
         public void Reduce(IProduction production, ReduceVisitor reducer, Lexeme lookahead)
         {
+#if HISTORY
+            var from = m_topStack.StateIndex;
+#endif
+
             if (production == null)
             {
                 //Accept
@@ -111,6 +129,11 @@ namespace VBF.Compilers.Parsers
 
                 AddError(reducer.ReduceError);
             }
+
+#if HISTORY
+            var to = m_topStack.StateIndex;
+            History.Add(String.Format("R{0}:{1}", from, to));
+#endif
         }
 
         public void IncreaseErrorRecoverLevel()
@@ -120,7 +143,17 @@ namespace VBF.Compilers.Parsers
 
         public ParserHead Clone()
         {
-            return (ParserHead)MemberwiseClone();
+            var newHead = (ParserHead)MemberwiseClone();
+
+            if (m_errors != null)
+            {
+                newHead.m_errors = m_errors.ToList();
+            }
+
+#if HISTORY
+            newHead.History = History.ToList();
+#endif
+            return newHead;
         }
     }
 }

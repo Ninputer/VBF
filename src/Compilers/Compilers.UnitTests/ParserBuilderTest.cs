@@ -319,6 +319,13 @@ namespace Compilers.UnitTests
                 LeftChild = left;
                 RightChild = right;
             }
+
+            public override string ToString()
+            {
+                return String.Format("{0}({1},{2})", Label,
+                    LeftChild != null ? LeftChild.ToString() : null,
+                    RightChild != null ? RightChild.ToString() : null);
+            }
         }
 
 
@@ -328,13 +335,13 @@ namespace Compilers.UnitTests
             Lexicon binaryTreeSyntax = new Lexicon();
             var lex = binaryTreeSyntax.Lexer;
 
-            //定义词法
+            //lex
             Token LEFTPH = lex.DefineToken(RE.Symbol('('));
             Token RIGHTPH = lex.DefineToken(RE.Symbol(')'));
             Token COMMA = lex.DefineToken(RE.Symbol(','));
             Token LETTER = lex.DefineToken(RE.Range('a', 'z') | RE.Range('A', 'Z'), "ID");
 
-            //定义语法
+            //grammar
             Production<Node> NodeParser = new Production<Node>();
             NodeParser.Rule =
                 (from a in LETTER
@@ -350,7 +357,7 @@ namespace Compilers.UnitTests
 
             const string correct = "A(B(,),C(,))";
 
-            string source = "A(B(,),C(,))))))))))))))))";
+            string source = "A((B(,),C(,)";
             SourceReader sr = new SourceReader(
                 new StringReader(source));
 

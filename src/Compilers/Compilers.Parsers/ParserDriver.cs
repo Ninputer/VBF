@@ -69,7 +69,7 @@ namespace VBF.Compilers.Parsers
             m_errorDef = errorDef;
 
             //init state
-            m_heads.Add(new ParserHead(new StackNode()));
+            m_heads.Add(new ParserHead(new StackNode(0, null, null)));
         }
 
         public void Input(Lexeme z)
