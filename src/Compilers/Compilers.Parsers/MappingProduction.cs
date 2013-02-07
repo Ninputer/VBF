@@ -9,15 +9,23 @@ namespace VBF.Compilers.Parsers
     {
         public ProductionBase<TSource> SourceProduction { get; private set; }
         public Func<TSource, TReturn> Selector { get; private set; }
+        public Func<TReturn, bool> ValidationRule { get; private set; }
+        public int? ValidationErrorId { get; private set; }
+        public Func<TReturn, SourceSpan> PositionGetter { get; private set; }
 
-        public MappingProduction(ProductionBase<TSource> sourceProduction, Func<TSource, TReturn> selector)
+        public MappingProduction(ProductionBase<TSource> sourceProduction, Func<TSource, TReturn> selector, Func<TReturn, bool> validationRule, int? errorId, Func<TReturn, SourceSpan> positionGetter)
         {
             CodeContract.RequiresArgumentNotNull(sourceProduction, "sourceProduction");
             CodeContract.RequiresArgumentNotNull(selector, "selector");
 
             SourceProduction = sourceProduction;
             Selector = selector;
+            ValidationRule = validationRule;
+            ValidationErrorId = errorId;
+            PositionGetter = positionGetter;
         }
+
+        public MappingProduction(ProductionBase<TSource> sourceProduction, Func<TSource, TReturn> selector) : this(sourceProduction, selector, null, null, null) { }
 
         public override void Accept(IProductionVisitor visitor)
         {

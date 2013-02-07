@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using VBF.Compilers.Scanners;
 
@@ -8,6 +10,13 @@ namespace VBF.Compilers.Parsers
 {
     public static class Grammar
     {
+        private static MethodInfo s_checkMethod;
+
+        static Grammar()
+        {
+            s_checkMethod = typeof(Grammar).GetMethod("Check", BindingFlags.Static | BindingFlags.Public);
+        }
+
         public static ProductionBase<Lexeme> AsTerminal(this Token token)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
@@ -75,6 +84,50 @@ namespace VBF.Compilers.Parsers
             CodeContract.RequiresArgumentNotNull(resultSelector, "resultSelector");
 
             return new ConcatenationProduction<Lexeme, Lexeme, TResult>(token.AsTerminal(), v => productionSelector(v).AsTerminal(), resultSelector);
+        }
+
+        public static ProductionBase<TResult> Where<TResult>(this ProductionBase<TResult> production, Expression<Func<TResult, bool>> predicate)
+        {
+            CodeContract.RequiresArgumentNotNull(production, "production");
+            CodeContract.RequiresArgumentNotNull(predicate, "predicate");
+
+            Expression<Func<TResult, bool>> finalRule = null;
+            Expression<Func<TResult, SourceSpan>> positionGetter = null;
+            int? errorId = null;
+
+            //exptract the first layer of 'predicate'
+            if (predicate.Body.NodeType == ExpressionType.Call)
+            {
+                MethodCallExpression call = predicate.Body as MethodCallExpression;
+
+                if (call.Method.Equals(s_checkMethod))
+                {
+                    //it is the call to Grammar.Check, extract message
+
+                    var ruleExp = call.Arguments[0];
+                    var errIdExp = call.Arguments[1];
+                    var positionExp = call.Arguments[2];
+
+                    positionGetter = Expression.Lambda<Func<TResult, SourceSpan>>(positionExp, predicate.Parameters[0]);
+                    Expression<Func<int>> idGetter = Expression.Lambda<Func<int>>(errIdExp);
+
+                    errorId = idGetter.Compile()();
+
+                    finalRule = Expression.Lambda<Func<TResult, bool>>(ruleExp, predicate.Parameters[0]);
+                }
+            }
+
+            if (finalRule == null)
+            {
+                finalRule = predicate;
+            }
+
+            return new MappingProduction<TResult, TResult>(production, x => x, finalRule.Compile(), errorId, positionGetter.Compile());
+        }
+
+        public static bool Check(bool condition, int errorId, SourceSpan position)
+        {
+            throw new InvalidOperationException("This method is only used in the 'where' clause of parser Linq expressions");
         }
 
         public static ProductionBase<T> Union<T>(this ProductionBase<T> production1, ProductionBase<T> production2)

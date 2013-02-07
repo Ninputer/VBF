@@ -73,20 +73,25 @@ namespace VBF.Compilers.Parsers.Generator
         public int TokenCount { get; private set; }
         public int StateCount { get; private set; }
         public int ProductionCount { get; private set; }
-        public int EndOfStreamTokenIndex { get; private set; }
 
         private ActionListNode<int>[,] m_gotoTable;
         private ActionListNode<int>[,] m_shiftTable;
         private ActionListNode<int>[,] m_reduceTable;
         private IProduction[] m_nonTerminals;
+        private string[] m_tokenDescriptions;
 
         private int m_acceptProductionIndex;
 
-        private TransitionTable(int tokenCount, int stateCount, int productionCount)
+        private TransitionTable(int tokenCount, int stateCount, int productionCount, string[] tokenDescriptions)
         {
+            TokenCount = tokenCount;
+            StateCount = stateCount;
+            ProductionCount = productionCount;
+
             m_gotoTable = new ActionListNode<int>[stateCount, productionCount];
             m_shiftTable = new ActionListNode<int>[stateCount, tokenCount];
             m_reduceTable = new ActionListNode<int>[stateCount, tokenCount];
+            m_tokenDescriptions = tokenDescriptions;
         }
 
         public ActionListNode<int> GetShift(int state, int tokenIndex)
@@ -112,12 +117,21 @@ namespace VBF.Compilers.Parsers.Generator
             }
         }
 
+        public string GetTokenDescription(int tokenIndex)
+        {
+            CodeContract.RequiresArgumentInRange(tokenIndex >= 0 && tokenIndex < m_tokenDescriptions.Length, "tokenIndex",
+                "tokenIndex must be greater than or equal to 0 and less than the token count");
+
+            return m_tokenDescriptions[tokenIndex];
+        }
+
         public static TransitionTable Create(LR0Model model, ScannerInfo scannerInfo)
         {
             CodeContract.RequiresArgumentNotNull(model, "model");
 
-            List<IProduction> nonterminals = new List<IProduction>();
 
+            string[] tokenDescriptions = new string[scannerInfo.EndOfStreamTokenIndex + 1];
+            List<IProduction> nonterminals = new List<IProduction>();
             foreach (var production in model.ProductionInfoManager.Productions)
             {
                 if (!production.IsTerminal)
@@ -127,13 +141,33 @@ namespace VBF.Compilers.Parsers.Generator
                     info.NonTerminalIndex = nonterminals.Count;
                     nonterminals.Add(production);
                 }
+                else
+                {
+                    var terminal = (production as Terminal);
+
+                    string description;
+                    int index;
+
+                    if (terminal != null)
+                    {
+                        index = terminal.Token.Index;
+                        description = terminal.Token.Description;
+                    }
+                    else
+                    {
+                        index = scannerInfo.EndOfStreamTokenIndex;
+                        description = "$";
+                    }
+
+                    tokenDescriptions[index] = description;
+                }
             }
 
             //add one null reference to non-terminal list
             //for "accept" action in parsing
             nonterminals.Add(null);
 
-            TransitionTable table = new TransitionTable(scannerInfo.EndOfStreamTokenIndex + 1, model.States.Count, nonterminals.Count);
+            TransitionTable table = new TransitionTable(scannerInfo.EndOfStreamTokenIndex + 1, model.States.Count, nonterminals.Count, tokenDescriptions);
             table.m_nonTerminals = nonterminals.ToArray();
             table.m_acceptProductionIndex = nonterminals.Count - 1;
 
@@ -179,8 +213,6 @@ namespace VBF.Compilers.Parsers.Generator
                 {
                     ActionListNode<int>.AppendToLast(ref table.m_reduceTable[i, scannerInfo.EndOfStreamTokenIndex], table.m_acceptProductionIndex);
                 }
-
-                table.EndOfStreamTokenIndex = scannerInfo.EndOfStreamTokenIndex;
 
             }
 

@@ -17,6 +17,8 @@ namespace VBF.Compilers.Parsers
         private List<ParserHead> m_tempHeads;
         private List<ParserHead> m_acceptedHeads;
 
+        private SyntaxErrors m_errorDef;
+
         public int CurrentStackCount
         {
             get
@@ -40,9 +42,10 @@ namespace VBF.Compilers.Parsers
             return m_acceptedHeads[index].TopStackValue;
         }
 
-        public ParserDriver(TransitionTable transitions)
+        public ParserDriver(TransitionTable transitions, SyntaxErrors errorDef)
         {
             CodeContract.RequiresArgumentNotNull(transitions, "transitions");
+            CodeContract.RequiresArgumentNotNull(errorDef, "errorDef");
 
             m_transitions = transitions;
             m_reducer = new ReduceVisitor(transitions);
@@ -50,13 +53,14 @@ namespace VBF.Compilers.Parsers
             m_heads = new List<ParserHead>();
             m_tempHeads = new List<ParserHead>();
             m_acceptedHeads = new List<ParserHead>();
+            m_errorDef = errorDef;
 
             //init state
             m_heads.Add(new ParserHead(new StackNode()));
         }
 
         public void Input(Lexeme z)
-        {            
+        {
             List<ParserHead> shiftedHeads = m_tempHeads;
 
             int count = m_heads.Count;
@@ -98,7 +102,7 @@ namespace VBF.Compilers.Parsers
 
                     var reducedHead = head.Clone();
 
-                    reducedHead.Reduce(production, m_reducer);
+                    reducedHead.Reduce(production, m_reducer, z);
 
                     if (reducedHead.IsAccepted)
                     {
@@ -118,7 +122,68 @@ namespace VBF.Compilers.Parsers
 
                 if (shifts == null && reduces == null)
                 {
-                    //TODO: no action for current lexeme, error recovery
+                    //no action for current lexeme, error recovery
+
+                    //option 1: remove
+                    //remove current token and continue
+                    var deleteHead = head.Clone();
+
+                    deleteHead.IncreaseErrorRecoverLevel();
+                    deleteHead.AddError(new ErrorRecord(m_errorDef.TokenUnexpected, z.Span) { ErrorArgument = z.Value });
+
+                    shiftedHeads.Add(deleteHead);
+
+                    //option 2: insert
+                    //insert all possible shifts token and continue
+                    Queue<ParserHead> recoverQueue = new Queue<ParserHead>();
+
+                    for (int j = 0; j < m_transitions.TokenCount - 1; j++)
+                    {
+                        recoverQueue.Enqueue(head);
+
+                        while (recoverQueue.Count > 0)
+                        {
+                            var recoverHead = recoverQueue.Dequeue();
+                            int recoverStateNumber = recoverHead.TopStackStateIndex;
+
+                            var recoverShifts = m_transitions.GetShift(recoverStateNumber, j);
+                            var recoverShift = recoverShifts;
+
+                            while (recoverShift != null)
+                            {
+                                var insertHead = recoverHead.Clone();
+
+                                var insertLexeme = z.GetErrorCorrectionLexeme(j, m_transitions.GetTokenDescription(j));
+                                insertHead.Shift(insertLexeme, recoverShift.Value);
+                                insertHead.IncreaseErrorRecoverLevel();
+                                insertHead.AddError(new ErrorRecord(m_errorDef.TokenMissing, z.Span) { ErrorArgument = insertLexeme.Value });
+
+                                m_heads.Add(insertHead);
+                                ++count;
+
+                                recoverShift = recoverShift.GetNext();
+                            }
+
+                            var recoverReduces = m_transitions.GetReduce(recoverStateNumber, j);
+                            var recoverReduce = recoverReduces;
+
+                            while (recoverReduce != null)
+                            {
+                                int productionIndex = recoverReduce.Value;
+                                IProduction production = m_transitions.NonTerminals[productionIndex];
+
+                                var reducedHead = recoverHead.Clone();
+
+                                reducedHead.Reduce(production, m_reducer, z);
+
+                                //add back to queue, until shifted
+                                recoverQueue.Enqueue(reducedHead);
+
+                                //get next reduce
+                                recoverReduce = recoverReduce.GetNext();
+                            }
+                        }
+                    }
                 }
             }
 
@@ -127,9 +192,41 @@ namespace VBF.Compilers.Parsers
 
         private void SwapAndClean()
         {
-            var temp = m_tempHeads;
-            m_tempHeads = m_heads;
-            m_heads = temp;
+            //var temp = m_tempHeads;
+            //m_tempHeads = m_heads;
+            //m_heads = temp;
+
+            //m_tempHeads.Clear();
+
+            m_heads.Clear();
+
+            if (m_tempHeads.Count == 0)
+            {
+                return;
+            }
+
+            //find min error level;
+            int minLevel = m_tempHeads[0].ErrorRecoverLevel;
+
+            for (int i = 0; i < m_tempHeads.Count; i++)
+            {
+                var headLevel = m_tempHeads[i].ErrorRecoverLevel;
+                if (minLevel > headLevel)
+                {
+                    minLevel = headLevel;
+                }
+            }
+
+            //copy all heads with min error level
+            for (int i = 0; i < m_tempHeads.Count; i++)
+            {
+                var head = m_tempHeads[i];
+
+                if (head.ErrorRecoverLevel == minLevel)
+                {
+                    m_heads.Add(head);
+                }
+            }
 
             m_tempHeads.Clear();
         }

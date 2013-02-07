@@ -16,6 +16,8 @@ namespace VBF.Compilers.Parsers
         internal StackNode TopStack;
         internal StackNode NewTopStack;
 
+        internal ErrorRecord ReduceError;
+
         public ReduceVisitor(TransitionTable transitions)
         {
             m_transitions = transitions;
@@ -38,6 +40,23 @@ namespace VBF.Compilers.Parsers
 
             //reduce
             var result = mappingProduction.Selector((TSource)topStack.ReducedValue);
+
+            //validate result
+            if (mappingProduction.ValidationRule != null)
+            {
+                if (!mappingProduction.ValidationRule(result))
+                {
+                    SourceSpan position = null;
+
+                    if (mappingProduction.PositionGetter != null)
+                    {
+                        position = mappingProduction.PositionGetter(result);
+                    }
+
+                    //generates error
+                    ReduceError = new ErrorRecord(mappingProduction.ValidationErrorId, position);
+                }
+            }
 
             //compute goto
             var gotoAction = m_transitions.GetGoto(poppedTopStack.StateIndex, info.NonTerminalIndex);

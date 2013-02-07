@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,8 @@ namespace VBF.Compilers.Parsers
         //Indicates current error recover level
         //level = 0 means not error
         //level = 1 means recovered 1 error, etc
-        private int m_errorRecoverLevel;
+        private int m_errorRecoverLevel = 0;
+        private List<ErrorRecord> m_errors;
 
         public bool IsAccepted { get; private set; }
 
@@ -35,6 +37,24 @@ namespace VBF.Compilers.Parsers
             }
         }
 
+        public int ErrorRecoverLevel
+        {
+            get
+            {
+                return m_errorRecoverLevel;
+            }
+        }
+
+        public void AddError(ErrorRecord error)
+        {
+            if (m_errors == null)
+            {
+                m_errors = new List<ErrorRecord>();
+            }
+
+            m_errors.Add(error);
+        }
+
         public ParserHead(StackNode topStack)
         {
             m_topStack = topStack;
@@ -51,15 +71,12 @@ namespace VBF.Compilers.Parsers
             m_topStack = shiftNode;
         }
 
-        public void Reduce(IProduction production, ReduceVisitor reducer)
+        public void Reduce(IProduction production, ReduceVisitor reducer, Lexeme lookahead)
         {
             if (production == null)
             {
                 //Accept
-                if (m_topStack.PrevNode.StateIndex != 0)
-                {
-                    throw new Exception("stack is not empty");
-                }
+                Debug.Assert(m_topStack.PrevNode.StateIndex == 0);
 
                 //TODO: accepted
                 IsAccepted = true;
@@ -67,14 +84,32 @@ namespace VBF.Compilers.Parsers
             }
 
             reducer.TopStack = m_topStack;
+            reducer.ReduceError = null;
             production.Accept(reducer);
 
             m_topStack = reducer.NewTopStack;
+
+            if (reducer.ReduceError != null)
+            {
+                IncreaseErrorRecoverLevel();
+
+                if (reducer.ReduceError.ErrorPosition == null)
+                {
+                    reducer.ReduceError.ErrorPosition = lookahead.Span;
+                }
+
+                AddError(reducer.ReduceError);
+            }
+        }
+
+        public void IncreaseErrorRecoverLevel()
+        {
+            ++m_errorRecoverLevel;
         }
 
         public ParserHead Clone()
         {
-            return new ParserHead(m_topStack);
+            return (ParserHead)MemberwiseClone();
         }
     }
 }

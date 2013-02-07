@@ -48,6 +48,7 @@
     <Compile Include="ConcatenationProduction.cs" />
     <Compile Include="EmptyProduction.cs" />
     <Compile Include="EndOfStream.cs" />
+    <Compile Include="ErrorRecord.cs" />
     <Compile Include="Generator\SymbolConversion.cs" />
     <Compile Include="Generator\TransitionTable.cs" />
     <Compile Include="Grammar.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="Generator\LR0State.cs" />
     <Compile Include="Generator\ReduceAction.cs" />
     <Compile Include="StackNode.cs" />
+    <Compile Include="SyntaxErrors.cs" />
     <Compile Include="Terminal.cs" />
   </ItemGroup>
   <ItemGroup />

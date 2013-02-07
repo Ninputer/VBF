@@ -238,7 +238,7 @@ namespace VBF.Compilers.Parsers.Generator
                     isv.DotLocation = item.DotLocation;
                     m_infoManager.Productions[item.ProductionIndex].Accept(isv);
 
-                    dotCommand.Append(isv.ToString());
+                    dotCommand.Append(Escape(isv.ToString()));
 
                     dotCommand.Append("\\n");
                 }
@@ -249,9 +249,9 @@ namespace VBF.Compilers.Parsers.Generator
 
                     foreach (var reduce in state.Reduces)
                     {
-                        dotCommand.Append((reduce.ReduceTerminal as ProductionBase).DebugName);
+                        dotCommand.Append(Escape((reduce.ReduceTerminal as ProductionBase).DebugName));
                         dotCommand.Append(" Reduce ");
-                        dotCommand.Append((reduce.ReduceProduction as ProductionBase).DebugName);
+                        dotCommand.Append(Escape((reduce.ReduceProduction as ProductionBase).DebugName));
                         dotCommand.Append("\\n");
                     }
                 }
@@ -267,9 +267,21 @@ namespace VBF.Compilers.Parsers.Generator
 
 
 
-            dotCommand.AppendLine("}");
+            dotCommand.AppendLine("}");            
 
             return dotCommand.ToString();
         }
+
+        private static string Escape(string input)
+        {
+            StringBuilder replaceBuilder = new StringBuilder(input);
+
+            replaceBuilder.Replace(">", "\\>");
+            replaceBuilder.Replace("<", "\\<");
+            replaceBuilder.Replace("\"", "\\\"");
+
+            return replaceBuilder.ToString();
+        }
     }
+
 }

@@ -9,6 +9,7 @@ using VBF.Compilers.Parsers;
 using RE = VBF.Compilers.Scanners.RegularExpression;
 using VBF.Compilers.Parsers.Generator;
 using System.IO;
+using VBF.Compilers;
 
 namespace Compilers.UnitTests
 {
@@ -114,7 +115,7 @@ namespace Compilers.UnitTests
 
             TransitionTable tt = TransitionTable.Create(lr0, scannerinfo);
 
-            ParserDriver driver = new ParserDriver(tt);
+            ParserDriver driver = new ParserDriver(tt, new SyntaxErrors());
 
             ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
             builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
@@ -185,11 +186,11 @@ namespace Compilers.UnitTests
 
             TransitionTable tt = TransitionTable.Create(lr0, scannerinfo);
 
-            ParserDriver driver = new ParserDriver(tt);
+            ParserDriver driver = new ParserDriver(tt, new SyntaxErrors() { TokenUnexpected = 1 });
 
             ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
             builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
-            var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x+x")));
+            var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x+")));
 
             var z1 = scanner.Read();
 
@@ -218,6 +219,41 @@ namespace Compilers.UnitTests
             Assert.AreEqual(0, driver.CurrentStackCount);
             Assert.AreEqual(1, driver.AcceptedCount);
             Assert.AreEqual(3, driver.GetResult(0));
+        }
+
+        [Test]
+        public void WhereGrammaTest()
+        {
+            Lexicon test = new Lexicon();
+
+            var X = test.Lexer.DefineToken(RE.Symbol('x'));
+            var PLUS = test.Lexer.DefineToken(RE.Symbol('+'));
+            var GREATER = test.Lexer.DefineToken(RE.Symbol('>'));
+
+            var scannerinfo = test.CreateScannerInfo();
+
+            Production<object> E = new Production<object>(), T = new Production<object>();
+
+            const int EG_SHIFT_RIGHT_SYMBOL = 2003;
+
+            E.Rule =
+                (from e in E
+                 from g1 in GREATER
+                 from g2 in GREATER
+                 where Grammar.Check(g2.PrefixTrivia.Count == 0, EG_SHIFT_RIGHT_SYMBOL, new SourceSpan(g1.Span.StartLocation, g2.Span.EndLocation))
+                 from t in T
+                 select (object)(((int)e) + ((int)t))) | T;
+
+            T.Rule =
+                from x in X
+                select (object)1;
+
+            ProductionInfoManager pim = new ProductionInfoManager(E.SuffixedBy(Grammar.Eos()));
+
+            LR0Model lr0 = new LR0Model(pim);
+            lr0.BuildModel();
+
+            string dot = lr0.ToString();
         }
     }
 }
