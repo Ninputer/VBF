@@ -65,10 +65,10 @@ namespace VBF.Compilers.Parsers
             Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
 
             //perform goto
-            StackNode reduceNode = new StackNode();
+            StackNode reduceNode = topStack; //new StackNode();
             reduceNode.StateIndex = gotoAction.Value;
             reduceNode.ReducedValue = result;
-            reduceNode.PrevNode = poppedTopStack;
+            //reduceNode.PrevNode = poppedTopStack;
 
             NewTopStack = reduceNode;
         }

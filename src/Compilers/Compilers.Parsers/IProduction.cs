@@ -10,5 +10,6 @@ namespace VBF.Compilers.Parsers
         void Accept(IProductionVisitor visitor);
         bool IsTerminal { get; }
         bool IsEos { get; }
+        int Priority { get; set; }
     }
 }

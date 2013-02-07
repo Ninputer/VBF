@@ -71,5 +71,17 @@ namespace VBF.Compilers.Parsers
         {
             return Rule.ToString();
         }
+
+        public override int Priority
+        {
+            get
+            {
+                return Rule.Priority;
+            }
+            set
+            {
+                Rule.Priority = value;
+            }
+        }
     }
 }

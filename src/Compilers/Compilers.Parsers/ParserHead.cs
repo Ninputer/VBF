@@ -20,6 +20,7 @@ namespace VBF.Compilers.Parsers
         private List<ErrorRecord> m_errors;
 
         public bool IsAccepted { get; private set; }
+        public int Priority { get; set; }
 
         public int TopStackStateIndex
         {
@@ -42,6 +43,14 @@ namespace VBF.Compilers.Parsers
             get
             {
                 return m_errorRecoverLevel;
+            }
+        }
+
+        public IReadOnlyList<ErrorRecord> Errors
+        {
+            get
+            {
+                return m_errors;
             }
         }
 
@@ -86,6 +95,8 @@ namespace VBF.Compilers.Parsers
             reducer.TopStack = m_topStack;
             reducer.ReduceError = null;
             production.Accept(reducer);
+
+            if (Priority < production.Priority) Priority = production.Priority;
 
             m_topStack = reducer.NewTopStack;
 

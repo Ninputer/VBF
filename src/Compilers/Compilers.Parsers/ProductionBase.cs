@@ -50,6 +50,12 @@ namespace VBF.Compilers.Parsers
                 }
             }
         }
+
+        /// <summary>
+        /// Larger number means higher priority
+        /// </summary>
+        public virtual int Priority { get; set; }
+        
     }
 
     public abstract class ProductionBase<T> : ProductionBase

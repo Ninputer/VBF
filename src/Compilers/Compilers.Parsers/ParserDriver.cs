@@ -35,11 +35,24 @@ namespace VBF.Compilers.Parsers
             }
         }
 
-        public object GetResult(int index)
+        public object GetResult(int index, CompilationErrorManager errorManager)
         {
             CodeContract.RequiresArgumentInRange(index >= 0 && index < m_acceptedHeads.Count, "index", "index is out of range");
 
-            return m_acceptedHeads[index].TopStackValue;
+            var head = m_acceptedHeads[index];
+
+            if (head.Errors != null && errorManager != null)
+            {
+                //aggregate errors
+                foreach (var error in head.Errors)
+                {
+                    int errorId = error.ErrorId ?? m_errorDef.OtherError;
+
+                    errorManager.AddError(errorId, error.ErrorPosition, error.ErrorArgument);
+                }
+            }
+
+            return head.TopStackValue;
         }
 
         public ParserDriver(TransitionTable transitions, SyntaxErrors errorDef)
@@ -122,16 +135,25 @@ namespace VBF.Compilers.Parsers
 
                 if (shifts == null && reduces == null)
                 {
+                    //skip error recovery if there's already any accepted states
+                    if (m_acceptedHeads.Count > 0)
+                    {
+                        continue;
+                    }
+
                     //no action for current lexeme, error recovery
 
                     //option 1: remove
                     //remove current token and continue
-                    var deleteHead = head.Clone();
+                    if (!z.IsEndOfStream)
+                    {
+                        var deleteHead = head.Clone();
 
-                    deleteHead.IncreaseErrorRecoverLevel();
-                    deleteHead.AddError(new ErrorRecord(m_errorDef.TokenUnexpected, z.Span) { ErrorArgument = z.Value });
+                        deleteHead.IncreaseErrorRecoverLevel();
+                        deleteHead.AddError(new ErrorRecord(m_errorDef.TokenUnexpected, z.Span) { ErrorArgument = z.Value });
 
-                    shiftedHeads.Add(deleteHead);
+                        shiftedHeads.Add(deleteHead);
+                    }
 
                     //option 2: insert
                     //insert all possible shifts token and continue
@@ -190,6 +212,58 @@ namespace VBF.Compilers.Parsers
             SwapAndClean();
         }
 
+        private List<ParserHead> CleanUpHeads(List<ParserHead> heads, List<ParserHead> comparedHeads)
+        {
+            var newHeads = new List<ParserHead>();
+
+            var firstHead = heads[0];
+            int minLevel = firstHead.ErrorRecoverLevel;
+            int minError = firstHead.Errors != null ? firstHead.Errors.Count : 0;
+            int maxPriority = 0;
+
+            for (int i = 0; i < comparedHeads.Count; i++)
+            {
+                var head = comparedHeads[i];
+                var headLevel = head.ErrorRecoverLevel;
+                var priority = head.Priority;
+                var errorCount = head.Errors != null ? head.Errors.Count : 0;
+
+                if (minLevel > headLevel)
+                {
+                    minLevel = headLevel;
+                }
+
+                if (minError > errorCount)
+                {
+                    minError = errorCount;
+                }
+
+                if (maxPriority < priority)
+                {
+                    maxPriority = priority;
+                }
+            }
+
+            //copy all heads with min error level, min error count and highest priority
+            for (int i = 0; i < heads.Count; i++)
+            {
+                var head = heads[i];
+
+                if (head.ErrorRecoverLevel == minLevel && head.Priority == maxPriority)
+                {
+                    if (head.Errors == null || head.Errors.Count == minError)
+                    {
+                        head.Priority = 0;
+                        newHeads.Add(head);
+                    }
+                }
+            }
+
+            heads.Clear();
+
+            return newHeads;
+        }
+
         private void SwapAndClean()
         {
             //var temp = m_tempHeads;
@@ -200,6 +274,8 @@ namespace VBF.Compilers.Parsers
 
             m_heads.Clear();
 
+            CleanUpAcceptedHeads();
+
             if (m_tempHeads.Count == 0)
             {
                 return;
@@ -207,13 +283,22 @@ namespace VBF.Compilers.Parsers
 
             //find min error level;
             int minLevel = m_tempHeads[0].ErrorRecoverLevel;
+            int maxPriority = 0;
 
             for (int i = 0; i < m_tempHeads.Count; i++)
             {
-                var headLevel = m_tempHeads[i].ErrorRecoverLevel;
+                var head = m_tempHeads[i];
+                var headLevel = head.ErrorRecoverLevel;
+                var priority = head.Priority;
+
                 if (minLevel > headLevel)
                 {
                     minLevel = headLevel;
+                }
+
+                if (maxPriority < priority)
+                {
+                    maxPriority = priority;
                 }
             }
 
@@ -222,13 +307,22 @@ namespace VBF.Compilers.Parsers
             {
                 var head = m_tempHeads[i];
 
-                if (head.ErrorRecoverLevel == minLevel)
+                if (head.ErrorRecoverLevel == minLevel && head.Priority == maxPriority)
                 {
+                    head.Priority = 0;
                     m_heads.Add(head);
                 }
             }
 
             m_tempHeads.Clear();
+        }
+
+        private void CleanUpAcceptedHeads()
+        {
+            if (m_acceptedHeads.Count > 0)
+            {
+                m_acceptedHeads = CleanUpHeads(m_acceptedHeads, m_acceptedHeads);
+            }
         }
 
 

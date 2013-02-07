@@ -148,11 +148,11 @@ namespace Compilers.UnitTests
             Assert.AreEqual(0, driver.CurrentStackCount);
             Assert.AreEqual(2, driver.AcceptedCount);
 
-            var results = new[] { (int)driver.GetResult(0), (int)driver.GetResult(1) };
+            var results = new[] { (int)driver.GetResult(0, null), (int)driver.GetResult(1, null) };
 
             Assert.IsTrue(results.Contains(8));
             Assert.IsTrue(results.Contains(6));
-            
+
         }
 
         [Test]
@@ -190,7 +190,7 @@ namespace Compilers.UnitTests
 
             ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
             builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
-            var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x+")));
+            var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x+x")));
 
             var z1 = scanner.Read();
 
@@ -218,7 +218,7 @@ namespace Compilers.UnitTests
 
             Assert.AreEqual(0, driver.CurrentStackCount);
             Assert.AreEqual(1, driver.AcceptedCount);
-            Assert.AreEqual(3, driver.GetResult(0));
+            Assert.AreEqual(3, driver.GetResult(0, null));
         }
 
         [Test]
@@ -226,34 +226,167 @@ namespace Compilers.UnitTests
         {
             Lexicon test = new Lexicon();
 
-            var X = test.Lexer.DefineToken(RE.Symbol('x'));
-            var PLUS = test.Lexer.DefineToken(RE.Symbol('+'));
+            var ID = test.Lexer.DefineToken(RE.Range('a', 'z').Concat(
+                (RE.Range('a', 'z') | RE.Range('0', '9')).Many()), "ID");
+            var NUM = test.Lexer.DefineToken(RE.Range('0', '9').Many1(), "NUM");
             var GREATER = test.Lexer.DefineToken(RE.Symbol('>'));
 
-            var scannerinfo = test.CreateScannerInfo();
+            var WHITESPACE = test.Lexer.DefineToken(RE.Symbol(' ').Union(RE.Symbol('\t')), "[ ]");
 
-            Production<object> E = new Production<object>(), T = new Production<object>();
+            var p1 = from i in ID
+                     from g in GREATER
+                     from g2 in GREATER
+                     where Grammar.Check(g2.PrefixTrivia.Count == 0, 4, g2.Span)
+                     from n in NUM
+                     select "A";
 
-            const int EG_SHIFT_RIGHT_SYMBOL = 2003;
+            var p2 = from i in ID
+                     from g in GREATER
+                     from g2 in GREATER
+                     from n in NUM
+                     select "B";
 
-            E.Rule =
-                (from e in E
-                 from g1 in GREATER
-                 from g2 in GREATER
-                 where Grammar.Check(g2.PrefixTrivia.Count == 0, EG_SHIFT_RIGHT_SYMBOL, new SourceSpan(g1.Span.StartLocation, g2.Span.EndLocation))
-                 from t in T
-                 select (object)(((int)e) + ((int)t))) | T;
+            p1.Priority = 1;
 
-            T.Rule =
-                from x in X
-                select (object)1;
+            var parser1 = p1 | p2;
 
-            ProductionInfoManager pim = new ProductionInfoManager(E.SuffixedBy(Grammar.Eos()));
+
+            var info = test.CreateScannerInfo();
+
+            var errorManager = new CompilationErrorManager();
+            errorManager.DefineError(1, 0, CompilationStage.Parsing, "Unexpected token '{0}'");
+            errorManager.DefineError(2, 0, CompilationStage.Parsing, "Missing token '{0}'");
+            errorManager.DefineError(3, 0, CompilationStage.Parsing, "Syntax error");
+            errorManager.DefineError(4, 0, CompilationStage.Parsing, "White spaces between >> are not allowed");
+
+            ProductionInfoManager pim = new ProductionInfoManager(parser1.SuffixedBy(Grammar.Eos()));
 
             LR0Model lr0 = new LR0Model(pim);
             lr0.BuildModel();
 
             string dot = lr0.ToString();
+
+            TransitionTable tt = TransitionTable.Create(lr0, info);
+            var errdef = new SyntaxErrors() { TokenUnexpected = 1, TokenMissing = 2, OtherError = 3 };
+            ParserDriver driver = new ParserDriver(tt, errdef);
+
+            string source1 = "abc >> 123";
+            var sr1 = new SourceReader(new StringReader(source1));
+
+            Scanner scanner = new Scanner(info);
+            scanner.SetTriviaTokens(WHITESPACE.Index);
+            scanner.SetSource(sr1);
+
+            Lexeme r;
+            do
+            {
+                r = scanner.Read();
+
+                driver.Input(r);
+            } while (!r.IsEndOfStream);
+
+            Assert.AreEqual(1, driver.AcceptedCount);
+            Assert.AreEqual("A", driver.GetResult(0, errorManager));
+            Assert.AreEqual(0, errorManager.Errors.Count);
+
+            ParserDriver driver2 = new ParserDriver(tt, errdef);
+
+            string source2 = "abc > > 123";
+            var sr2 = new SourceReader(new StringReader(source2));
+
+            scanner.SetSource(sr2);
+            do
+            {
+                r = scanner.Read();
+
+                driver2.Input(r);
+            } while (!r.IsEndOfStream);
+
+            Assert.AreEqual(1, driver2.AcceptedCount);
+            Assert.AreEqual("B", driver2.GetResult(0, errorManager));
+            Assert.AreEqual(0, errorManager.Errors.Count);
+        }
+
+        class Node
+        {
+            public Node LeftChild { get; private set; }
+            public Node RightChild { get; private set; }
+            public string Label { get; private set; }
+
+            public Node(string label, Node left, Node right)
+            {
+                Label = label;
+                LeftChild = left;
+                RightChild = right;
+            }
+        }
+
+
+        [Test]
+        public void ParserErrorRecoveryTest()
+        {
+            Lexicon binaryTreeSyntax = new Lexicon();
+            var lex = binaryTreeSyntax.Lexer;
+
+            //定义词法
+            Token LEFTPH = lex.DefineToken(RE.Symbol('('));
+            Token RIGHTPH = lex.DefineToken(RE.Symbol(')'));
+            Token COMMA = lex.DefineToken(RE.Symbol(','));
+            Token LETTER = lex.DefineToken(RE.Range('a', 'z') | RE.Range('A', 'Z'), "ID");
+
+            //定义语法
+            Production<Node> NodeParser = new Production<Node>();
+            NodeParser.Rule =
+                (from a in LETTER
+                 from _1 in LEFTPH
+                 from left in NodeParser
+                 from _2 in COMMA
+                 from right in NodeParser
+                 from _3 in RIGHTPH
+                 select new Node(a.Value, left, right))
+                | Grammar.Empty<Node>(null);
+
+            var builder = new ForkableScannerBuilder(binaryTreeSyntax.CreateScannerInfo());
+
+            const string correct = "A(B(,),C(,))";
+
+            string source = "A(B(,),C(,))))))))))))))))";
+            SourceReader sr = new SourceReader(
+                new StringReader(source));
+
+            var info = binaryTreeSyntax.CreateScannerInfo();
+            Scanner scanner = new Scanner(info);
+            scanner.SetSource(sr);
+
+            CompilationErrorManager errorManager = new CompilationErrorManager();
+            errorManager.DefineError(1, 0, CompilationStage.Parsing, "Unexpected token '{0}'");
+            errorManager.DefineError(2, 0, CompilationStage.Parsing, "Missing token '{0}'");
+            errorManager.DefineError(3, 0, CompilationStage.Parsing, "Syntax error");
+
+            ProductionInfoManager pim = new ProductionInfoManager(NodeParser.SuffixedBy(Grammar.Eos()));
+
+            LR0Model lr0 = new LR0Model(pim);
+            lr0.BuildModel();
+
+            string dot = lr0.ToString();
+
+            TransitionTable tt = TransitionTable.Create(lr0, info);
+
+            SyntaxErrors errDef = new SyntaxErrors() { TokenUnexpected = 1, TokenMissing = 2, OtherError = 3 };
+
+            ParserDriver driver = new ParserDriver(tt, errDef);
+
+            Lexeme r;
+            do
+            {
+                r = scanner.Read();
+
+                driver.Input(r);
+            } while (!r.IsEndOfStream);
+
+            var result = driver.GetResult(0, errorManager);
+
+            ;
         }
     }
 }
