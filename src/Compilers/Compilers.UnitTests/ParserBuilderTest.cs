@@ -115,7 +115,7 @@ namespace Compilers.UnitTests
 
             TransitionTable tt = TransitionTable.Create(lr0, scannerinfo);
 
-            ParserDriver driver = new ParserDriver(tt, new SyntaxErrors());
+            ParserEngine driver = new ParserEngine(tt, new SyntaxErrors());
 
             ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
             builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
@@ -186,7 +186,7 @@ namespace Compilers.UnitTests
 
             TransitionTable tt = TransitionTable.Create(lr0, scannerinfo);
 
-            ParserDriver driver = new ParserDriver(tt, new SyntaxErrors() { TokenUnexpected = 1 });
+            ParserEngine driver = new ParserEngine(tt, new SyntaxErrors() { TokenUnexpectedId = 1 });
 
             ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
             builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
@@ -267,8 +267,8 @@ namespace Compilers.UnitTests
             string dot = lr0.ToString();
 
             TransitionTable tt = TransitionTable.Create(lr0, info);
-            var errdef = new SyntaxErrors() { TokenUnexpected = 1, TokenMissing = 2, OtherError = 3 };
-            ParserDriver driver = new ParserDriver(tt, errdef);
+            var errdef = new SyntaxErrors() { TokenUnexpectedId = 1, TokenMissingId = 2, OtherErrorId = 3 };
+            ParserEngine driver = new ParserEngine(tt, errdef);
 
             string source1 = "abc >> 123";
             var sr1 = new SourceReader(new StringReader(source1));
@@ -289,7 +289,7 @@ namespace Compilers.UnitTests
             Assert.AreEqual("A", driver.GetResult(0, errorManager));
             Assert.AreEqual(0, errorManager.Errors.Count);
 
-            ParserDriver driver2 = new ParserDriver(tt, errdef);
+            ParserEngine driver2 = new ParserEngine(tt, errdef);
 
             string source2 = "abc > > 123";
             var sr2 = new SourceReader(new StringReader(source2));
@@ -379,9 +379,9 @@ namespace Compilers.UnitTests
 
             TransitionTable tt = TransitionTable.Create(lr0, info);
 
-            SyntaxErrors errDef = new SyntaxErrors() { TokenUnexpected = 1, TokenMissing = 2, OtherError = 3 };
+            SyntaxErrors errDef = new SyntaxErrors() { TokenUnexpectedId = 1, TokenMissingId = 2, OtherErrorId = 3 };
 
-            ParserDriver driver = new ParserDriver(tt, errDef);
+            ParserEngine driver = new ParserEngine(tt, errDef);
 
             Lexeme r;
             do
@@ -393,6 +393,56 @@ namespace Compilers.UnitTests
 
             var result = driver.GetResult(0, errorManager);
 
+            ;
+        }
+
+        class TreeParser : ParserBase<Node>
+        {
+            Token LEFTPH;
+            Token RIGHTPH;
+            Token COMMA;
+            Token LETTER;
+
+            public TreeParser(CompilationErrorManager em) : base(em) { }
+
+            protected override void OnDefineLexer(Lexicon lexicon, ICollection<Token> triviaTokens)
+            {
+                var lex = lexicon.Lexer;
+
+                //lex
+                LEFTPH = lex.DefineToken(RE.Symbol('('));
+                RIGHTPH = lex.DefineToken(RE.Symbol(')'));
+                COMMA = lex.DefineToken(RE.Symbol(','));
+                LETTER = lex.DefineToken(RE.Range('a', 'z') | RE.Range('A', 'Z'), "ID");
+            }
+
+            protected override ProductionBase<Node> OnDefineGrammar()
+            {
+                //grammar
+                Production<Node> NodeParser = new Production<Node>();
+                NodeParser.Rule =
+                    (from a in LETTER
+                     from _1 in LEFTPH
+                     from left in NodeParser
+                     from _2 in COMMA
+                     from right in NodeParser
+                     from _3 in RIGHTPH
+                     select new Node(a.Value, left, right))
+                    | Grammar.Empty<Node>(null);
+
+                return NodeParser;
+            }
+        }
+
+        [Test]
+        public void ParserBaseTest()
+        {
+            string source = "A((B(,),C(,)";
+            CompilationErrorManager em = new CompilationErrorManager();
+
+            var parser = new TreeParser(em);
+
+            var result = parser.Parse(source);
             ;
         }
     }

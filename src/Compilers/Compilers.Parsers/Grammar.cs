@@ -188,7 +188,17 @@ namespace VBF.Compilers.Parsers
         {
             CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return production.Many1().Union(Empty(new RepeatParserListNode<T>() as IEnumerable<T>));
+            CodeContract.RequiresArgumentNotNull(production, "production");
+
+            Production<IEnumerable<T>> many1 = new Production<IEnumerable<T>>();
+            var many = Empty(new RepeatParserListNode<T>() as IEnumerable<T>) | many1;
+
+
+            many1.Rule = from r in production
+                         from rm in many
+                         select new RepeatParserListNode<T>(r, rm as RepeatParserListNode<T>) as IEnumerable<T>;
+
+            return many;
         }
 
         public static ProductionBase<IEnumerable<T>> Many<T, TSeparator>(this ProductionBase<T> production, ProductionBase<TSeparator> separator)
@@ -230,9 +240,15 @@ namespace VBF.Compilers.Parsers
         {
             CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return from r in production
-                   from rm in production.Many()
-                   select new RepeatParserListNode<T>(r, rm as RepeatParserListNode<T>) as IEnumerable<T>;
+            Production<IEnumerable<T>> many1 = new Production<IEnumerable<T>>();
+            var many = Empty(new RepeatParserListNode<T>() as IEnumerable<T>) | many1;
+
+
+            many1.Rule = from r in production
+                         from rm in many
+                         select new RepeatParserListNode<T>(r, rm as RepeatParserListNode<T>) as IEnumerable<T>;
+
+            return many1;
         }
 
         public static ProductionBase<IEnumerable<Lexeme>> Many1(this Token token)
@@ -304,6 +320,16 @@ namespace VBF.Compilers.Parsers
         public static ProductionBase<T> SuffixedBy<T>(this ProductionBase<T> production, Token suffix)
         {
             return from p in production from s in suffix select p;
+        }
+
+        public static ProductionBase<T> PackedBy<T, TPrefix, TSuffix>(this ProductionBase<T> production, ProductionBase<TPrefix> prefix, ProductionBase<TSuffix> suffix)
+        {
+            return from pr in prefix from p in production from s in suffix select p;
+        }
+
+        public static ProductionBase<T> PackedBy<T>(this ProductionBase<T> production, Token prefix, Token suffix)
+        {
+            return from pr in prefix from p in production from s in suffix select p;
         }
     }
 }

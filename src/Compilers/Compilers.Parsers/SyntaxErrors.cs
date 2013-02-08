@@ -8,8 +8,9 @@ namespace VBF.Compilers.Parsers
 {
     public class SyntaxErrors
     {
-        public int TokenMissing { get; set; }
-        public int TokenUnexpected { get; set; }
-        public int OtherError { get; set; }
+        public int TokenMissingId { get; set; }
+        public int TokenUnexpectedId { get; set; }
+        public int OtherErrorId { get; set; }
+        public int LexicalErrorId { get; set; }
     }
 }
