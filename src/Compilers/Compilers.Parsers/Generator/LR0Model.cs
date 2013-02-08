@@ -281,6 +281,14 @@ namespace VBF.Compilers.Parsers.Generator
             replaceBuilder.Replace("<", "\\<");
             replaceBuilder.Replace("\"", "\\\"");
 
+            replaceBuilder.Replace("{", "\\{");
+            replaceBuilder.Replace("}", "\\}");
+
+            replaceBuilder.Replace("[", "\\[");
+            replaceBuilder.Replace("]", "\\]");
+
+            replaceBuilder.Replace("|", "\\|");
+
             return replaceBuilder.ToString();
         }
     }

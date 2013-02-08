@@ -376,14 +376,14 @@ namespace VBF.Compilers.Parsers.Generator
         {
             if (DotLocation == 0)
             {
-                m_itemString = String.Format("{0} ::=.({1}\\|{2})", alternationProduction.DebugName,
+                m_itemString = String.Format("{0} ::=.({1}|{2})", alternationProduction.DebugName,
                         alternationProduction.Production1.DebugName,
                         alternationProduction.Production2.DebugName);
 
             }
             else
             {
-                m_itemString = String.Format("{0} ::= ({1}\\|{2}).", alternationProduction.DebugName,
+                m_itemString = String.Format("{0} ::= ({1}|{2}).", alternationProduction.DebugName,
                         alternationProduction.Production1.DebugName,
                         alternationProduction.Production2.DebugName);
             }
