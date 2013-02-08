@@ -45,6 +45,9 @@
     <Reference Include="VBF.Compilers.Common">
       <HintPath>..\..\..\bin\VBF.Compilers.Common.dll</HintPath>
     </Reference>
+    <Reference Include="VBF.Compilers.Parsers">
+      <HintPath>..\..\..\bin\VBF.Compilers.Parsers.dll</HintPath>
+    </Reference>
     <Reference Include="VBF.Compilers.Parsers.Combinators">
       <HintPath>..\..\..\bin\VBF.Compilers.Parsers.Combinators.dll</HintPath>
     </Reference>
@@ -99,6 +102,7 @@
     <Compile Include="Method.cs" />
     <Compile Include="MethodBodyResolver.cs" />
     <Compile Include="MethodOverloadingComparer.cs" />
+    <Compile Include="MiniSharpParser.CP.cs" />
     <Compile Include="MiniSharpParser.cs" />
     <Compile Include="Parameter.cs" />
     <Compile Include="PrimaryType.cs" />

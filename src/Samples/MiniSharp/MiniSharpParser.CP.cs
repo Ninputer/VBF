@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using VBF.Compilers;
 using VBF.Compilers.Scanners;
-using VBF.Compilers.Parsers;
+using VBF.Compilers.Parsers.Combinators;
 using RE = VBF.Compilers.Scanners.RegularExpression;
 using System.Globalization;
 using VBF.MiniSharp.Ast;
-namespace VBF.MiniSharp
+namespace VBF.MiniSharp.CombinatorParser
 {
-    public class MiniSharpParser : ParserBase<Ast.Program>
+    public class MiniSharpParser : ParserFrame<Ast.Program>
     {
-        public MiniSharpParser(CompilationErrorManager errorManager) : base(errorManager) { }
+        public MiniSharpParser(CompilationErrorManager errorManager) : base(errorManager, 101, 201, 202) { }
 
         //keywords
         private Token K_CLASS;
@@ -69,42 +69,42 @@ namespace VBF.MiniSharp
         private Token LINE_BREAKER;
 
         //grammar
-        private Production<Program> PProgram = new Production<Program>();
-        private Production<MainClass> PMainClass = new Production<MainClass>();
-        private Production<ClassDecl> PClassDecl = new Production<ClassDecl>();
-        private Production<FieldDecl> PFieldDecl = new Production<FieldDecl>();
-        private Production<MethodDecl> PMethodDecl = new Production<MethodDecl>();
-        private Production<Formal[]> PFormalList = new Production<Formal[]>();
-        private Production<Ast.Type> PType = new Production<Ast.Type>();
-        private Production<Ast.Type> PIntArrayType = new Production<Ast.Type>();
-        private Production<Ast.Type> PBoolType = new Production<Ast.Type>();
-        private Production<Ast.Type> PIntType = new Production<Ast.Type>();
-        private Production<Ast.Type> PIdType = new Production<Ast.Type>();
-        private Production<Statement> PStatement = new Production<Statement>();
-        private Production<Statement> PIfElse = new Production<Statement>();
-        private Production<Statement> PWhile = new Production<Statement>();
-        private Production<Statement> PWriteLine = new Production<Statement>();
-        private Production<Statement> PAssignment = new Production<Statement>();
-        private Production<Statement> PArrayAssignment = new Production<Statement>();
-        private Production<Statement> PVarDeclStmt = new Production<Statement>();
-        private Production<Expression> PExp = new Production<Expression>();
-        private Production<Expression> PFactor = new Production<Expression>();
-        private Production<Expression> PTerm = new Production<Expression>();
-        private Production<Expression> PComparand = new Production<Expression>();
-        private Production<Expression> PComparison = new Production<Expression>();
-        private Production<Expression> PAnd = new Production<Expression>();
-        private Production<Expression> POr = new Production<Expression>();
-        private Production<Expression> PNot = new Production<Expression>();
-        private Production<Expression> PVariable = new Production<Expression>();
-        private Production<Expression> PThis = new Production<Expression>();
-        private Production<Expression> PArrayLookup = new Production<Expression>();
-        private Production<Expression> PArrayLength = new Production<Expression>();
-        private Production<Expression> PCall = new Production<Expression>();
-        private Production<Expression> PNumberLiteral = new Production<Expression>();
-        private Production<Expression> PBoolLiteral = new Production<Expression>();
-        private Production<Expression> PNewObj = new Production<Expression>();
-        private Production<Expression> PNewArray = new Production<Expression>();
-        private Production<Expression[]> PExpList = new Production<Expression[]>();
+        private ParserReference<Program> PProgram = new ParserReference<Program>();
+        private ParserReference<MainClass> PMainClass = new ParserReference<MainClass>();
+        private ParserReference<ClassDecl> PClassDecl = new ParserReference<ClassDecl>();
+        private ParserReference<FieldDecl> PFieldDecl = new ParserReference<FieldDecl>();
+        private ParserReference<MethodDecl> PMethodDecl = new ParserReference<MethodDecl>();
+        private ParserReference<Formal[]> PFormalList = new ParserReference<Formal[]>();
+        private ParserReference<Ast.Type> PType = new ParserReference<Ast.Type>();
+        private ParserReference<Ast.Type> PIntArrayType = new ParserReference<Ast.Type>();
+        private ParserReference<Ast.Type> PBoolType = new ParserReference<Ast.Type>();
+        private ParserReference<Ast.Type> PIntType = new ParserReference<Ast.Type>();
+        private ParserReference<Ast.Type> PIdType = new ParserReference<Ast.Type>();
+        private ParserReference<Statement> PStatement = new ParserReference<Statement>();
+        private ParserReference<Statement> PIfElse = new ParserReference<Statement>();
+        private ParserReference<Statement> PWhile = new ParserReference<Statement>();
+        private ParserReference<Statement> PWriteLine = new ParserReference<Statement>();
+        private ParserReference<Statement> PAssignment = new ParserReference<Statement>();
+        private ParserReference<Statement> PArrayAssignment = new ParserReference<Statement>();
+        private ParserReference<Statement> PVarDeclStmt = new ParserReference<Statement>();
+        private ParserReference<Expression> PExp = new ParserReference<Expression>();
+        private ParserReference<Expression> PFactor = new ParserReference<Expression>();
+        private ParserReference<Expression> PTerm = new ParserReference<Expression>();
+        private ParserReference<Expression> PComparand = new ParserReference<Expression>();
+        private ParserReference<Expression> PComparison = new ParserReference<Expression>();
+        private ParserReference<Expression> PAnd = new ParserReference<Expression>();
+        private ParserReference<Expression> POr = new ParserReference<Expression>();
+        private ParserReference<Expression> PNot = new ParserReference<Expression>();
+        private ParserReference<Expression> PVariable = new ParserReference<Expression>();
+        private ParserReference<Expression> PThis = new ParserReference<Expression>();
+        private ParserReference<Func<Expression, Expression>> PArrayLookup = new ParserReference<Func<Expression, Expression>>();
+        private ParserReference<Func<Expression, Expression>> PArrayLength = new ParserReference<Func<Expression, Expression>>();
+        private ParserReference<Func<Expression, Expression>> PCall = new ParserReference<Func<Expression, Expression>>();
+        private ParserReference<Expression> PNumberLiteral = new ParserReference<Expression>();
+        private ParserReference<Expression> PBoolLiteral = new ParserReference<Expression>();
+        private ParserReference<Expression> PNewObj = new ParserReference<Expression>();
+        private ParserReference<Expression> PNewArray = new ParserReference<Expression>();
+        private ParserReference<Expression[]> PExpList = new ParserReference<Expression[]>();
 
         protected override void OnDefineLexer(Compilers.Scanners.Lexicon lexicon, ICollection<Token> skippedTokens)
         {
@@ -208,14 +208,14 @@ namespace VBF.MiniSharp
             skippedTokens.Add(COMMENT);
         }
 
-        protected override ProductionBase<Program> OnDefineGrammar()
+        protected override Compilers.Parsers.Combinators.Parser<Ast.Program> OnDefineParser()
         {
-            PProgram.Rule = // MainClass ClassDecl*
+            PProgram.Reference = // MainClass ClassDecl*
                 from main in PMainClass
                 from classes in PClassDecl.Many()
                 select new Program(main, classes.ToArray());
 
-            PMainClass.Rule = // static class id { public static void Main(string[] id) { statement }}
+            PMainClass.Reference = // static class id { public static void Main(string[] id) { statement }}
                 from _static1 in K_STATIC
                 from _class in K_CLASS
                 from className in ID
@@ -253,13 +253,13 @@ namespace VBF.MiniSharp
                 from members in classMembers
                 select new { BaseClassName = baseClassName, Members = members };
 
-            PClassDecl.Rule = //class id
+            PClassDecl.Reference = //class id
                 from _class in K_CLASS
                 from className in ID
                 from def in (classDeclSimple | classDeclInherits)
                 select new ClassDecl(className, def.BaseClassName, def.Members.Fields, def.Members.Methods);
 
-            PFieldDecl.Rule = // Type id;
+            PFieldDecl.Reference = // Type id;
                 from type in PType
                 from varName in ID
                 from _sc in SEMICOLON
@@ -278,7 +278,7 @@ namespace VBF.MiniSharp
                 from _sc in SEMICOLON
                 select new { Statements = default(Statement[]), ReturnExp = default(Expression) };
 
-            PMethodDecl.Rule = // public Type id (FormalList) { Statement* return Exp; }
+            PMethodDecl.Reference = // public Type id (FormalList) { Statement* return Exp; }
                 from _public in K_PUBLIC
                 from type in PType
                 from methodName in ID
@@ -293,34 +293,34 @@ namespace VBF.MiniSharp
                 from paramName in ID
                 select new Formal(paramType, paramName);
 
-            PFormalList.Rule = // Type id FormalRest* | <empty>
+            PFormalList.Reference = // Type id FormalRest* | <empty>
                  from list in paramFormal.Many(COMMA)
                  select list.ToArray();
 
-            PType.Rule = // int[] | bool | int | id 
+            PType.Reference = // int[] | bool | int | id 
                 PIntArrayType | PBoolType | PIntType | PIdType;
 
-            PIntArrayType.Rule = //int[]
+            PIntArrayType.Reference = //int[]
                 from _int in K_INT
                 from _lb in LEFT_BK
                 from _rb in RIGHT_BK
                 select (Ast.Type)new IntArrayType();
 
-            PBoolType.Rule = // bool
+            PBoolType.Reference = // bool
                 from _bool in K_BOOL
                 select (Ast.Type)new BooleanType();
 
-            PIntType.Rule = // int
+            PIntType.Reference = // int
                 from _int in K_INT
                 select (Ast.Type)new IntegerType();
 
-            PIdType.Rule = // id
+            PIdType.Reference = // id
                 from type in ID
                 select (Ast.Type)new IdentifierType(type);
 
             //statements
 
-            PStatement.Rule = // { statement*} | ifelse | while | writeline | assign | array assign | var decl
+            PStatement.Reference = // { statement*} | ifelse | while | writeline | assign | array assign | var decl
                 (from _1 in LEFT_BR from stmts in PStatement.Many() from _2 in RIGHT_BR select (Statement)new Block(stmts.ToArray())) |
                 PIfElse |
                 PWhile |
@@ -329,7 +329,7 @@ namespace VBF.MiniSharp
                 PArrayAssignment |
                 PVarDeclStmt;
 
-            PIfElse.Rule = // if ( exp ) statement else statement
+            PIfElse.Reference = // if ( exp ) statement else statement
                 from _if in K_IF
                 from _1 in LEFT_PH
                 from condExp in PExp
@@ -339,7 +339,7 @@ namespace VBF.MiniSharp
                 from falsePart in PStatement
                 select (Statement)new IfElse(condExp, truePart, falsePart, _if.Span, _else.Span);
 
-            PWhile.Rule = // while ( exp ) statement
+            PWhile.Reference = // while ( exp ) statement
                 from _while in K_WHILE
                 from _1 in LEFT_PH
                 from condExp in PExp
@@ -347,7 +347,7 @@ namespace VBF.MiniSharp
                 from loopBody in PStatement
                 select (Statement)new While(condExp, loopBody, _while.Span);
 
-            PWriteLine.Rule = // System.Console.WriteLine( exp );
+            PWriteLine.Reference = // System.Console.WriteLine( exp );
                 from _sys in K_SYSTEM
                 from _1 in DOT
                 from _console in K_CONSOLE
@@ -359,14 +359,14 @@ namespace VBF.MiniSharp
                 from _sc in SEMICOLON
                 select (Statement)new WriteLine(exp, new SourceSpan(_sys.Span.StartLocation, _wl.Span.EndLocation));
 
-            PAssignment.Rule = // id = exp;
+            PAssignment.Reference = // id = exp;
                 from variable in ID
                 from _eq in ASSIGN
                 from value in PExp
                 from _sc in SEMICOLON
                 select (Statement)new Assign(variable, value);
 
-            PArrayAssignment.Rule = // id[ exp ] = exp ;
+            PArrayAssignment.Reference = // id[ exp ] = exp ;
                 from variable in ID
                 from _1 in LEFT_BK
                 from index in PExp
@@ -376,7 +376,7 @@ namespace VBF.MiniSharp
                 from _sc in SEMICOLON
                 select (Statement)new ArrayAssign(variable, index, value);
 
-            PVarDeclStmt.Rule = // Type id;
+            PVarDeclStmt.Reference = // Type id;
                 from type in PType
                 from varName in ID
                 from _sc in SEMICOLON
@@ -385,30 +385,30 @@ namespace VBF.MiniSharp
             //expressions
 
             //basic
-            PNumberLiteral.Rule = // number
+            PNumberLiteral.Reference = // number
                 from intvalue in INTEGER_LITERAL
                 select (Expression)new IntegerLiteral(intvalue);
 
-            PBoolLiteral.Rule = // true | false
-                from b in K_TRUE.AsTerminal() | K_FALSE.AsTerminal()
+            PBoolLiteral.Reference = // true | false
+                from b in K_TRUE.AsParser() | K_FALSE.AsParser()
                 select (Expression)new BooleanLiteral(b);
 
-            PThis.Rule = // this
+            PThis.Reference = // this
                 from _this in K_THIS
                 select (Expression)new This(_this.Span);
 
-            PVariable.Rule = // id
+            PVariable.Reference = // id
                 from varName in ID
                 select (Expression)new Variable(varName);
 
-            PNewObj.Rule = // new id()
+            PNewObj.Reference = // new id()
                 from _new in K_NEW
                 from typeName in ID
                 from _1 in LEFT_PH
                 from _2 in RIGHT_PH
                 select (Expression)new NewObject(typeName);
 
-            PNewArray.Rule = // new int [exp]
+            PNewArray.Reference = // new int [exp]
                 from _new in K_NEW
                 from _int in K_INT
                 from _1 in LEFT_BK
@@ -423,36 +423,39 @@ namespace VBF.MiniSharp
                 PVariable |
                 PNewObj |
                 PNewArray |
-                PExp.PackedBy(LEFT_PH, RIGHT_PH);
+                PExp.PackedBy(LEFT_PH.AsParser(), RIGHT_PH.AsParser());
 
 
-            PCall.Rule = // exp.id(explist)
-                from exp in foundationExp
+            PCall.Reference = // exp.id(explist)
                 from _d in DOT
                 from methodName in ID
                 from _1 in LEFT_PH
                 from args in PExpList
                 from _2 in RIGHT_PH
-                select (Expression)new Call(exp, methodName, args);
+                select new Func<Expression, Expression>(e =>
+                    new Call(e, methodName, args));
 
-            PArrayLookup.Rule = // exp[exp]
-                from exp in foundationExp
+            PArrayLookup.Reference = // exp[exp]
                 from _1 in LEFT_BK
                 from index in PExp
                 from _2 in RIGHT_BK
-                select (Expression)new ArrayLookup(exp, index, new SourceSpan(_1.Span.EndLocation, _2.Span.StartLocation));
+                select new Func<Expression, Expression>(e =>
+                    new ArrayLookup(e, index, new SourceSpan(_1.Span.EndLocation, _2.Span.StartLocation)));
 
-            PArrayLength.Rule = // exp.Length
-                from exp in foundationExp
+            PArrayLength.Reference = // exp.Length
                 from _d in DOT
                 from _length in K_LENGTH
-                select (Expression)new ArrayLength(exp, _length.Span);
+                select new Func<Expression, Expression>(e =>
+                    new ArrayLength(e, _length.Span));
 
-            var basicExp = foundationExp | PCall | PArrayLookup | PArrayLength;  //foundation >> call | id[exp] | id.Length
+            var basicExp = //foundation >> call | id[exp] | id.Length
+                from exp in foundationExp
+                from follow in (PCall | PArrayLookup | PArrayLength).Optional()
+                select follow == null ? exp : follow(exp);
 
             //unary 
 
-            PNot.Rule = // ! exp
+            PNot.Reference = // ! exp
                 basicExp |
                 from _n in LOGICAL_NOT
                 from exp in PNot
@@ -460,47 +463,63 @@ namespace VBF.MiniSharp
 
             //binary
 
-            PFactor.Rule = // exp | !exp
+            PFactor.Reference = // exp | !exp
                 PNot;
-            
-            PTerm.Rule = // term * factor | factor
-                PFactor |
-                from term in PTerm
-                from op in (ASTERISK.AsTerminal() | SLASH.AsTerminal())
+
+            var termRest =
+                from op in (ASTERISK.AsParser() | SLASH.AsParser())
                 from factor in PFactor
-                select (Expression)new Binary(op, term, factor);
-            
-            PComparand.Rule = // comparand + term | term
-                PTerm |
-                from comparand in PComparand
-                from op in (PLUS.AsTerminal() | MINUS.AsTerminal())
+                select new { Op = op, Right = factor };
+
+            PTerm.Reference = // term * factor | factor
+                from factor in PFactor
+                from rest in termRest.Many()
+                select rest.Aggregate(factor, (f, r) => new Binary(r.Op, f, r.Right));
+
+            var comparandRest =
+                from op in (PLUS.AsParser() | MINUS.AsParser())
                 from term in PTerm
-                select (Expression)new Binary(op, comparand, term);
+                select new { Op = op, Right = term };
 
-            PComparison.Rule =// comparison < comparand | comparand
-                PComparand |
-                from comparison in PComparison
-                from op in (LESS.AsTerminal() | GREATER.AsTerminal() | EQUAL.AsTerminal())
+            PComparand.Reference = // comparand + term | term
+                from term in PTerm
+                from rest in comparandRest.Many()
+                select rest.Aggregate(term, (t, r) => new Binary(r.Op, t, r.Right));
+
+
+            var comparisonRest =
+                from op in (LESS.AsParser() | GREATER.AsParser() | EQUAL.AsParser())
                 from comparand in PComparand
-                select (Expression)new Binary(op, comparison, comparand);
+                select new { Op = op, Right = comparand };
 
-            PAnd.Rule = // andexp && comparison | comparison
-                PComparison |
-                from andexp in PAnd
+            PComparison.Reference = // comparison < comparand | comparand
+                from comparand in PComparand
+                from rest in comparisonRest.Many()
+                select rest.Aggregate(comparand, (c, r) => new Binary(r.Op, c, r.Right));
+
+            var andRest =
                 from op in LOGICAL_AND
                 from comparison in PComparison
-                select (Expression)new Binary(op, andexp, comparison);
+                select new { Op = op, Right = comparison };
 
-            POr.Rule =
-                PAnd |
-                from orexp in POr
+            PAnd.Reference = // andexp && comparison | comparison
+                from comparison in PComparison
+                from rest in andRest.Many()
+                select rest.Aggregate(comparison, (c, r) => new Binary(r.Op, c, r.Right));
+
+            var orRest =
                 from op in LOGICAL_OR
-                from andexp in PAnd
-                select (Expression)new Binary(op, orexp, andexp);
+                from comparison in PComparison
+                select new { Op = op, Right = comparison };
 
-            PExp.Rule = POr;
+            POr.Reference = // orexp || andexp | andexp
+                from and in PAnd
+                from rest in orRest.Many()
+                select rest.Aggregate(and, (c, r) => new Binary(r.Op, c, r.Right));
 
-            PExpList.Rule =
+            PExp.Reference = POr;
+
+            PExpList.Reference =
                 from list in PExp.Many(COMMA)
                 select list.ToArray();
 
