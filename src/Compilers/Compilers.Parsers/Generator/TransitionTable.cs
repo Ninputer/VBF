@@ -74,7 +74,7 @@ namespace VBF.Compilers.Parsers.Generator
         public int StateCount { get; private set; }
         public int ProductionCount { get; private set; }
 
-        private ActionListNode<int>[,] m_gotoTable;
+        private int[,] m_gotoTable;
         private ActionListNode<int>[,] m_shiftTable;
         private ActionListNode<int>[,] m_reduceTable;
         private IProduction[] m_nonTerminals;
@@ -88,10 +88,20 @@ namespace VBF.Compilers.Parsers.Generator
             StateCount = stateCount;
             ProductionCount = productionCount;
 
-            m_gotoTable = new ActionListNode<int>[stateCount, productionCount];
-            m_shiftTable = new ActionListNode<int>[stateCount, tokenCount];
-            m_reduceTable = new ActionListNode<int>[stateCount, tokenCount];
+            m_gotoTable = new int[stateCount, productionCount];
+            m_shiftTable = new ActionListNode<int>[stateCount, tokenCount + 1];
+            m_reduceTable = new ActionListNode<int>[stateCount, tokenCount + 1];
             m_tokenDescriptions = tokenDescriptions;
+        }
+
+        public ActionListNode<int> GetLexersInShifting(int state)
+        {
+            return m_shiftTable[state, TokenCount];
+        }
+
+        public ActionListNode<int> GetLexersInReducing(int state)
+        {
+            return m_reduceTable[state, TokenCount];
         }
 
         public ActionListNode<int> GetShift(int state, int tokenIndex)
@@ -99,7 +109,7 @@ namespace VBF.Compilers.Parsers.Generator
             return m_shiftTable[state, tokenIndex];
         }
 
-        public ActionListNode<int> GetGoto(int state, int nonterminalIndex)
+        public int GetGoto(int state, int nonterminalIndex)
         {
             return m_gotoTable[state, nonterminalIndex];
         }
@@ -193,8 +203,14 @@ namespace VBF.Compilers.Parsers.Generator
                     else
                     {
                         //goto
-                        ActionListNode<int>.AppendToLast(ref table.m_gotoTable[i, info.NonTerminalIndex], edge.TargetStateIndex);
+                        table.m_gotoTable[i, info.NonTerminalIndex] = edge.TargetStateIndex;
                     }
+                }
+
+                //lexer states for shifting
+                if (state.MaxShiftingLexer != null)
+                {
+                    ActionListNode<int>.AppendToLast(ref table.m_shiftTable[i, table.TokenCount], state.MaxShiftingLexer.Value);
                 }
 
                 //reduces
@@ -206,6 +222,12 @@ namespace VBF.Compilers.Parsers.Generator
                     var info = model.ProductionInfoManager.GetInfo(reduce.ReduceProduction);
 
                     ActionListNode<int>.AppendToLast(ref table.m_reduceTable[i, tokenIndex], info.NonTerminalIndex);
+                }
+
+                //lexer states for reducing
+                if (state.MaxReducingLexer != null)
+                {
+                    ActionListNode<int>.AppendToLast(ref table.m_reduceTable[i, table.TokenCount], state.MaxReducingLexer.Value);
                 }
 
                 //accepts

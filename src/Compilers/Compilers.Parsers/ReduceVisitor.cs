@@ -59,13 +59,10 @@ namespace VBF.Compilers.Parsers
             }
 
             //compute goto
-            var gotoAction = m_transitions.GetGoto(poppedTopStack.StateIndex, info.NonTerminalIndex);
-
-            //TODO: optimize goto table if no conflicts
-            Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
+            var gotoAction = m_transitions.GetGoto(poppedTopStack.StateIndex, info.NonTerminalIndex);          
 
             //perform goto
-            StackNode reduceNode = new StackNode(gotoAction.Value, poppedTopStack, result);
+            StackNode reduceNode = new StackNode(gotoAction, poppedTopStack, result);
 
             NewTopStack = reduceNode;
         }
@@ -85,11 +82,8 @@ namespace VBF.Compilers.Parsers
             //compute goto
             var gotoAction = m_transitions.GetGoto(TopStack.StateIndex, info.NonTerminalIndex);
 
-            //TODO: optimize goto table if no conflicts
-            Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
-
             //perform goto
-            StackNode reduceNode = new StackNode(gotoAction.Value, TopStack, result);
+            StackNode reduceNode = new StackNode(gotoAction, TopStack, result);
 
             NewTopStack = reduceNode;
         }
@@ -102,11 +96,8 @@ namespace VBF.Compilers.Parsers
             //compute goto
             var gotoAction = m_transitions.GetGoto(TopStack.PrevNode.StateIndex, info.NonTerminalIndex);
 
-            //TODO: optimize goto table if no conflicts
-            Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
-
             //perform goto
-            StackNode reduceNode = new StackNode(gotoAction.Value, TopStack.PrevNode, TopStack.ReducedValue);
+            StackNode reduceNode = new StackNode(gotoAction, TopStack.PrevNode, TopStack.ReducedValue);
 
             NewTopStack = reduceNode;
         }
@@ -133,11 +124,8 @@ namespace VBF.Compilers.Parsers
             //compute goto
             var gotoAction = m_transitions.GetGoto(poppedTopStack.StateIndex, info.NonTerminalIndex);
 
-            //TODO: optimize goto table if no conflicts
-            Debug.Assert(gotoAction.GetNext() == null, "goto action is not unique");
-
             //perform goto
-            StackNode reduceNode = new StackNode(gotoAction.Value, poppedTopStack, result);
+            StackNode reduceNode = new StackNode(gotoAction, poppedTopStack, result);
 
             NewTopStack = reduceNode;
         }

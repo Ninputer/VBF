@@ -87,7 +87,21 @@ namespace VBF.Compilers.Parsers
                     var head = m_heads[i];
 
                     int stateNumber = head.TopStackStateIndex;
-                    int tokenIndex = z.TokenIndex;
+
+
+                    bool isShiftedOrReduced = false;
+
+                    var shiftLexer = m_transitions.GetLexersInShifting(stateNumber);
+
+                    int tokenIndex;
+                    if (shiftLexer == null)
+                    {
+                        tokenIndex = z.TokenIndex;
+                    }
+                    else
+                    {
+                        tokenIndex = z.GetTokenIndex(shiftLexer.Value);
+                    }
 
                     //get shift
                     var shifts = m_transitions.GetShift(stateNumber, tokenIndex);
@@ -97,6 +111,8 @@ namespace VBF.Compilers.Parsers
 
                     while (shift != null)
                     {
+                        isShiftedOrReduced = true;
+
                         var newHead = head.Clone();
 
                         newHead.Shift(z, shift.Value);
@@ -108,13 +124,27 @@ namespace VBF.Compilers.Parsers
                         shift = shift.GetNext();
                     }
 
-                    //reduces
-                    var reduces = m_transitions.GetReduce(stateNumber, tokenIndex);
 
+
+                    //reduces
+                    var reduceLexer = m_transitions.GetLexersInReducing(stateNumber);
+
+                    if (reduceLexer == null)
+                    {
+                        tokenIndex = z.TokenIndex;
+                    }
+                    else
+                    {
+                        tokenIndex = z.GetTokenIndex(reduceLexer.Value);
+                    }
+
+                    var reduces = m_transitions.GetReduce(stateNumber, tokenIndex);
                     var reduce = reduces;
 
                     while (reduce != null)
                     {
+                        isShiftedOrReduced = true;
+
                         int productionIndex = reduce.Value;
                         IProduction production = m_transitions.NonTerminals[productionIndex];
 
@@ -137,7 +167,9 @@ namespace VBF.Compilers.Parsers
                         reduce = reduce.GetNext();
                     }
 
-                    if (shifts == null && reduces == null)
+
+
+                    if (!isShiftedOrReduced)
                     {
                         m_errorCandidates.Add(head);
                     }
@@ -151,7 +183,7 @@ namespace VBF.Compilers.Parsers
                 else
                 {
                     break;
-                } 
+                }
             }
 
             SwapAndClean();
@@ -203,6 +235,18 @@ namespace VBF.Compilers.Parsers
                         var recoverHead = recoverQueue.Dequeue();
                         int recoverStateNumber = recoverHead.TopStackStateIndex;
 
+                        var shiftLexer = m_transitions.GetLexersInShifting(recoverStateNumber);
+
+                        int tokenIndex;
+                        if (shiftLexer == null)
+                        {
+                            tokenIndex = z.TokenIndex;
+                        }
+                        else
+                        {
+                            tokenIndex = z.GetTokenIndex(shiftLexer.Value);
+                        }
+
                         var recoverShifts = m_transitions.GetShift(recoverStateNumber, j);
                         var recoverShift = recoverShifts;
 
@@ -218,6 +262,17 @@ namespace VBF.Compilers.Parsers
                             m_heads.Add(insertHead);
 
                             recoverShift = recoverShift.GetNext();
+                        }
+
+                        var reduceLexer = m_transitions.GetLexersInReducing(recoverStateNumber);
+
+                        if (reduceLexer == null)
+                        {
+                            tokenIndex = z.TokenIndex;
+                        }
+                        else
+                        {
+                            tokenIndex = z.GetTokenIndex(reduceLexer.Value);
                         }
 
                         var recoverReduces = m_transitions.GetReduce(recoverStateNumber, j);

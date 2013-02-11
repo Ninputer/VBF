@@ -445,5 +445,99 @@ namespace Compilers.UnitTests
             var result = parser.Parse(source);
             ;
         }
+
+        class GetDef
+        {
+            public IEnumerable<string> Statements { get; set; }
+        }
+
+        class PropDef
+        {
+            public string PropName { get; set; }
+            public GetDef GetDef { get; set; }
+        }
+
+        [Test]
+        public void MultipleLexerParsingTest()
+        {
+            Lexicon lexicon = new Lexicon();
+            Lexer global = lexicon.Lexer;
+            Lexer keywords = global.CreateSubLexer();
+
+            var PROPERTY = global.DefineToken(RE.Literal("property"));
+            var ID = global.DefineToken(RE.Range('a', 'z').Concat(
+                (RE.Range('a', 'z') | RE.Range('0', '9')).Many()), "ID");
+            var NUM = global.DefineToken(RE.Range('0', '9').Many1(), "NUM");
+            var EQ = global.DefineToken(RE.Symbol('='));
+            var SEMICOLON = global.DefineToken(RE.Symbol(';'));
+            var LB = global.DefineToken(RE.Symbol('{'));
+            var RB = global.DefineToken(RE.Symbol('}'));
+            var WHITESPACE = global.DefineToken(RE.Symbol(' ').Union(RE.Symbol('\t')), "[ ]");
+
+            var GET = keywords.DefineToken(RE.Literal("get"));
+
+            var assignStatement =
+                from id in ID
+                from eq in EQ
+                from value in NUM
+                from st in SEMICOLON
+                select id.Value + "=" + value.Value;
+
+            var getDef =
+                from _get in GET
+                from lb in LB
+                from statements in assignStatement.Many()
+                from rb in RB
+                select new GetDef{ Statements = statements };
+
+            var propDef =
+                from _prop in PROPERTY
+                from id in ID
+                from lb in LB
+                from getdef in getDef
+                from rb in RB
+                select new PropDef{ PropName = id.Value, GetDef = getdef };
+
+            string source = "property get { get { get = 1; } }";
+            SourceReader sr = new SourceReader(
+                new StringReader(source));
+
+            var info = lexicon.CreateScannerInfo();
+            Scanner scanner = new Scanner(info);
+            scanner.SetTriviaTokens(WHITESPACE.Index);
+            scanner.SetSource(sr);
+
+            CompilationErrorManager errorManager = new CompilationErrorManager();
+            errorManager.DefineError(1, 0, CompilationStage.Parsing, "Unexpected token '{0}'");
+            errorManager.DefineError(2, 0, CompilationStage.Parsing, "Missing token '{0}'");
+            errorManager.DefineError(3, 0, CompilationStage.Parsing, "Syntax error");
+
+            ProductionInfoManager pim = new ProductionInfoManager(propDef.SuffixedBy(Grammar.Eos()));
+
+            LR0Model lr0 = new LR0Model(pim);
+            lr0.BuildModel();
+
+            string dot = lr0.ToString();
+
+            TransitionTable tt = TransitionTable.Create(lr0, info);
+
+            SyntaxErrors errDef = new SyntaxErrors() { TokenUnexpectedId = 1, TokenMissingId = 2, OtherErrorId = 3 };
+
+            ParserEngine driver = new ParserEngine(tt, errDef);
+
+            Lexeme r;
+            do
+            {
+                r = scanner.Read();
+
+                driver.Input(r);
+            } while (!r.IsEndOfStream);
+
+            var result = (PropDef)driver.GetResult(0, errorManager);
+
+            Assert.AreEqual(0, errorManager.Errors.Count);
+            Assert.AreEqual("get", result.PropName);
+            Assert.AreEqual("get=1", result.GetDef.Statements.First());
+        }
     }
 }

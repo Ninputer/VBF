@@ -122,7 +122,7 @@ namespace VBF.Compilers.Parsers
                 finalRule = predicate;
             }
 
-            return new MappingProduction<TResult, TResult>(production, x => x, finalRule.Compile(), errorId, positionGetter.Compile());
+            return new MappingProduction<TResult, TResult>(production, x => x, finalRule.Compile(), errorId, positionGetter != null ? positionGetter.Compile() : null);
         }
 
         public static bool Check(bool condition, int errorId, SourceSpan position)

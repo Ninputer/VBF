@@ -35,7 +35,22 @@ namespace VBF.Compilers.Scanners
 
         internal int GetStateIndex(int tokenIndex)
         {
-            return Array.IndexOf(m_detail.AcceptTables[m_lexerState], tokenIndex);
+            int possibleIndex = -1;
+            for (int i = 0; i < m_detail.AcceptTables.Length; i++)
+            {
+                possibleIndex = Array.IndexOf(m_detail.AcceptTables[i], tokenIndex);
+
+                if (possibleIndex >= 0)
+                {
+                    break;
+                }
+            }
+            return possibleIndex;
+        }
+
+        internal int GetStateIndex(int tokenIndex, int state)
+        {
+            return Array.IndexOf(m_detail.AcceptTables[state], tokenIndex);
         }
 
         internal int GetTokenIndex(int state)

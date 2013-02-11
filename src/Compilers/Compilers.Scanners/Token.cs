@@ -5,12 +5,14 @@ namespace VBF.Compilers.Scanners
     public class Token : IEquatable<Token>
     {
         public int Index { get; private set; }
+        public int LexerIndex { get; private set; }
         public string Description { get; private set; }
 
-        public Token(int index, string description)
+        public Token(int index, string description, int lexerIndex)
         {
             Index = index;
             Description = description;
+            LexerIndex = lexerIndex;
         }
 
         public bool Equals(Token other)

@@ -25,7 +25,7 @@ namespace VBF.Compilers.Scanners
         internal TokenInfo AddToken(RegularExpression definition, Lexer state, int indexInState, string description)
         {
             int index = m_tokenList.Count;
-            Token tag = new Token(index, description ?? definition.ToString());
+            Token tag = new Token(index, description ?? definition.ToString(), state.Index);
             TokenInfo token = new TokenInfo(definition, this, state, tag);
             m_tokenList.Add(token);
 

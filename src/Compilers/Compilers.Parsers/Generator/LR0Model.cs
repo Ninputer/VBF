@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers.Generator
 {
@@ -98,6 +99,15 @@ namespace VBF.Compilers.Parsers.Generator
                                 //create edge for it
                                 state.AddEdge(symbol, targetState);
                             }
+
+                            //calculate lexer states that the current LR0 state should cover
+                            if (isChanged && symbol.IsTerminal && !symbol.IsEos)
+                            {
+                                Terminal t = symbol as Terminal;
+                                Token token = t.Token;
+
+                                state.AddShiftingLexer(token.LexerIndex);
+                            }
                         }
                     }
                 }
@@ -119,6 +129,14 @@ namespace VBF.Compilers.Parsers.Generator
                         {
                             //reduce
                             state.AddReduce(followSymbol, production);
+                            
+                            if (!followSymbol.IsEos)
+                            {
+                                Terminal t = followSymbol as Terminal;
+                                Token token = t.Token;
+
+                                state.AddReducingLexer(token.LexerIndex);
+                            }
                         }
 
                     }
@@ -175,7 +193,6 @@ namespace VBF.Compilers.Parsers.Generator
                 production.Accept(m_dotSymbolVisitor);
 
                 var dotSymbols = m_dotSymbolVisitor.Symbols;
-
 
                 if (dotSymbols.Count == 1 && m_infoManager.GetInfo(dotSymbols[0]).Index == symbolIndex)
                 {
