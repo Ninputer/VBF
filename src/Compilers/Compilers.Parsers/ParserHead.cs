@@ -106,24 +106,23 @@ namespace VBF.Compilers.Parsers
                 return;
             }
 
-            reducer.TopStack = m_topStack;
-            reducer.ReduceError = null;
-            production.Accept(reducer);
-
             if (Priority < production.Priority) Priority = production.Priority;
 
-            m_topStack = reducer.NewTopStack;
+            var reduceResult = production.Accept(reducer, m_topStack);
 
-            if (reducer.ReduceError != null)
+            m_topStack = reduceResult.Item1;
+            var reduceError = reduceResult.Item2;
+
+            if (reduceError != null)
             {
                 IncreaseErrorRecoverLevel();
 
-                if (reducer.ReduceError.ErrorPosition == null)
+                if (reduceError.ErrorPosition == null)
                 {
-                    reducer.ReduceError.ErrorPosition = lookahead.Span;
+                    reduceError.ErrorPosition = lookahead.Span;
                 }
 
-                AddError(reducer.ReduceError);
+                AddError(reduceError);
             }
 
 #if HISTORY

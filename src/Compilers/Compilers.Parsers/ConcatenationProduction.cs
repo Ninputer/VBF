@@ -22,9 +22,9 @@ namespace VBF.Compilers.Parsers
             Selector = selector;
         }
 
-        public override void Accept(IProductionVisitor visitor)
+        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
         {
-            visitor.VisitConcatenation(this);
+            return visitor.VisitConcatenation(this, argument);
         }
 
         public override string DebugName

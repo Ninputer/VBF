@@ -14,9 +14,9 @@ namespace VBF.Compilers.Parsers
             Value = value;
         }
 
-        public override void Accept(IProductionVisitor visitor)
+        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
         {
-            visitor.VisitEmpty(this);
+            return visitor.VisitEmpty(this, argument);
         }
 
         public override string ToString()

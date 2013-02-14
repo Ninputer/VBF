@@ -65,9 +65,9 @@ namespace VBF.Compilers.Parsers.Generator
                         var production = m_infoManager.Productions[item.ProductionIndex];
                         var info = m_infoManager.GetInfo(production);
 
-                        m_dotSymbolVisitor.DotLocation = item.DotLocation;
-                        production.Accept(m_dotSymbolVisitor);
-                        foreach (var symbol in m_dotSymbolVisitor.Symbols)
+                        //m_dotSymbolVisitor.DotLocation = item.DotLocation;
+                        var symbols = production.Accept(m_dotSymbolVisitor, item.DotLocation);
+                        foreach (var symbol in symbols)
                         {
                             if (symbol.IsEos)
                             {
@@ -164,19 +164,18 @@ namespace VBF.Compilers.Parsers.Generator
 
         private ISet<LR0Item> GetClosure(ISet<LR0Item> initSet)
         {
-            m_closureVisitor.LR0ItemSet = initSet;
+            bool isChanged;
 
             do
             {
-                m_closureVisitor.IsChanged = false;
+                isChanged = false;
                 foreach (var item in initSet.ToArray())
                 {
-                    m_closureVisitor.DotLocation = item.DotLocation;
-                    m_infoManager.Productions[item.ProductionIndex].Accept(m_closureVisitor);
+                    isChanged = m_infoManager.Productions[item.ProductionIndex].Accept(m_closureVisitor, Tuple.Create(item.DotLocation, isChanged, initSet));
                 }
-            } while (m_closureVisitor.IsChanged);
+            } while (isChanged);
 
-            return m_closureVisitor.LR0ItemSet;
+            return initSet;
         }
 
         private ISet<LR0Item> GetGoto(IEnumerable<LR0Item> state, IProduction symbol)
@@ -189,10 +188,7 @@ namespace VBF.Compilers.Parsers.Generator
                 var production = m_infoManager.Productions[item.ProductionIndex];
                 var info = m_infoManager.GetInfo(production);
 
-                m_dotSymbolVisitor.DotLocation = item.DotLocation;
-                production.Accept(m_dotSymbolVisitor);
-
-                var dotSymbols = m_dotSymbolVisitor.Symbols;
+                var dotSymbols = production.Accept(m_dotSymbolVisitor, item.DotLocation);
 
                 if (dotSymbols.Count == 1 && m_infoManager.GetInfo(dotSymbols[0]).Index == symbolIndex)
                 {
@@ -253,10 +249,9 @@ namespace VBF.Compilers.Parsers.Generator
                 ItemStringVisitor isv = new ItemStringVisitor();
                 foreach (var item in state.ItemSet)
                 {
-                    isv.DotLocation = item.DotLocation;
-                    m_infoManager.Productions[item.ProductionIndex].Accept(isv);
+                    var itemStr = m_infoManager.Productions[item.ProductionIndex].Accept(isv, item.DotLocation);
 
-                    dotCommand.Append(Escape(isv.ToString()));
+                    dotCommand.Append(Escape(itemStr));
 
                     dotCommand.Append("\\n");
                 }

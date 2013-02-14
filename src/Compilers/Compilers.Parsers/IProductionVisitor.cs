@@ -5,18 +5,18 @@ using System.Text;
 
 namespace VBF.Compilers.Parsers
 {
-    public interface IProductionVisitor
+    public interface IProductionVisitor<TArg, TResult>
     {
-        void VisitTerminal(Terminal terminal);
+        TResult VisitTerminal(Terminal terminal, TArg argument);
 
-        void VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction);
+        TResult VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, TArg argument);
 
-        void VisitEndOfStream(EndOfStream endOfStream);
+        TResult VisitEndOfStream(EndOfStream endOfStream, TArg argument);
 
-        void VisitEmpty<T>(EmptyProduction<T> emptyProduction);
+        TResult VisitEmpty<T>(EmptyProduction<T> emptyProduction, TArg argument);
 
-        void VisitAlternation<T>(AlternationProduction<T> alternationProduction);
+        TResult VisitAlternation<T>(AlternationProduction<T> alternationProduction, TArg argument);
 
-        void VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction);
+        TResult VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, TArg argument);
     }
 }

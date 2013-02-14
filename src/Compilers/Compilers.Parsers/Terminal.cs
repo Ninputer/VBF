@@ -39,9 +39,9 @@ namespace VBF.Compilers.Parsers
             return new Terminal(token);
         }
 
-        public override void Accept(IProductionVisitor visitor)
+        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
         {
-            visitor.VisitTerminal(this);
+            return visitor.VisitTerminal(this, argument);
         }
 
         public override bool Equals(object obj)

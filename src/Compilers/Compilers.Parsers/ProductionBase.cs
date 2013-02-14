@@ -11,7 +11,7 @@ namespace VBF.Compilers.Parsers
     {
         internal virtual ProductionInfo Info { get; set; }
 
-        public abstract void Accept(IProductionVisitor visitor);
+        public abstract TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument);
 
         public virtual bool IsTerminal
         {

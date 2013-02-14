@@ -13,9 +13,9 @@ namespace VBF.Compilers.Parsers
 
         }
 
-        public override void Accept(IProductionVisitor visitor)
+        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
         {
-            visitor.VisitEndOfStream(this);
+            return visitor.VisitEndOfStream(this, argument);
         }
 
         public override bool Equals(object obj)

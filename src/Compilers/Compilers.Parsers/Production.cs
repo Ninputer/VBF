@@ -28,10 +28,10 @@ namespace VBF.Compilers.Parsers
 
         }
 
-        public override void Accept(IProductionVisitor visitor)
+        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
         {
-            Rule.Accept(visitor);
-        }
+            return Rule.Accept(visitor, argument);
+        }        
 
         public override bool IsTerminal
         {

@@ -19,9 +19,9 @@ namespace VBF.Compilers.Parsers
             Production2 = production2;
         }
 
-        public override void Accept(IProductionVisitor visitor)
+        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg arg)
         {
-            visitor.VisitAlternation(this);
+            return visitor.VisitAlternation(this, arg);
         }
 
         public override string DebugName

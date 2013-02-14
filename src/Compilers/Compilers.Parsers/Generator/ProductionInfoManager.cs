@@ -8,7 +8,7 @@ namespace VBF.Compilers.Parsers.Generator
 {
     public class ProductionInfoManager
     {
-        private IProduction[] productions;
+        private IProduction[] m_productions;
 
         public IProduction RootProduction { get; private set; }
 
@@ -16,7 +16,7 @@ namespace VBF.Compilers.Parsers.Generator
         {
             get
             {
-                return productions;
+                return m_productions;
             }
         }
 
@@ -30,23 +30,25 @@ namespace VBF.Compilers.Parsers.Generator
             CodeContract.RequiresArgumentNotNull(root, "root");
 
             var aggregator = new ProductionAggregationVisitor();
-            root.Accept(aggregator);
+            var productions = root.Accept(aggregator, new List<IProduction>());
 
-            productions = aggregator.Productions.ToArray();
+            m_productions = productions.ToArray();
             RootProduction = root;
 
             var ffVisitor = new FirstFollowVisitor();
 
+            bool isChanged;
+
             do
             {
-                ffVisitor.IsChanged = false;
+                isChanged = false;
 
                 foreach (var p in productions)
                 {
-                    p.Accept(ffVisitor);
+                    isChanged = p.Accept(ffVisitor, isChanged);
                 }
 
-            } while (ffVisitor.IsChanged);
+            } while (isChanged);
         }
     }
 }

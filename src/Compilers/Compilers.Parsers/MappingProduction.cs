@@ -27,9 +27,9 @@ namespace VBF.Compilers.Parsers
 
         public MappingProduction(ProductionBase<TSource> sourceProduction, Func<TSource, TReturn> selector) : this(sourceProduction, selector, null, null, null) { }
 
-        public override void Accept(IProductionVisitor visitor)
+        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
         {
-            visitor.VisitMapping(this);
+            return visitor.VisitMapping(this, argument);
         }
 
         public override string DebugName

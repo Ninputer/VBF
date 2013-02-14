@@ -7,7 +7,7 @@ namespace VBF.Compilers.Parsers
 {
     public interface IProduction
     {
-        void Accept(IProductionVisitor visitor);
+        TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument);
         bool IsTerminal { get; }
         bool IsEos { get; }
         int Priority { get; set; }

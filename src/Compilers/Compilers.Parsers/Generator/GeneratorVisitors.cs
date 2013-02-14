@@ -7,20 +7,14 @@ using VBF.Compilers.Parsers.Generator;
 
 namespace VBF.Compilers.Parsers.Generator
 {
-    internal class ProductionAggregationVisitor : IProductionVisitor
+    internal class ProductionAggregationVisitor : IProductionVisitor<List<IProduction>, List<IProduction>>
     {
-        public List<IProduction> Productions { get; private set; }
 
-        public ProductionAggregationVisitor()
-        {
-            Productions = new List<IProduction>();
-        }
-
-        void IProductionVisitor.VisitTerminal(Terminal terminal)
+        List<IProduction> IProductionVisitor<List<IProduction>, List<IProduction>>.VisitTerminal(Terminal terminal, List<IProduction> Productions)
         {
             if (terminal.Info != null)
             {
-                return;
+                return Productions;
             }
 
             terminal.Info = new ProductionInfo();
@@ -30,28 +24,32 @@ namespace VBF.Compilers.Parsers.Generator
             terminal.Info.SymbolCount = 1;
 
             Productions.Add(terminal);
+
+            return Productions;
         }
 
-        void IProductionVisitor.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
+        List<IProduction> IProductionVisitor<List<IProduction>, List<IProduction>>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, List<IProduction> Productions)
         {
             if (mappingProduction.Info != null)
             {
-                return;
+                return Productions;
             }
 
             mappingProduction.Info = new ProductionInfo();
-            mappingProduction.SourceProduction.Accept(this);
+            mappingProduction.SourceProduction.Accept(this, Productions);
 
             mappingProduction.Info.Index = Productions.Count;
             mappingProduction.Info.SymbolCount = 1;
             Productions.Add(mappingProduction);
+
+            return Productions;
         }
 
-        void IProductionVisitor.VisitEndOfStream(EndOfStream endOfStream)
+        List<IProduction> IProductionVisitor<List<IProduction>, List<IProduction>>.VisitEndOfStream(EndOfStream endOfStream, List<IProduction> Productions)
         {
             if (endOfStream.Info != null)
             {
-                return;
+                return Productions;
             }
 
             endOfStream.Info = new ProductionInfo();
@@ -61,13 +59,15 @@ namespace VBF.Compilers.Parsers.Generator
             endOfStream.Info.SymbolCount = 1;
 
             Productions.Add(endOfStream);
+
+            return Productions;
         }
 
-        void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
+        List<IProduction> IProductionVisitor<List<IProduction>, List<IProduction>>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, List<IProduction> Productions)
         {
             if (emptyProduction.Info != null)
             {
-                return;
+                return Productions;
             }
 
             emptyProduction.Info = new ProductionInfo();
@@ -76,72 +76,77 @@ namespace VBF.Compilers.Parsers.Generator
             emptyProduction.Info.Index = Productions.Count;
             emptyProduction.Info.SymbolCount = 0;
             Productions.Add(emptyProduction);
+
+            return Productions;
         }
 
-        void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
+        List<IProduction> IProductionVisitor<List<IProduction>, List<IProduction>>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, List<IProduction> Productions)
         {
             if (alternationProduction.Info != null)
             {
-                return;
+                return Productions;
             }
 
             alternationProduction.Info = new ProductionInfo();
 
-            alternationProduction.Production1.Accept(this);
-            alternationProduction.Production2.Accept(this);
+            alternationProduction.Production1.Accept(this, Productions);
+            alternationProduction.Production2.Accept(this, Productions);
 
             alternationProduction.Info.Index = Productions.Count;
             alternationProduction.Info.SymbolCount = 1;
             Productions.Add(alternationProduction);
+
+            return Productions;
         }
 
-        void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
+        List<IProduction> IProductionVisitor<List<IProduction>, List<IProduction>>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, List<IProduction> Productions)
         {
             if (concatenationProduction.Info != null)
             {
-                return;
+                return Productions;
             }
 
             concatenationProduction.Info = new ProductionInfo();
 
-            concatenationProduction.ProductionLeft.Accept(this);
-            concatenationProduction.ProductionRight.Accept(this);
+            concatenationProduction.ProductionLeft.Accept(this, Productions);
+            concatenationProduction.ProductionRight.Accept(this, Productions);
 
             concatenationProduction.Info.Index = Productions.Count;
             concatenationProduction.Info.SymbolCount = 2;
             Productions.Add(concatenationProduction);
-        }
+
+            return Productions;
+        }       
     }
 
-    internal class FirstFollowVisitor : IProductionVisitor
+    internal class FirstFollowVisitor : IProductionVisitor<bool, bool>
     {
-
-        public bool IsChanged { get; set; }
-
-        void IProductionVisitor.VisitTerminal(Terminal terminal)
+        bool IProductionVisitor<bool, bool>.VisitTerminal(Terminal terminal, bool IsChanged)
         {
-
+            return IsChanged;
         }
 
-        void IProductionVisitor.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
+        bool IProductionVisitor<bool, bool>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, bool IsChanged)
         {
             var source = mappingProduction.SourceProduction;
 
             IsChanged = mappingProduction.Info.First.UnionCheck(source.Info.First) || IsChanged;
             IsChanged = source.Info.Follow.UnionCheck(mappingProduction.Info.Follow) || IsChanged;
+
+            return IsChanged;
         }
 
-        void IProductionVisitor.VisitEndOfStream(EndOfStream endOfStream)
+        bool IProductionVisitor<bool, bool>.VisitEndOfStream(EndOfStream endOfStream, bool IsChanged)
         {
-
+            return IsChanged;
         }
 
-        void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
+        bool IProductionVisitor<bool, bool>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, bool IsChanged)
         {
-
+            return IsChanged;
         }
 
-        void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
+        bool IProductionVisitor<bool, bool>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, bool IsChanged)
         {
             var info = alternationProduction.Info;
 
@@ -162,9 +167,11 @@ namespace VBF.Compilers.Parsers.Generator
                 IsChanged = true;
                 info.IsNullable = isNullable;
             }
+
+            return IsChanged;
         }
 
-        void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
+        bool IProductionVisitor<bool, bool>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, bool IsChanged)
         {
             var p1 = concatenationProduction.ProductionLeft;
             var p2 = concatenationProduction.ProductionRight;
@@ -196,44 +203,59 @@ namespace VBF.Compilers.Parsers.Generator
                 info.IsNullable = isNullable;
             }
 
+            return IsChanged;
+
         }
 
 
     }
 
-    internal class ClosureVisitor : IProductionVisitor
+    internal class ClosureVisitor : IProductionVisitor<Tuple<int, bool, ISet<LR0Item>>, bool>
     {
 
-        public bool IsChanged { get; set; }
-        public int DotLocation { get; set; }
+        //public bool IsChanged { get; set; }
+        //public int DotLocation { get; set; }
 
-        public ISet<LR0Item> LR0ItemSet { get; set; }
+        //public ISet<LR0Item> LR0ItemSet { get; set; }
 
-        void IProductionVisitor.VisitTerminal(Terminal terminal)
+        bool IProductionVisitor<Tuple<int, bool, ISet<LR0Item>>, bool>.VisitTerminal(Terminal terminal, Tuple<int, bool, ISet<LR0Item>> arg)
         {
             //do nothing, make set unchanged
+            return arg.Item2;
         }
 
-        void IProductionVisitor.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
+        bool IProductionVisitor<Tuple<int, bool, ISet<LR0Item>>, bool>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, Tuple<int, bool, ISet<LR0Item>> arg)
         {
+            int DotLocation = arg.Item1;
+            bool IsChanged = arg.Item2;
+            ISet<LR0Item> LR0ItemSet = arg.Item3;
+
             if (DotLocation == 0 && !mappingProduction.SourceProduction.IsTerminal)
             {
                 IsChanged = LR0ItemSet.Add(new LR0Item(mappingProduction.SourceProduction.Info.Index, 0)) || IsChanged;
             }
+
+            return IsChanged;
         }
 
-        void IProductionVisitor.VisitEndOfStream(EndOfStream endOfStream)
+        bool IProductionVisitor<Tuple<int, bool, ISet<LR0Item>>, bool>.VisitEndOfStream(EndOfStream endOfStream, Tuple<int, bool, ISet<LR0Item>> arg)
         {
             //do nothing, make set unchanged
+            return arg.Item2;
         }
 
-        void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
+        bool IProductionVisitor<Tuple<int, bool, ISet<LR0Item>>, bool>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, Tuple<int, bool, ISet<LR0Item>> arg)
         {
             //do nothing, make set unchanged
+            return arg.Item2;
         }
 
-        void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
+        bool IProductionVisitor<Tuple<int, bool, ISet<LR0Item>>, bool>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, Tuple<int, bool, ISet<LR0Item>> arg)
         {
+            int DotLocation = arg.Item1;
+            bool IsChanged = arg.Item2;
+            ISet<LR0Item> LR0ItemSet = arg.Item3;
+
             if (DotLocation == 0)
             {
                 if (!alternationProduction.Production1.IsTerminal)
@@ -246,10 +268,16 @@ namespace VBF.Compilers.Parsers.Generator
                     IsChanged = LR0ItemSet.Add(new LR0Item(alternationProduction.Production2.Info.Index, 0)) || IsChanged;
                 }
             }
+
+            return IsChanged;
         }
 
-        void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
+        bool IProductionVisitor<Tuple<int, bool, ISet<LR0Item>>, bool>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, Tuple<int, bool, ISet<LR0Item>> arg)
         {
+            int DotLocation = arg.Item1;
+            bool IsChanged = arg.Item2;
+            ISet<LR0Item> LR0ItemSet = arg.Item3;
+
             switch (DotLocation)
             {
                 case 0:
@@ -268,144 +296,129 @@ namespace VBF.Compilers.Parsers.Generator
                     //no symbol at position                    
                     break;
             }
+
+            return IsChanged;
         }
     }
 
-    internal class DotSymbolVisitor : IProductionVisitor
+    internal class DotSymbolVisitor : IProductionVisitor<int, IReadOnlyList<IProduction>>
     {
-        public int DotLocation { get; set; }
-        public IReadOnlyList<IProduction> Symbols { get; private set; }
-
         private static readonly IProduction[] s_empty = new IProduction[0];
 
-        void IProductionVisitor.VisitTerminal(Terminal terminal)
+        IReadOnlyList<IProduction> IProductionVisitor<int, IReadOnlyList<IProduction>>.VisitTerminal(Terminal terminal, int DotLocation)
         {
             throw new InvalidOperationException("Terminals are not allowed in LR states");
         }
 
-        void IProductionVisitor.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
+        IReadOnlyList<IProduction> IProductionVisitor<int, IReadOnlyList<IProduction>>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, int DotLocation)
         {
             if (DotLocation == 0)
             {
-                Symbols = new IProduction[1] { mappingProduction.SourceProduction };
+                return new IProduction[1] { mappingProduction.SourceProduction };
             }
             else
             {
-                Symbols = s_empty;
+                return s_empty;
             }
         }
 
-        void IProductionVisitor.VisitEndOfStream(EndOfStream endOfStream)
+        IReadOnlyList<IProduction> IProductionVisitor<int, IReadOnlyList<IProduction>>.VisitEndOfStream(EndOfStream endOfStream, int DotLocation)
         {
             throw new InvalidOperationException("Terminal EOS is not allowed in LR states");
         }
 
-        void IProductionVisitor.VisitEmpty<T>(EmptyProduction<T> emptyProduction)
+        IReadOnlyList<IProduction> IProductionVisitor<int, IReadOnlyList<IProduction>>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, int DotLocation)
         {
-            Symbols = s_empty;
+            return s_empty;
         }
 
-        void IProductionVisitor.VisitAlternation<T>(AlternationProduction<T> alternationProduction)
+        IReadOnlyList<IProduction> IProductionVisitor<int, IReadOnlyList<IProduction>>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, int DotLocation)
         {
             if (DotLocation == 0)
             {
-                Symbols = new IProduction[2] { alternationProduction.Production1, alternationProduction.Production2 };
+                return new IProduction[2] { alternationProduction.Production1, alternationProduction.Production2 };
             }
             else
             {
-                Symbols = s_empty;
+                return s_empty;
             }
         }
 
-        void IProductionVisitor.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
+        IReadOnlyList<IProduction> IProductionVisitor<int, IReadOnlyList<IProduction>>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, int DotLocation)
         {
             switch (DotLocation)
             {
                 case 0:
-                    Symbols = new IProduction[1] { concatenationProduction.ProductionLeft };
-                    break;
+                    return new IProduction[1] { concatenationProduction.ProductionLeft };
                 case 1:
-                    Symbols = new IProduction[1] { concatenationProduction.ProductionRight };
-                    break;
+                    return new IProduction[1] { concatenationProduction.ProductionRight };
                 default:
-                    Symbols = s_empty;
-                    break;
+                    return s_empty;
             }
         }
     }
 
-    internal class ItemStringVisitor : IProductionVisitor
+    internal class ItemStringVisitor : IProductionVisitor<int, string>
     {
-        public int DotLocation { get; set; }
 
-        private string m_itemString;
-
-        public override string ToString()
-        {
-            return m_itemString;
-        }
-
-        public void VisitTerminal(Terminal terminal)
+        string IProductionVisitor<int, string>.VisitTerminal(Terminal terminal, int DotLocation)
         {
             throw new NotSupportedException("Terminals do not have item strings");
         }
 
-        public void VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction)
+        string IProductionVisitor<int, string>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, int DotLocation)
         {
             if (DotLocation == 0)
             {
-                m_itemString = mappingProduction.DebugName + " ::=." + mappingProduction.SourceProduction.DebugName;
+                return mappingProduction.DebugName + " ::=." + mappingProduction.SourceProduction.DebugName;
             }
             else
             {
-                m_itemString = mappingProduction.DebugName + " ::= " + mappingProduction.SourceProduction.DebugName + '.';
+                return mappingProduction.DebugName + " ::= " + mappingProduction.SourceProduction.DebugName + '.';
             }
         }
 
-        public void VisitEndOfStream(EndOfStream endOfStream)
+        string IProductionVisitor<int, string>.VisitEndOfStream(EndOfStream endOfStream, int DotLocation)
         {
             throw new NotSupportedException("Terminal EOS does not have an item string");
         }
 
-        public void VisitEmpty<T>(EmptyProduction<T> emptyProduction)
+        string IProductionVisitor<int, string>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, int DotLocation)
         {
-            m_itemString = emptyProduction.ToString() + '.';
+            return emptyProduction.ToString() + '.';
         }
 
-        public void VisitAlternation<T>(AlternationProduction<T> alternationProduction)
+        string IProductionVisitor<int, string>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, int DotLocation)
         {
             if (DotLocation == 0)
             {
-                m_itemString = String.Format("{0} ::=.({1}|{2})", alternationProduction.DebugName,
+                return String.Format("{0} ::=.({1}|{2})", alternationProduction.DebugName,
                         alternationProduction.Production1.DebugName,
                         alternationProduction.Production2.DebugName);
 
             }
             else
             {
-                m_itemString = String.Format("{0} ::= ({1}|{2}).", alternationProduction.DebugName,
+                return String.Format("{0} ::= ({1}|{2}).", alternationProduction.DebugName,
                         alternationProduction.Production1.DebugName,
                         alternationProduction.Production2.DebugName);
             }
         }
 
-        public void VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction)
+        string IProductionVisitor<int, string>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, int DotLocation)
         {
             switch (DotLocation)
             {
                 case 0:
-                    m_itemString = String.Format("{0} ::=.{1} {2}", concatenationProduction.DebugName,
+                    return String.Format("{0} ::=.{1} {2}", concatenationProduction.DebugName,
                         concatenationProduction.ProductionLeft.DebugName,
                         concatenationProduction.ProductionRight.DebugName);
-                    break;
                 case 1:
-                    m_itemString = String.Format("{0} ::= {1}.{2}", concatenationProduction.DebugName,
+                    return String.Format("{0} ::= {1}.{2}", concatenationProduction.DebugName,
                         concatenationProduction.ProductionLeft.DebugName,
                         concatenationProduction.ProductionRight.DebugName);
-                    break;
                 default:
-                    m_itemString = concatenationProduction.ToString() + '.';
-                    break;
+                    return concatenationProduction.ToString() + '.';
             }
         }
     }
