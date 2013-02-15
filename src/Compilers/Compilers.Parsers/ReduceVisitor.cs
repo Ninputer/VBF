@@ -9,8 +9,19 @@ using VBF.Compilers.Parsers.Generator;
 
 namespace VBF.Compilers.Parsers
 {
+    internal struct ReduceResult
+    {
+        public StackNode NewTopStack;
+        public ErrorRecord ReduceError;
 
-    internal class ReduceVisitor : IProductionVisitor<StackNode, Tuple<StackNode, ErrorRecord>>
+        public ReduceResult(StackNode newTopStack, ErrorRecord reduceError = null)
+        {
+            NewTopStack = newTopStack;
+            ReduceError = reduceError;
+        }
+    }
+
+    internal class ReduceVisitor : IProductionVisitor<StackNode, ReduceResult>
     {
         private TransitionTable m_transitions;
 
@@ -19,12 +30,12 @@ namespace VBF.Compilers.Parsers
             m_transitions = transitions;
         }
 
-        Tuple<StackNode, ErrorRecord> IProductionVisitor<StackNode, Tuple<StackNode, ErrorRecord>>.VisitTerminal(Terminal terminal, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitTerminal(Terminal terminal, StackNode TopStack)
         {
             throw new NotSupportedException("No need to reduce terminals");
         }
 
-        Tuple<StackNode, ErrorRecord> IProductionVisitor<StackNode, Tuple<StackNode, ErrorRecord>>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, StackNode TopStack)
         {
             ErrorRecord ReduceError = null;
 
@@ -62,15 +73,15 @@ namespace VBF.Compilers.Parsers
             //perform goto
             StackNode reduceNode = new StackNode(gotoAction, poppedTopStack, result);
 
-            return Tuple.Create(reduceNode, ReduceError);
+            return new ReduceResult(reduceNode, ReduceError);
         }
 
-        Tuple<StackNode, ErrorRecord> IProductionVisitor<StackNode, Tuple<StackNode, ErrorRecord>>.VisitEndOfStream(EndOfStream endOfStream, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitEndOfStream(EndOfStream endOfStream, StackNode TopStack)
         {
             throw new NotSupportedException("No need to reduce terminal EOS");
         }
 
-        Tuple<StackNode, ErrorRecord> IProductionVisitor<StackNode, Tuple<StackNode, ErrorRecord>>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, StackNode TopStack)
         {
             var info = ((ProductionBase)emptyProduction).Info;
 
@@ -83,10 +94,10 @@ namespace VBF.Compilers.Parsers
             //perform goto
             StackNode reduceNode = new StackNode(gotoAction, TopStack, result);
 
-            return Tuple.Create<StackNode, ErrorRecord>(reduceNode, null);
+            return new ReduceResult(reduceNode);
         }
 
-        Tuple<StackNode, ErrorRecord> IProductionVisitor<StackNode, Tuple<StackNode, ErrorRecord>>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, StackNode TopStack)
         {
            
             var info = ((ProductionBase)alternationProduction).Info;            
@@ -97,10 +108,10 @@ namespace VBF.Compilers.Parsers
             //perform goto
             StackNode reduceNode = new StackNode(gotoAction, TopStack.PrevNode, TopStack.ReducedValue);
 
-            return Tuple.Create<StackNode, ErrorRecord>(reduceNode, null);
+            return new ReduceResult(reduceNode);
         }
 
-        Tuple<StackNode, ErrorRecord> IProductionVisitor<StackNode, Tuple<StackNode, ErrorRecord>>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, StackNode TopStack)
         {
             StackNode topStack = TopStack;
             StackNode poppedTopStack;
@@ -125,7 +136,7 @@ namespace VBF.Compilers.Parsers
             //perform goto
             StackNode reduceNode = new StackNode(gotoAction, poppedTopStack, result);
 
-            return Tuple.Create<StackNode, ErrorRecord>(reduceNode, null);
+            return new ReduceResult(reduceNode);
         }
     }
 }

@@ -110,8 +110,8 @@ namespace VBF.Compilers.Parsers
 
             var reduceResult = production.Accept(reducer, m_topStack);
 
-            m_topStack = reduceResult.Item1;
-            var reduceError = reduceResult.Item2;
+            m_topStack = reduceResult.NewTopStack;
+            var reduceError = reduceResult.ReduceError;
 
             if (reduceError != null)
             {
