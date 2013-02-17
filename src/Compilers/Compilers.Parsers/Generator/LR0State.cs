@@ -23,6 +23,8 @@ namespace VBF.Compilers.Parsers.Generator
 
         public bool IsAcceptState { get; internal set; }
 
+        internal List<KeyValuePair<IProduction, ISet<LR0Item>>> PossibleEdges { get; private set; }
+
         public IEnumerable<LR0Item> ItemSet
         {
             get
@@ -70,6 +72,9 @@ namespace VBF.Compilers.Parsers.Generator
             m_edges = new HashSet<LR0Edge>();
             m_maxShiftingLexer = null;
             m_maxReducingLexer = null;
+
+            //for generator only
+            PossibleEdges = new List<KeyValuePair<IProduction, ISet<LR0Item>>>();
         }
 
         internal bool AddEdge(IProduction symbol, LR0State targetState)
