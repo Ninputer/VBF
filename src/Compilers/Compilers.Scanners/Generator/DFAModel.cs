@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace VBF.Compilers.Scanners.Generator
 {
@@ -167,11 +169,23 @@ namespace VBF.Compilers.Scanners.Generator
 
             //begin algorithm
             int p = 1, j = 0;
+            var newStates = new DFAState[CompactCharSetManager.MaxClassIndex + 1];
             while (j <= p)
             {
+                var sourceState = m_dfaStates[j];
+
+                Parallel.For(CompactCharSetManager.MinClassIndex, CompactCharSetManager.MaxClassIndex + 1,
+                    symbol =>
+                    {
+                        DFAState e = GetDFAState(sourceState, symbol);
+
+                        newStates[symbol] = e;
+                    }
+                );
+
                 for (int symbol = CompactCharSetManager.MinClassIndex; symbol <= CompactCharSetManager.MaxClassIndex; symbol++)
                 {
-                    DFAState e = GetDFAState(m_dfaStates[j], symbol);
+                    DFAState e = newStates[symbol];
 
                     bool isSetExist = false;
                     for (int i = 0; i <= p; i++)
@@ -181,7 +195,7 @@ namespace VBF.Compilers.Scanners.Generator
                             //an existing dfa state
 
                             DFAEdge newEdge = new DFAEdge(symbol, m_dfaStates[i]);
-                            m_dfaStates[j].AddEdge(newEdge);
+                            sourceState.AddEdge(newEdge);
 
                             isSetExist = true;
                         }
@@ -194,9 +208,38 @@ namespace VBF.Compilers.Scanners.Generator
                         AddDFAState(e);
 
                         DFAEdge newEdge = new DFAEdge(symbol, e);
-                        m_dfaStates[j].AddEdge(newEdge);
+                        sourceState.AddEdge(newEdge);
                     }
                 }
+
+                //for (int symbol = CompactCharSetManager.MinClassIndex; symbol <= CompactCharSetManager.MaxClassIndex; symbol++)
+                //{
+                //    DFAState e = GetDFAState(sourceState, symbol);
+
+                //    bool isSetExist = false;
+                //    for (int i = 0; i <= p; i++)
+                //    {
+                //        if (e.NFAStateSet.SetEquals(m_dfaStates[i].NFAStateSet))
+                //        {
+                //            //an existing dfa state
+
+                //            DFAEdge newEdge = new DFAEdge(symbol, m_dfaStates[i]);
+                //            sourceState.AddEdge(newEdge);
+
+                //            isSetExist = true;
+                //        }
+                //    }
+
+                //    if (!isSetExist)
+                //    {
+                //        //a new set of nfa states (a new dfa state)
+                //        p += 1;
+                //        AddDFAState(e);
+
+                //        DFAEdge newEdge = new DFAEdge(symbol, e);
+                //        sourceState.AddEdge(newEdge);
+                //    }
+                //}
 
                 j += 1;
             }
@@ -243,7 +286,7 @@ namespace VBF.Compilers.Scanners.Generator
             {
                 changed = false;
 
-                int[] lastStateSet = new int[closure.NFAStateSet.Count]; 
+                int[] lastStateSet = new int[closure.NFAStateSet.Count];
                 closure.NFAStateSet.CopyTo(lastStateSet, 0);
 
                 foreach (var stateIndex in lastStateSet)
