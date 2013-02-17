@@ -8,6 +8,7 @@ VBF is a set of tools/libraries for compilers. It has seperated libraries for sc
 2. Open Options dialog, go to "Package Manager" and then check "Allow NuGet to download missing packages during build"
 3. Open Project VBF/src/Compilers/Compilers.sln
 4. Build
+5. Binaries will be placed in VBF/bin folder
 
 #### Components:
 * VBF.Compilers.Common
