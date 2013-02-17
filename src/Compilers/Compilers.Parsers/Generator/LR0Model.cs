@@ -36,113 +36,7 @@ namespace VBF.Compilers.Parsers.Generator
 
             m_infoManager = infoManager;
             m_states = new List<LR0State>();
-        }
-
-        public void BuildModelInSingleThread()
-        {
-            ISet<LR0Item> initStateSet = new HashSet<LR0Item>();
-            initStateSet.Add(new LR0Item(m_infoManager.GetInfo(m_infoManager.RootProduction).Index, 0));
-
-            initStateSet = GetClosure(initStateSet);
-
-            LR0State initState = new LR0State(initStateSet);
-            initState.Index = 0;
-
-            m_states.Add(initState);
-
-
-            bool isChanged = false;
-
-            //build shifts and gotos
-            do
-            {
-                isChanged = false;
-
-                foreach (var state in m_states.ToArray())
-                {
-                    foreach (var item in state.ItemSet)
-                    {
-                        var production = m_infoManager.Productions[item.ProductionIndex];
-                        var info = m_infoManager.GetInfo(production);
-
-                        //m_dotSymbolVisitor.DotLocation = item.DotLocation;
-                        var symbols = production.Accept(m_dotSymbolVisitor, item.DotLocation);
-                        foreach (var symbol in symbols)
-                        {
-                            if (symbol.IsEos)
-                            {
-                                //accept
-                                state.IsAcceptState = true;
-                                continue;
-                            }
-
-                            var targetStateSet = GetGoto(state.ItemSet, symbol);
-                            LR0State targetState;
-                            //check if the target state is exist
-                            bool exist = CheckExist(targetStateSet, out targetState);
-
-                            if (exist)
-                            {
-                                //check edges
-                                isChanged = state.AddEdge(symbol, targetState) || isChanged;
-                            }
-                            else
-                            {
-                                isChanged = true;
-
-                                //create new state
-                                targetState = new LR0State(targetStateSet);
-
-                                targetState.Index = m_states.Count;
-                                m_states.Add(targetState);
-
-                                //create edge for it
-                                state.AddEdge(symbol, targetState);
-                            }
-
-                            //calculate lexer states that the current LR0 state should cover
-                            if (isChanged && symbol.IsTerminal && !symbol.IsEos)
-                            {
-                                Terminal t = symbol as Terminal;
-                                Token token = t.Token;
-
-                                state.AddShiftingLexer(token.LexerIndex);
-                            }
-                        }
-                    }
-                }
-
-            } while (isChanged);
-
-
-            //build reduces
-            foreach (var state in m_states)
-            {
-                foreach (var item in state.ItemSet)
-                {
-                    var production = m_infoManager.Productions[item.ProductionIndex];
-                    var info = m_infoManager.GetInfo(production);
-
-                    if (item.DotLocation == info.SymbolCount)
-                    {
-                        foreach (var followSymbol in info.Follow)
-                        {
-                            //reduce
-                            state.AddReduce(followSymbol, production);
-
-                            if (!followSymbol.IsEos)
-                            {
-                                Terminal t = followSymbol as Terminal;
-                                Token token = t.Token;
-
-                                state.AddReducingLexer(token.LexerIndex);
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
+        }        
 
         public void BuildModel()
         {
@@ -158,14 +52,19 @@ namespace VBF.Compilers.Parsers.Generator
 
 
             bool isChanged = false;
+            List<LR0State> changedStates = new List<LR0State>(m_states);
+            List<LR0State> swapList = new List<LR0State>();
 
             //build shifts and gotos
             do
             {
                 isChanged = false;
 
-                //make a copy
-                var states = m_states.ToArray();
+                //swap lists in different usages
+                var states = changedStates;
+                changedStates = swapList;
+                changedStates.Clear();
+                swapList = states;
 
                 Parallel.ForEach(states,
                     /* 
@@ -237,6 +136,8 @@ namespace VBF.Compilers.Parsers.Generator
 
                             //create edge for it
                             state.AddEdge(symbol, targetState);
+
+                            changedStates.Add(targetState);
                         }
                     }
                 }
