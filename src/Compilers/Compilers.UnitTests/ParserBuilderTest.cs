@@ -539,5 +539,49 @@ namespace Compilers.UnitTests
             Assert.AreEqual("get", result.PropName);
             Assert.AreEqual("get=1", result.GetDef.Statements.First());
         }
+
+        class OperatorManyParser : ParserBase<IEnumerable<string>>
+        {
+            Token LEFTPH;
+            Token RIGHTPH;
+            Token COMMA;
+            Token LETTER;
+
+            public OperatorManyParser(CompilationErrorManager em) : base(em) { }
+
+            protected override void OnDefineLexer(Lexicon lexicon, ICollection<Token> triviaTokens)
+            {
+                var lex = lexicon.Lexer;
+
+                //lex
+                LEFTPH = lex.DefineToken(RE.Symbol('('));
+                RIGHTPH = lex.DefineToken(RE.Symbol(')'));
+                COMMA = lex.DefineToken(RE.Symbol(','));
+                LETTER = lex.DefineToken(RE.Range('a', 'z') | RE.Range('A', 'Z'), "ID");
+            }
+
+            protected override ProductionBase<IEnumerable<string>> OnDefineGrammar()
+            {
+                //grammar
+                Production<IEnumerable<string>> P = new Production<IEnumerable<string>>();
+                P.Rule =                    
+                    from list in LETTER.Many(COMMA)
+                    select list.Select(z => z.Value).ToArray() as IEnumerable<string>;
+
+                return P;
+            }
+        }
+
+        [Test]
+        public void OperatorManyTest()
+        {
+            string source = "";
+            CompilationErrorManager em = new CompilationErrorManager();
+
+            var parser = new OperatorManyParser(em);
+
+            var result = parser.Parse(source);
+            ;
+        }
     }
 }

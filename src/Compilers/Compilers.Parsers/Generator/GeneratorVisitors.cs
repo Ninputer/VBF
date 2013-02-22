@@ -133,6 +133,12 @@ namespace VBF.Compilers.Parsers.Generator
             IsChanged = mappingProduction.Info.First.UnionCheck(source.Info.First) || IsChanged;
             IsChanged = source.Info.Follow.UnionCheck(mappingProduction.Info.Follow) || IsChanged;
 
+            if (mappingProduction.Info.IsNullable != source.Info.IsNullable)
+            {
+                mappingProduction.Info.IsNullable = source.Info.IsNullable;
+                IsChanged = true;
+            }
+
             return IsChanged;
         }
 

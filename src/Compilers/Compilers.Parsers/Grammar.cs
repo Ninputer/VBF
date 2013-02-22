@@ -188,8 +188,6 @@ namespace VBF.Compilers.Parsers
         {
             CodeContract.RequiresArgumentNotNull(production, "production");
 
-            CodeContract.RequiresArgumentNotNull(production, "production");
-
             Production<IEnumerable<T>> many1 = new Production<IEnumerable<T>>();
             var many = Empty(new RepeatParserListNode<T>() as IEnumerable<T>) | many1;
 
@@ -205,7 +203,7 @@ namespace VBF.Compilers.Parsers
         {
             CodeContract.RequiresArgumentNotNull(production, "production");
 
-            return production.Many1(separator).Union(Empty(new RepeatParserListNode<T>() as IEnumerable<T>));
+            return Empty(new RepeatParserListNode<T>() as IEnumerable<T>).Union(production.Many1(separator));
         }
 
         public static ProductionBase<IEnumerable<Lexeme>> Many(this Token token)
@@ -229,7 +227,7 @@ namespace VBF.Compilers.Parsers
             return production.Many(separator.AsTerminal());
         }
 
-        public static ProductionBase<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Token separator)
+        public static ProductionBase<IEnumerable<Lexeme>> Many(this Token token, Token separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
 
