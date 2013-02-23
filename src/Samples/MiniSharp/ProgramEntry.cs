@@ -36,6 +36,11 @@ class Fac
 
         return num_aux;
     }
+
+    public int Foo()
+    {
+        return 1;
+    }
 }
 
 ";
