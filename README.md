@@ -33,3 +33,9 @@ VBF is a set of tools/libraries for compilers. It has seperated libraries for sc
 	MiniSharp is a fully functional compiler of a very small subset of C# language. It contains parsers and scanners built with VBF and an MSIL code generator.
 	
 	It is a good sample for programming language and DSL authors.
+
+* For additional sample, please refer to NotBasic project: https://github.com/Ninputer/notbasic
+
+#### Other information
+* Chinese blog: http://ninputer.cnblogs.com/
+* Chinese Weibo: http://weibo.com/ninputer
