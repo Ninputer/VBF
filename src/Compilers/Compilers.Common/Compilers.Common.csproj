@@ -47,7 +47,8 @@
     <Compile Include="CompilationErrorInfoCollection.cs" />
     <Compile Include="CompilationErrorManager.cs" />
     <Compile Include="CompilationStage.cs" />
-    <Compile Include="DataStructures\DisjointSet.cs" />
+    <Compile Include="DataStructures\DepthFirstSearch.cs" />
+    <Compile Include="DataStructures\DisjointSets.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RevertPoint.cs" />
     <Compile Include="RevertPointCollection.cs" />
