@@ -36,9 +36,15 @@ class Fac
 
         return num_aux;
     }
+
+    public int Foo()
+    {
+        return this.Foo(a);
+    }
 }
 
 ";
+
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
