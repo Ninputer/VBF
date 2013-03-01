@@ -39,7 +39,7 @@ class Fac
 
     public int Foo()
     {
-        return this.Foo(a);
+        return 1;
     }
 }
 
