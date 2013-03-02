@@ -8,6 +8,9 @@ using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers
 {
+    /// <summary>
+    /// Provides a set of static (Shared in Visual Basic) method to build parser grammar using Linq query expressions.
+    /// </summary>
     public static class Grammar
     {
         private static MethodInfo s_checkMethod;
@@ -17,6 +20,11 @@ namespace VBF.Compilers.Parsers
             s_checkMethod = typeof(Grammar).GetMethod("Check", BindingFlags.Static | BindingFlags.Public);
         }
 
+        /// <summary>
+        /// Converts a <see cref="VBF.Compilers.Scanners.Token"/> to a terminal production.
+        /// </summary>
+        /// <param name="token">The <see cref="VBF.Compilers.Scanners.Token"/> used as a terminal</param>
+        /// <returns>The production object represents the terminal</returns>
         public static ProductionBase<Lexeme> AsTerminal(this Token token)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
@@ -24,16 +32,46 @@ namespace VBF.Compilers.Parsers
             return Terminal.GetTerminal(token);
         }
 
+        /// <summary>
+        /// Generates a production of 'end of stream' terminal. Note: this production is added automatically by <see cref="ParserBase{T}"/> class 
+        /// to the end of your root production. In normal case, you don't need to use this production manually. 
+        /// </summary>
+        /// <returns>The production object represents the 'end of stream' terminal.</returns>
         public static ProductionBase<Lexeme> Eos()
         {
             return new EndOfStream();
         }
 
+        /// <summary>
+        /// Generates a production that doesn't consume any token but results a specific object in parsing.
+        /// </summary>
+        /// <typeparam name="T">The type of parsing result object</typeparam>
+        /// <param name="value">The parsing result object of this production</param>
+        /// <returns>The generated 'empty' production object</returns>
         public static ProductionBase<T> Empty<T>(T value)
         {
             return new EmptyProduction<T>(value);
         }
 
+        /// <summary>
+        /// Generates a production that converts the parsing result of another production using a specific converting rule. 
+        /// In other words, generates a 'mapping' production
+        /// </summary>
+        /// <typeparam name="TSource">The type of the parsing result of the source production</typeparam>
+        /// <typeparam name="TResult">The type of the converted parsing result</typeparam>
+        /// <param name="production">The source production whose parsing result will be converted</param>
+        /// <param name="selector">The delegate that represents the converting rule</param>
+        /// <returns>The generated 'mapping' production object</returns>
+        /// <example>
+        /// The following code converts the parsing result of <see cref="Production{int}"/> into string from int.
+        /// <code language="C#">
+        /// Production&lt;int&gt; intProduction = new Production&lt;int&gt;();
+        /// 
+        /// var stringProduction =
+        ///     from iv in intProduction
+        ///     select iv.ToString();
+        /// </code>
+        /// </example>
         public static ProductionBase<TResult> Select<TSource, TResult>(this ProductionBase<TSource> production, Func<TSource, TResult> selector)
         {
             CodeContract.RequiresArgumentNotNull(production, "production");
@@ -42,6 +80,24 @@ namespace VBF.Compilers.Parsers
             return new MappingProduction<TSource, TResult>(production, selector);
         }
 
+        /// <summary>
+        /// Generates a production that converts the parsing result of a terminal using a specific converting rule. 
+        /// In other words, generates a 'mapping' production from a token
+        /// </summary>
+        /// <typeparam name="TResult">The type of the converted parsing result</typeparam>
+        /// <param name="token">The token used as the source terminal production whose parsing result will be converted.</param>
+        /// <param name="selector">The delegate that represents the converting rule</param>
+        /// <returns>The generated 'mapping' production object</returns>
+        /// <example>
+        /// The following code converts the parsing result of a terminal into string with some formatting.
+        /// <code language="C#">
+        /// Token T; //initialized in somewhere
+        /// 
+        /// var formatting =
+        ///     from z in T
+        ///     select String.Format("Token is {0}", z.Value);
+        /// </code>
+        /// </example>
         public static ProductionBase<TResult> Select<TResult>(this Token token, Func<Lexeme, TResult> selector)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
@@ -50,6 +106,31 @@ namespace VBF.Compilers.Parsers
             return new MappingProduction<Lexeme, TResult>(token.AsTerminal(), selector);
         }
 
+        /// <summary>
+        /// Generates a production that concatenates two productions. The generated 'concatenation' production consumes the input of two source productions in the order, 
+        /// and then using a converting rule to convert the parsing results of two source productions. In practice, this method is used to build multiple embedded 'from' 
+        /// clauses in a Linq query expression to concatenate multiple source productions. 
+        /// </summary>
+        /// <typeparam name="T1">The type of the parsing result of the 1st source production</typeparam>
+        /// <typeparam name="T2">The type of the parsing result of the 2nd source production</typeparam>
+        /// <typeparam name="TResult">The parsing result of the 'concatentation' production</typeparam>
+        /// <param name="production">The 1st source production</param>
+        /// <param name="productionSelector">The delegate used to generated the 2nd source production. 
+        /// Note that the argument of this delegate will be always null (Nothing in Visual Basic)</param>
+        /// <param name="resultSelector">The delegate that represents the converting rule of parsing result</param>
+        /// <returns>The generated 'concatentation' production object</returns>
+        /// <example>
+        /// The following code concatenates two <see cref="Production{T}"/> and formats the parsing result.
+        /// <code language="C#">
+        /// Production&lt;string&gt; strProduction = new Production&lt;string&gt;();
+        /// Production&lt;int&gt; intProduction = new Production&lt;int&gt;();
+        /// 
+        /// var concatenation =
+        ///     from sv in strProduction
+        ///     from iv in intProduction
+        ///     select String.Format("{0} is followed by {1}", sv, iv);
+        /// </code>
+        /// </example>
         public static ProductionBase<TResult> SelectMany<T1, T2, TResult>(this ProductionBase<T1> production, Func<T1, ProductionBase<T2>> productionSelector, Func<T1, T2, TResult> resultSelector)
         {
             CodeContract.RequiresArgumentNotNull(production, "production");
