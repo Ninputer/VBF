@@ -45,6 +45,8 @@
       <Link>CodeContract.cs</Link>
     </Compile>
     <Compile Include="AlternationProduction.cs" />
+    <Compile Include="ParserHeadCleaner.cs" />
+    <Compile Include="AmbiguityAggregator.cs" />
     <Compile Include="ConcatenationProduction.cs" />
     <Compile Include="EmptyProduction.cs" />
     <Compile Include="EndOfStream.cs" />

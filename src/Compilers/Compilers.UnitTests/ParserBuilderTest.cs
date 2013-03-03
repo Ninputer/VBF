@@ -246,10 +246,8 @@ namespace Compilers.UnitTests
                      from n in NUM
                      select "B";
 
-            p1.Priority = 1;
-
             var parser1 = p1 | p2;
-
+            parser1.AmbiguityAggregator = (a, b) => a == "A" ? a : b;
 
             var info = test.CreateScannerInfo();
 

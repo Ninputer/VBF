@@ -19,6 +19,8 @@ namespace VBF.Compilers.Parsers
         private List<ParserHead> m_errorCandidates;
         private List<ParserHead> m_acceptedHeads;
 
+        ParserHeadCleaner m_cleaner;
+
         private SyntaxErrors m_errorDef;
 
         public int CurrentStackCount
@@ -70,6 +72,8 @@ namespace VBF.Compilers.Parsers
             m_acceptedHeads = new List<ParserHead>();
             m_errorCandidates = new List<ParserHead>();
             m_errorDef = errorDef;
+
+            m_cleaner = new ParserHeadCleaner();
 
             //init state
             m_heads.Add(new ParserHead(new StackNode(0, null, null)));
@@ -176,6 +180,7 @@ namespace VBF.Compilers.Parsers
 
                 }
 
+                //no action for current lexeme, error recovery
                 if (shiftedHeads.Count == 0 && m_acceptedHeads.Count == 0)
                 {
                     RecoverError(z);
@@ -200,15 +205,7 @@ namespace VBF.Compilers.Parsers
 
             for (int i = 0; i < errorHeadCount; i++)
             {
-                var head = m_errorCandidates[i];
-
-                //skip error recovery if there's already any accepted states
-                if (m_acceptedHeads.Count > 0)
-                {
-                    continue;
-                }
-
-                //no action for current lexeme, error recovery
+                var head = m_errorCandidates[i];                
 
                 //option 1: remove
                 //remove current token and continue
@@ -296,59 +293,7 @@ namespace VBF.Compilers.Parsers
                     }
                 }
             }
-        }
-
-        private List<ParserHead> CleanUpHeads(List<ParserHead> heads, List<ParserHead> comparedHeads)
-        {
-            var newHeads = new List<ParserHead>();
-
-            var firstHead = heads[0];
-            int minLevel = firstHead.ErrorRecoverLevel;
-            int minError = firstHead.Errors != null ? firstHead.Errors.Count : 0;
-            int maxPriority = 0;
-
-            for (int i = 0; i < comparedHeads.Count; i++)
-            {
-                var head = comparedHeads[i];
-                var headLevel = head.ErrorRecoverLevel;
-                var priority = head.Priority;
-                var errorCount = head.Errors != null ? head.Errors.Count : 0;
-
-                if (minLevel > headLevel)
-                {
-                    minLevel = headLevel;
-                }
-
-                if (minError > errorCount)
-                {
-                    minError = errorCount;
-                }
-
-                if (maxPriority < priority)
-                {
-                    maxPriority = priority;
-                }
-            }
-
-            //copy all heads with min error level, min error count and highest priority
-            for (int i = 0; i < heads.Count; i++)
-            {
-                var head = heads[i];
-
-                if (head.ErrorRecoverLevel == minLevel && head.Priority == maxPriority)
-                {
-                    if (head.Errors == null || head.Errors.Count == minError)
-                    {
-                        head.Priority = 0;
-                        newHeads.Add(head);
-                    }
-                }
-            }
-
-            heads.Clear();
-
-            return newHeads;
-        }
+        }        
 
         private void SwapAndClean()
         {
@@ -361,57 +306,22 @@ namespace VBF.Compilers.Parsers
             m_heads.Clear();
             m_errorCandidates.Clear();
 
-            CleanUpAcceptedHeads();
+            if (m_acceptedHeads.Count > 0)
+            {
+                var acceptedheads = m_acceptedHeads.ToArray();
+                m_acceptedHeads.Clear();
+                m_cleaner.CleanHeads(acceptedheads, m_acceptedHeads);
+            }            
 
             if (m_tempHeads.Count == 0)
             {
                 return;
             }
 
-            //find min error level;
-            int minLevel = m_tempHeads[0].ErrorRecoverLevel;
-            int maxPriority = 0;
-
-            for (int i = 0; i < m_tempHeads.Count; i++)
-            {
-                var head = m_tempHeads[i];
-                var headLevel = head.ErrorRecoverLevel;
-                var priority = head.Priority;
-
-                if (minLevel > headLevel)
-                {
-                    minLevel = headLevel;
-                }
-
-                if (maxPriority < priority)
-                {
-                    maxPriority = priority;
-                }
-            }
-
-            //copy all heads with min error level
-            for (int i = 0; i < m_tempHeads.Count; i++)
-            {
-                var head = m_tempHeads[i];
-
-                if (head.ErrorRecoverLevel == minLevel && head.Priority == maxPriority)
-                {
-                    head.Priority = 0;
-                    m_heads.Add(head);
-                }
-            }
+            m_cleaner.CleanHeads(m_tempHeads, m_heads);
 
             m_tempHeads.Clear();
         }
-
-        private void CleanUpAcceptedHeads()
-        {
-            if (m_acceptedHeads.Count > 0)
-            {
-                m_acceptedHeads = CleanUpHeads(m_acceptedHeads, m_acceptedHeads);
-            }
-        }
-
 
     }
 }

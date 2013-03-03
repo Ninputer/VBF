@@ -9,7 +9,7 @@ namespace VBF.Compilers.Parsers
     internal class StackNode
     {
         internal readonly StackNode PrevNode;
-        internal readonly object ReducedValue;
+        internal object ReducedValue;
         internal readonly int StateIndex;
 
         public StackNode(int stateIndex, StackNode prev, object value)

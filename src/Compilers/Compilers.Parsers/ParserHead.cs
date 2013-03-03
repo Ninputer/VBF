@@ -20,7 +20,7 @@ namespace VBF.Compilers.Parsers
         private List<ErrorRecord> m_errors;
 
         public bool IsAccepted { get; private set; }
-        public int Priority { get; set; }
+        public AmbiguityAggregator AmbiguityAggregator { get; set; }
 
 #if HISTORY
         public List<string> History = new List<string>();
@@ -39,6 +39,11 @@ namespace VBF.Compilers.Parsers
             get
             {
                 return m_topStack.ReducedValue;
+            }
+
+            set
+            {
+                m_topStack.ReducedValue = value;
             }
         }
 
@@ -80,7 +85,7 @@ namespace VBF.Compilers.Parsers
             var from = m_topStack.StateIndex;
 #endif
 
-            StackNode shiftNode = new StackNode(targetStateIndex, m_topStack, z);            
+            StackNode shiftNode = new StackNode(targetStateIndex, m_topStack, z);
 
             m_topStack = shiftNode;
 
@@ -106,7 +111,10 @@ namespace VBF.Compilers.Parsers
                 return;
             }
 
-            if (Priority < production.Priority) Priority = production.Priority;
+            if (production.AggregatesAmbiguities)
+            {
+                AmbiguityAggregator = (production as ProductionBase).CreateAggregator();
+            }
 
             var reduceResult = production.Accept(reducer, m_topStack);
 
@@ -149,6 +157,18 @@ namespace VBF.Compilers.Parsers
             newHead.History = History.ToList();
 #endif
             return newHead;
+        }
+
+        public static bool ShareSameParent(ParserHead h1, ParserHead h2)
+        {
+            var prev1 = h1.m_topStack.PrevNode;
+            var prev2 = h2.m_topStack.PrevNode;
+            if (prev1 != null && prev2 !=null && Object.ReferenceEquals(prev1, prev2))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

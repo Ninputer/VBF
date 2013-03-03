@@ -9,7 +9,24 @@ namespace VBF.Compilers.Parsers
 {
     public class Production<T> : ProductionBase<T>
     {
-        public ProductionBase<T> Rule { get; set; }
+        private ProductionBase<T> m_rule;
+        public ProductionBase<T> Rule
+        {
+            get
+            {
+                if (m_rule == null)
+                {
+                    throw new InvalidOperationException("The Rule property of this Production is not set. Please set before parsing.");
+                }
+
+                return m_rule;
+            }
+            set
+            {
+                CodeContract.RequiresArgumentNotNull(value, "value");
+                m_rule = value;
+            }
+        }
 
         internal override ProductionInfo Info
         {
@@ -31,7 +48,7 @@ namespace VBF.Compilers.Parsers
         public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
         {
             return Rule.Accept(visitor, argument);
-        }        
+        }
 
         public override bool IsTerminal
         {
@@ -72,15 +89,15 @@ namespace VBF.Compilers.Parsers
             return Rule.ToString();
         }
 
-        public override int Priority
+        public override Func<T, T, T> AmbiguityAggregator
         {
             get
             {
-                return Rule.Priority;
+                return Rule.AmbiguityAggregator;
             }
             set
             {
-                Rule.Priority = value;
+                Rule.AmbiguityAggregator = value;
             }
         }
     }

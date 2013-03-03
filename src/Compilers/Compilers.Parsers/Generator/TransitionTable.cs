@@ -214,7 +214,7 @@ namespace VBF.Compilers.Parsers.Generator
                 }
 
                 //reduces
-                foreach (var reduce in state.Reduces.OrderByDescending(r => r.ReduceProduction.Priority))
+                foreach (var reduce in state.Reduces)
                 {
                     Terminal t = reduce.ReduceTerminal as Terminal;
                     int tokenIndex = t == null ? scannerInfo.EndOfStreamTokenIndex : t.Token.Index;

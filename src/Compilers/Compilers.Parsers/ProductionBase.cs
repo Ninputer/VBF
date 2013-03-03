@@ -51,11 +51,9 @@ namespace VBF.Compilers.Parsers
             }
         }
 
-        /// <summary>
-        /// Larger number means higher priority
-        /// </summary>
-        public virtual int Priority { get; set; }
-        
+        internal abstract AmbiguityAggregator CreateAggregator();
+
+        public abstract bool AggregatesAmbiguities { get; }
     }
 
     public abstract class ProductionBase<T> : ProductionBase
@@ -63,6 +61,18 @@ namespace VBF.Compilers.Parsers
         public static ProductionBase<T> operator |(ProductionBase<T> p1, ProductionBase<T> p2)
         {
             return new AlternationProduction<T>(p1, p2);
+        }
+
+        public virtual Func<T, T, T> AmbiguityAggregator { get; set; }
+
+        public sealed override bool AggregatesAmbiguities
+        {
+            get { return AmbiguityAggregator != null; }
+        }
+
+        internal sealed override AmbiguityAggregator CreateAggregator()
+        {
+            return new AmbiguityAggregator<T>(Info.NonTerminalIndex, AmbiguityAggregator);
         }
 
         protected ProductionBase()
