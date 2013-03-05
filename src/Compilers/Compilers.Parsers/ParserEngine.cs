@@ -15,6 +15,9 @@ namespace VBF.Compilers.Parsers
         private ReduceVisitor m_reducer;
 
         private List<ParserHead> m_heads;
+        private List<ParserHead> m_shiftedHeads;
+        private List<ParserHead> m_reducedHeads;
+        private List<ParserHead> m_recoverReducedHeads;
         private List<ParserHead> m_tempHeads;
         private List<ParserHead> m_errorCandidates;
         private List<ParserHead> m_acceptedHeads;
@@ -68,9 +71,13 @@ namespace VBF.Compilers.Parsers
             m_reducer = new ReduceVisitor(transitions);
 
             m_heads = new List<ParserHead>();
-            m_tempHeads = new List<ParserHead>();
+            m_shiftedHeads = new List<ParserHead>();
             m_acceptedHeads = new List<ParserHead>();
             m_errorCandidates = new List<ParserHead>();
+            m_tempHeads = new List<ParserHead>();
+            m_reducedHeads = new List<ParserHead>();
+            m_recoverReducedHeads = new List<ParserHead>();
+
             m_errorDef = errorDef;
 
             m_cleaner = new ParserHeadCleaner();
@@ -83,12 +90,11 @@ namespace VBF.Compilers.Parsers
         {
             while (true)
             {
-                List<ParserHead> shiftedHeads = m_tempHeads;
+                var heads = m_heads;
 
-                int count = m_heads.Count;
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < heads.Count; i++)
                 {
-                    var head = m_heads[i];
+                    var head = heads[i];
 
                     int stateNumber = head.TopStackStateIndex;
 
@@ -122,7 +128,7 @@ namespace VBF.Compilers.Parsers
                         newHead.Shift(z, shift.Value);
 
                         //save shifted heads
-                        shiftedHeads.Add(newHead);
+                        m_shiftedHeads.Add(newHead);
 
                         //get next shift
                         shift = shift.GetNext();
@@ -163,15 +169,12 @@ namespace VBF.Compilers.Parsers
                         else
                         {
                             //add back to queue, until shifted
-                            m_heads.Add(reducedHead);
-                            ++count;
+                            m_reducedHeads.Add(reducedHead);                                
                         }
 
                         //get next reduce
                         reduce = reduce.GetNext();
                     }
-
-
 
                     if (!isShiftedOrReduced)
                     {
@@ -179,10 +182,18 @@ namespace VBF.Compilers.Parsers
                     }
 
                 }
-
-                //no action for current lexeme, error recovery
-                if (shiftedHeads.Count == 0 && m_acceptedHeads.Count == 0)
+                
+                if (m_reducedHeads.Count > 0)
                 {
+                    m_heads.Clear();
+                    m_cleaner.CleanHeads(m_reducedHeads, m_heads);
+                    m_reducedHeads.Clear();
+
+                    continue;
+                }
+                else if (m_shiftedHeads.Count == 0 && m_acceptedHeads.Count == 0)
+                {
+                    //no action for current lexeme, error recovery
                     RecoverError(z);
                 }
                 else
@@ -191,12 +202,12 @@ namespace VBF.Compilers.Parsers
                 }
             }
 
-            SwapAndClean();
+            CleanShiftedAndAcceptedHeads();
         }
 
         private void RecoverError(Lexeme z)
         {
-            List<ParserHead> shiftedHeads = m_tempHeads;
+            List<ParserHead> shiftedHeads = m_shiftedHeads;
 
             m_heads.Clear();
             int errorHeadCount = m_errorCandidates.Count;
@@ -285,42 +296,50 @@ namespace VBF.Compilers.Parsers
                             reducedHead.Reduce(production, m_reducer, z);
 
                             //add back to queue, until shifted
-                            recoverQueue.Enqueue(reducedHead);
+                            m_recoverReducedHeads.Add(reducedHead);
 
                             //get next reduce
                             recoverReduce = recoverReduce.GetNext();
+                        }
+
+                        if (m_recoverReducedHeads.Count > 0)
+                        {
+                            m_tempHeads.Clear();
+                            m_cleaner.CleanHeads(m_recoverReducedHeads, m_tempHeads);
+                            m_recoverReducedHeads.Clear();
+
+                            foreach (var recoveredHead in m_tempHeads)
+                            {
+                                recoverQueue.Enqueue(recoveredHead);
+                            }
                         }
                     }
                 }
             }
         }        
 
-        private void SwapAndClean()
+        private void CleanShiftedAndAcceptedHeads()
         {
-            //var temp = m_tempHeads;
-            //m_tempHeads = m_heads;
-            //m_heads = temp;
-
-            //m_tempHeads.Clear();
-
             m_heads.Clear();
             m_errorCandidates.Clear();
+            m_tempHeads.Clear();
 
             if (m_acceptedHeads.Count > 0)
             {
-                var acceptedheads = m_acceptedHeads.ToArray();
+                m_cleaner.CleanHeads(m_acceptedHeads, m_tempHeads);
                 m_acceptedHeads.Clear();
-                m_cleaner.CleanHeads(acceptedheads, m_acceptedHeads);
+
+                var swap = m_tempHeads;
+                m_tempHeads = m_acceptedHeads;
+                m_acceptedHeads = swap;
             }            
 
-            if (m_tempHeads.Count == 0)
+            if (m_shiftedHeads.Count > 0)
             {
-                return;
+                m_cleaner.CleanHeads(m_shiftedHeads, m_heads);
+                m_shiftedHeads.Clear();
             }
-
-            m_cleaner.CleanHeads(m_tempHeads, m_heads);
-
-            m_tempHeads.Clear();
+            
         }
 
     }

@@ -20,8 +20,6 @@ namespace VBF.Compilers.Parsers
 
         public void CleanHeads(IList<ParserHead> sourceHeads, IList<ParserHead> targetHeads)
         {
-            m_aggregatingHeads.Clear();
-
             int minErrorLevel = sourceHeads[0].ErrorRecoverLevel;
             int minErrorCount = sourceHeads[0].Errors != null ? sourceHeads[0].Errors.Count : 0;
 
@@ -88,6 +86,13 @@ namespace VBF.Compilers.Parsers
                     targetHeads.Add(head);
                 }
             }
+
+            foreach (var aggHead in m_aggregatingHeads)
+            {
+                aggHead.AmbiguityAggregator = null;
+            }
+
+            m_aggregatingHeads.Clear();
         }
     }
 }

@@ -56,6 +56,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GrammarTests.cs" />
     <Compile Include="ParserBuilderTest.cs" />
     <Compile Include="ParserCombinatorsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
