@@ -73,6 +73,25 @@ namespace VBF.Compilers.Parsers
             m_errors.Add(error);
         }
 
+        public bool HasSameErrorsWith(ParserHead other)
+        {
+            if (other.m_errors == null && m_errors == null)
+            {
+                return true;
+            }
+            else if (other.m_errors == null || m_errors == null)
+            {
+                return false;
+            }
+            else
+            {
+                HashSet<ErrorRecord> myErrors = new HashSet<ErrorRecord>(m_errors);
+                HashSet<ErrorRecord> otherErrors = new HashSet<ErrorRecord>(other.m_errors);
+
+                return myErrors.SetEquals(otherErrors);
+            }
+        }
+
         public ParserHead(StackNode topStack)
         {
             m_topStack = topStack;

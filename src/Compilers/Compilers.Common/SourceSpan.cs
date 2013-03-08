@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VBF.Compilers
 {
-    public class SourceSpan
+    public class SourceSpan : IEquatable<SourceSpan>
     {
 
         private readonly SourceLocation m_startLocation;
@@ -24,6 +24,27 @@ namespace VBF.Compilers
         {
             m_startLocation = startLocation;
             m_endLocation = endLocation;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as SourceSpan);
+        }
+
+        public override int GetHashCode()
+        {
+            return (m_endLocation.GetHashCode() << 16) ^ m_startLocation.GetHashCode();
+        }
+
+        public bool Equals(SourceSpan other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return m_startLocation.Equals(other.m_startLocation) &&
+                m_endLocation.Equals(other.m_endLocation);
         }
     }
 

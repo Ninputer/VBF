@@ -170,7 +170,7 @@ namespace Compilers.UnitTests
 
             AmbiguityParser parser = new AmbiguityParser(em);
 
-            const string input = "a<b> c;a<b> c;a<b> c;a<b> c;a<b> c;";
+            const string input = "a<b>c;a<b>c;a<b>c;a<b>c;a<b>c;";
 
             var result = parser.Parse(input);
             var resarr = result.ToArray();

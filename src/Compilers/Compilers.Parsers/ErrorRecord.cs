@@ -17,5 +17,26 @@ namespace VBF.Compilers.Parsers
             ErrorId = id;
             ErrorPosition = position;
         }
+
+        public override bool Equals(object obj)
+        {
+            ErrorRecord other = obj as ErrorRecord;
+            if (other == null)
+            {
+                return false;
+            }
+
+            return ErrorId == other.ErrorId &&
+                Object.Equals(ErrorPosition, other.ErrorPosition) &&
+                Object.Equals(ErrorArgument, other.ErrorArgument);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (ErrorId ?? -1) ^ ErrorPosition.GetHashCode();
+            }
+        }
     }
 }
