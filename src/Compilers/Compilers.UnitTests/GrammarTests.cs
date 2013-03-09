@@ -201,5 +201,23 @@ namespace Compilers.UnitTests
 
             }
         }
+
+        [Test]
+        public void AmbiguityGrammarErrorTest()
+        {
+            CompilationErrorManager em = new CompilationErrorManager();
+
+            AmbiguityParser parser = new AmbiguityParser(em);
+
+            const string input = "a<b>>c;";
+
+            var result = parser.Parse(input);
+
+            var r = result.First() as AmbiguityStatementNode;
+
+            Assert.IsNotNull(r);
+            Assert.AreEqual(1, em.Errors.Count);
+
+        }
     }
 }
