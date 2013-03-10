@@ -50,7 +50,7 @@ namespace VBF.Compilers.DataStructures
             }
         }
 
-        protected DFSInfo[] Nodes
+        protected DFSInfo[] NodesInfo
         {
             get
             {

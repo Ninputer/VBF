@@ -49,6 +49,8 @@
     <Compile Include="CompilationStage.cs" />
     <Compile Include="DataStructures\DepthFirstSearch.cs" />
     <Compile Include="DataStructures\DisjointSets.cs" />
+    <Compile Include="DataStructures\EditDistanceCalculator.cs" />
+    <Compile Include="DataStructures\Strings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RevertPoint.cs" />
     <Compile Include="RevertPointCollection.cs" />
