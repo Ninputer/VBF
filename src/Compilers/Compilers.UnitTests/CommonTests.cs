@@ -17,7 +17,7 @@ namespace Compilers.UnitTests
             const string str1 = "abc";
             const string str2 = "abc";
 
-            var ed = Strings.EditDistance(str1, str2);
+            var ed = StringHelpers.EditDistance(str1, str2);
 
             Assert.AreEqual(0, ed);
         }
@@ -28,7 +28,7 @@ namespace Compilers.UnitTests
             const string str1 = "abc";
             const string str2 = "abcd";
 
-            var ed = Strings.EditDistance(str1, str2);
+            var ed = StringHelpers.EditDistance(str1, str2);
 
             Assert.AreEqual(1, ed);
         }
@@ -39,7 +39,7 @@ namespace Compilers.UnitTests
             const string str1 = "abc";
             const string str2 = "ac";
 
-            var ed = Strings.EditDistance(str1, str2);
+            var ed = StringHelpers.EditDistance(str1, str2);
 
             Assert.AreEqual(1, ed);
         }
@@ -50,7 +50,7 @@ namespace Compilers.UnitTests
             const string str1 = "abc";
             const string str2 = "ebc";
 
-            var ed = Strings.EditDistance(str1, str2);
+            var ed = StringHelpers.EditDistance(str1, str2);
 
             Assert.AreEqual(1, ed);
         }
@@ -61,7 +61,7 @@ namespace Compilers.UnitTests
             const string str1 = "snowy";
             const string str2 = "sunny";
 
-            var ed = Strings.EditDistance(str1, str2);
+            var ed = StringHelpers.EditDistance(str1, str2);
 
             Assert.AreEqual(3, ed);
         }
@@ -72,9 +72,17 @@ namespace Compilers.UnitTests
             const string str1 = "exponential";
             const string str2 = "polynomial";
 
-            var ed = Strings.EditDistance(str1, str2);
+            var ed = StringHelpers.EditDistance(str1, str2);
 
             Assert.AreEqual(6, ed);
+        }
+
+        [Test]
+        public void EditDistanceZeroLengthTest()
+        {
+            var ed = StringHelpers.EditDistance(String.Empty, String.Empty);
+
+            Assert.AreEqual(0, ed);
         }
     }
 }

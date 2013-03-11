@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace VBF.Compilers.DataStructures
 {
-    public static class Strings
+    public static class StringHelpers
     {
         public static int EditDistance(string str1, string str2)
         {
