@@ -9,6 +9,7 @@ namespace VBF.Compilers.DataStructures
     public class DisjointSets<T>
     {
         private Dictionary<T, T> m_setsStorage;
+        private Dictionary<T, int> m_ranks;
 
         public DisjointSets(IEnumerable<T> elements)
         {
@@ -25,11 +26,14 @@ namespace VBF.Compilers.DataStructures
                 m_setsStorage = new Dictionary<T, T>();
             }
 
+            m_ranks = new Dictionary<T, int>();
+
             foreach (var item in elements)
             {
                 if (item != null)
                 {
                     m_setsStorage[item] = item;
+                    m_ranks[item] = 0;
                 }
             }
         }
@@ -56,7 +60,25 @@ namespace VBF.Compilers.DataStructures
             CodeContract.RequiresArgumentNotNull(v1, "v1");
             CodeContract.RequiresArgumentNotNull(v2, "v2");
 
-            m_setsStorage[Find(v1)] = Find(v2);
+            var r1 = Find(v1);
+            var r2 = Find(v2);
+
+            var rank1 =  m_ranks[r1];
+            var rank2 = m_ranks[r2];
+            if (rank1 > rank2)
+            {
+                m_setsStorage[r2] = r1;
+            }
+            else
+            {
+                if (rank1 == rank2)
+                {
+                    m_ranks[r2] = rank2 + 1;
+                }
+
+                m_setsStorage[r1] = r2;
+            }
+
         }
     }
 }

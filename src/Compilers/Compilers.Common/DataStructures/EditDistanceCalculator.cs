@@ -11,9 +11,6 @@ namespace VBF.Compilers.DataStructures
         private string m_string1;
         private string m_string2;
 
-        private int[] m_traceOdd;
-        private int[] m_traceEven;
-
         public EditDistanceCalculator(string string1, string string2)
         {
             if (string1.Length > string2.Length)
@@ -26,15 +23,12 @@ namespace VBF.Compilers.DataStructures
                 m_string2 = string1;
                 m_string1 = string2;
             }
-
-            m_traceOdd = new int[m_string1.Length + 1];
-            m_traceEven = new int[m_string1.Length + 1];
         }
 
         public int Calculate()
         {
-            int[] last = m_traceEven;
-            int[] current = m_traceOdd;
+            int[] last = new int[m_string1.Length + 1];
+            int[] current = new int[m_string1.Length + 1];
             int[] temp = null;
 
             //initialize last (row[0])
