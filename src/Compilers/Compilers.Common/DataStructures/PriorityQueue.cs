@@ -20,6 +20,7 @@ namespace VBF.Compilers.DataStructures
         //less in Minimum mode, greater in maximum mode
         private Func<T, T, bool> inRightOrder;
         private List<T> m_binaryHeap;
+        private Dictionary<T, int> m_indexDict;
 
         private int m_size;
 
@@ -52,15 +53,23 @@ namespace VBF.Compilers.DataStructures
                 throw new ArgumentOutOfRangeException("type", "ExtremeType can only be Minmun or Maximum");
             }
 
+            m_indexDict = new Dictionary<T, int>();
+
             //initialize prioirty queue heap
             if (values != null)
             {
                 m_binaryHeap = new List<T>(values);
+
+                for (int i = 0; i < m_binaryHeap.Count; i++)
+                {
+                    m_indexDict.Add(m_binaryHeap[i], i);
+                }
             }
             else
             {
                 m_binaryHeap = new List<T>();
             }
+
 
             InitializeHeap();
         }
@@ -73,6 +82,7 @@ namespace VBF.Compilers.DataStructures
             if (count > 0)
             {
                 m_binaryHeap.Add(m_binaryHeap[0]);
+                m_indexDict[m_binaryHeap[0]] = m_binaryHeap.Count - 1;
                 m_binaryHeap[0] = default(T);
             }
             else
@@ -107,8 +117,7 @@ namespace VBF.Compilers.DataStructures
                 if (inRightOrder(m_binaryHeap[child], temp))
                 {
                     m_binaryHeap[hole] = m_binaryHeap[child];
-
-                    //TODO
+                    m_indexDict[m_binaryHeap[hole]] = hole;
                 }
                 else
                 {
@@ -119,8 +128,7 @@ namespace VBF.Compilers.DataStructures
             }
 
             m_binaryHeap[hole] = temp;
-
-            //TODO
+            m_indexDict[temp] = hole;
         }
 
         private void PercolateUp(int index)
@@ -131,12 +139,12 @@ namespace VBF.Compilers.DataStructures
             while (hole > 1 && inRightOrder(temp, m_binaryHeap[hole / 2]))
             {
                 m_binaryHeap[hole] = m_binaryHeap[hole / 2];
-                //TODO
+                m_indexDict[m_binaryHeap[hole]] = hole;
                 hole /= 2;
             }
 
             m_binaryHeap[hole] = temp;
-            //TEMP
+            m_indexDict[temp] = hole;
         }
 
         public PriorityQueue(IEnumerable<T> values, ExtremeType type) : this(values, type, Comparer<T>.Default) { }
@@ -165,7 +173,7 @@ namespace VBF.Compilers.DataStructures
             T extreme = m_binaryHeap[1];
 
             m_binaryHeap[1] = m_binaryHeap[m_size];
-            //TODO
+            m_indexDict[m_binaryHeap[1]] = 1;
             m_size--;
 
             PercolateDown(1);
@@ -175,7 +183,7 @@ namespace VBF.Compilers.DataStructures
 
         public void Insert(T value)
         {
-            if (m_size == m_binaryHeap.Count)
+            if (m_size == m_binaryHeap.Count - 1)
             {
                 //full, add one
                 m_binaryHeap.Add(value);
@@ -187,7 +195,7 @@ namespace VBF.Compilers.DataStructures
                 m_binaryHeap[m_size] = value;          
             }
 
-            //TODO
+            m_indexDict[value] = m_size;
             PercolateUp(m_size);
         }
 
@@ -196,6 +204,28 @@ namespace VBF.Compilers.DataStructures
             get
             {
                 return m_size == 0;
+            }
+        }
+
+        public void ModifyValue(T originalValue, T newValue)
+        {
+            int current;
+            if (!m_indexDict.TryGetValue(originalValue, out current))
+            {
+                throw new ArgumentOutOfRangeException("originalValue", "The originalValue is not in the priority queue");
+            }
+
+            m_binaryHeap[current] = newValue;
+
+            if (inRightOrder(newValue, originalValue))
+            {
+                //near extreme, go up
+                PercolateUp(current);
+            }
+            else
+            {
+                //far from extreme, go down
+                PercolateDown(current);
             }
         }
     }
