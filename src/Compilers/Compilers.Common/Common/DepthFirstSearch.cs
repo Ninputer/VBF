@@ -39,7 +39,7 @@ namespace VBF.Compilers.Common
         private ChildrenGetter<T> m_childrenGetter;
         private DFSInfo[] m_nodesInfo;
         private T[] m_nodes;
-        protected bool[] m_visited;
+        private bool[] m_visited;
         private Dictionary<T, int> m_nodeIndexLookup;
 
         protected T[] Nodes
