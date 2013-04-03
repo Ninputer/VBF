@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using VBF.Compilers.DataStructures;
+using VBF.Compilers.Common;
 
 namespace Compilers.UnitTests
 {

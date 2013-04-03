@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VBF.Compilers.DataStructures
+namespace VBF.Compilers.Common
 {
     internal class EditDistanceCalculator
     {
