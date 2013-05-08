@@ -10,5 +10,10 @@ namespace VBF.Compilers.Intermediate
     {
         public Operand Operand { get; set; }
         public PrimaryType Type { get; set; }
+
+        void Foo()
+        {
+            
+        }
     }
 }

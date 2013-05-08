@@ -62,7 +62,7 @@ namespace VBF.Compilers.Parsers.Combinators
             if (context != null && context.ErrorManager != null)
             {
                 context.ErrorManager.AddError(
-                    context.DeletionErrorId, UnexpectedLexeme.Span, UnexpectedLexeme.Value);
+                    context.DeletionErrorId, UnexpectedLexeme.Value.Span, UnexpectedLexeme.Value);
             }
         }
     }

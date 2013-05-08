@@ -294,17 +294,17 @@ namespace Compilers.UnitTests
 
             Lexeme l1 = scanner.Read();
             Assert.AreEqual(ID.Index, l1.TokenIndex);
-            Assert.AreEqual("asdf04a", l1.Value);
-            Assert.AreEqual(0, l1.Span.StartLocation.Column);
-            Assert.AreEqual(6, l1.Span.EndLocation.Column);
+            Assert.AreEqual("asdf04a", l1.Value.Content);
+            Assert.AreEqual(0, l1.Value.Span.StartLocation.Column);
+            Assert.AreEqual(6, l1.Value.Span.EndLocation.Column);
 
             Lexeme l2 = scanner.Read();
             Assert.AreEqual(WHITESPACE.Index, l2.TokenIndex);
-            Assert.AreEqual(" ", l2.Value);
+            Assert.AreEqual(" ", l2.Value.Content);
 
             Lexeme l3 = scanner.Read();
             Assert.AreEqual(NUM.Index, l3.TokenIndex);
-            Assert.AreEqual("1107", l3.Value);
+            Assert.AreEqual("1107", l3.Value.Content);
 
             Lexeme l4 = scanner.Read();
             Assert.AreEqual(WHITESPACE.Index, l4.TokenIndex);
@@ -346,13 +346,13 @@ namespace Compilers.UnitTests
             Lexeme leof = scanner.Read(); // eof
 
             Assert.AreEqual(info.EndOfStreamTokenIndex, leof.TokenIndex);
-            Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
-            Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
+            Assert.AreEqual(leof.Value.Span.StartLocation.CharIndex, leof.Value.Span.EndLocation.CharIndex);
+            Assert.AreEqual(source.Length, leof.Value.Span.StartLocation.CharIndex);
 
             Lexeme leof2 = scanner.Read(); //after eof, should return eof again
 
             Assert.AreEqual(info.EndOfStreamTokenIndex, leof2.TokenIndex);
-            Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof2.Span.StartLocation.CharIndex);
+            Assert.AreEqual(leof.Value.Span.StartLocation.CharIndex, leof2.Value.Span.StartLocation.CharIndex);
         }
 
         [Test]
@@ -386,22 +386,22 @@ namespace Compilers.UnitTests
 
             Lexeme l1 = scanner.Read();
             Assert.AreEqual(ID.Index, l1.TokenIndex);
-            Assert.AreEqual("asdf04a", l1.Value);
+            Assert.AreEqual("asdf04a", l1.Value.Content);
             Assert.AreEqual(0, l1.PrefixTrivia.Count);
 
             Lexeme l2 = scanner.Read();
             Assert.AreEqual(NUM.Index, l2.TokenIndex);
-            Assert.AreEqual("1107", l2.Value);
+            Assert.AreEqual("1107", l2.Value.Content);
             Assert.AreEqual(1, l2.PrefixTrivia.Count);
 
             Lexeme l3 = scanner.Read();
             Assert.AreEqual(ELSE.Index, l3.TokenIndex);
-            Assert.AreEqual("else", l3.Value);
+            Assert.AreEqual("else", l3.Value.Content);
             Assert.AreEqual(1, l2.PrefixTrivia.Count);
 
             Lexeme l4 = scanner.Read();
             Assert.AreEqual(IF.Index, l4.TokenIndex);
-            Assert.AreEqual("if", l4.Value);
+            Assert.AreEqual("if", l4.Value.Content);
             Assert.AreEqual(3, l4.PrefixTrivia.Count);
             
 
@@ -422,8 +422,8 @@ namespace Compilers.UnitTests
 
             Lexeme leof = scanner.Read();
             Assert.AreEqual(info.EndOfStreamTokenIndex, leof.TokenIndex);
-            Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
-            Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
+            Assert.AreEqual(leof.Value.Span.StartLocation.CharIndex, leof.Value.Span.EndLocation.CharIndex);
+            Assert.AreEqual(source.Length, leof.Value.Span.StartLocation.CharIndex);
         }
 
         [Test]
@@ -439,9 +439,9 @@ namespace Compilers.UnitTests
             ForkableScanner fscanner = fsBuilder.Create(new SourceReader(new StringReader(source)));
 
             var l1 = fscanner.Read();
-            Assert.AreEqual("a", l1.Value);
+            Assert.AreEqual("a", l1.Value.Content);
             var l2 = fscanner.Read();
-            Assert.AreEqual("b", l2.Value);
+            Assert.AreEqual("b", l2.Value.Content);
 
             //fork
             ForkableScanner fscanner2 = fscanner.Fork();
@@ -449,13 +449,13 @@ namespace Compilers.UnitTests
             for (int i = 2; i <= 4; i++)
             {
                 var l = fscanner.Read();
-                Assert.AreEqual(source[i].ToString(), l.Value);
+                Assert.AreEqual(source[i].ToString(), l.Value.Content);
             }
 
             for (int i = 2; i <= 5; i++)
             {
                 var l = fscanner2.Read();
-                Assert.AreEqual(source[i].ToString(), l.Value);
+                Assert.AreEqual(source[i].ToString(), l.Value.Content);
             }
 
             ForkableScanner fscanner3 = fscanner.Fork();
@@ -463,21 +463,21 @@ namespace Compilers.UnitTests
             var l5a = fscanner.Read();
             var l5b = fscanner3.Read();
 
-            Assert.AreEqual(source[5].ToString(), l5a.Value);
-            Assert.AreEqual(source[5].ToString(), l5b.Value);
+            Assert.AreEqual(source[5].ToString(), l5a.Value.Content);
+            Assert.AreEqual(source[5].ToString(), l5b.Value.Content);
 
             var l6b = fscanner2.Read();
             var l6a = fscanner3.Read();
 
-            Assert.AreEqual(source[6].ToString(), l6a.Value);
-            Assert.AreEqual(source[6].ToString(), l6b.Value);
+            Assert.AreEqual(source[6].ToString(), l6a.Value.Content);
+            Assert.AreEqual(source[6].ToString(), l6b.Value.Content);
 
             var l7a = fscanner2.Read();
 
             for (int i = 7; i < 9; i++)
             {
                 var l = fscanner3.Read();
-                Assert.AreEqual(source[i].ToString(), l.Value);
+                Assert.AreEqual(source[i].ToString(), l.Value.Content);
             }
         }
 

@@ -65,7 +65,7 @@ namespace VBF.Compilers.Parsers.Combinators
                 else
                 {
                     Lexeme correctionLexeme = l.GetErrorCorrectionLexeme(ExpectedToken.Index, MissingCorrection);
-                    ErrorCorrection insertCorrection = new InsertedErrorCorrection(ExpectedToken.ToString(), correctionLexeme.Span);
+                    ErrorCorrection insertCorrection = new InsertedErrorCorrection(ExpectedToken.ToString(), correctionLexeme.Value.Span);
 
                     if (l.IsEndOfStream)
                     {

@@ -225,7 +225,7 @@ namespace VBF.Compilers.Parsers
                     var deleteHead = head.Clone();
 
                     deleteHead.IncreaseErrorRecoverLevel();
-                    deleteHead.AddError(new ErrorRecord(m_errorDef.TokenUnexpectedId, z.Span) { ErrorArgument = z.Value });
+                    deleteHead.AddError(new ErrorRecord(m_errorDef.TokenUnexpectedId, z.Value.Span) { ErrorArgument = z.Value });
 
                     shiftedHeads.Add(deleteHead);
                 }
@@ -265,7 +265,7 @@ namespace VBF.Compilers.Parsers
                             var insertLexeme = z.GetErrorCorrectionLexeme(j, m_transitions.GetTokenDescription(j));
                             insertHead.Shift(insertLexeme, recoverShift.Value);
                             insertHead.IncreaseErrorRecoverLevel();
-                            insertHead.AddError(new ErrorRecord(m_errorDef.TokenMissingId, z.Span) { ErrorArgument = insertLexeme.Value });
+                            insertHead.AddError(new ErrorRecord(m_errorDef.TokenMissingId, z.Value.Span) { ErrorArgument = insertLexeme.Value });
 
                             m_heads.Add(insertHead);
 

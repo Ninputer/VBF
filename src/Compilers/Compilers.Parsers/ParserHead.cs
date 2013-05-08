@@ -146,7 +146,7 @@ namespace VBF.Compilers.Parsers
 
                 if (reduceError.ErrorPosition == null)
                 {
-                    reduceError.ErrorPosition = lookahead.Span;
+                    reduceError.ErrorPosition = lookahead.Value.Span;
                 }
 
                 AddError(reduceError);

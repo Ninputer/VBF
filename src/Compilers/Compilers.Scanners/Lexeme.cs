@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace VBF.Compilers.Scanners
 {
-    [DebuggerDisplay("Token:{TokenIndex} {Value}")]
+    [DebuggerDisplay("Token:{TokenIndex} {Value.ToString()}")]
     public sealed class Lexeme
     {
         private ScannerInfo m_scannerInfo;
@@ -17,15 +17,13 @@ namespace VBF.Compilers.Scanners
 
         private static readonly Lexeme[] s_emptyTrivia = new Lexeme[0];
 
-        public SourceSpan Span { get; private set; }
-        public string Value { get; private set; }
+        public LexemeValue Value { get; private set; }
 
-        internal Lexeme(ScannerInfo scannerInfo, int state, SourceSpan span, string value, List<Lexeme> trivia)
+        internal Lexeme(ScannerInfo scannerInfo, int state, SourceSpan span, string content, List<Lexeme> trivia)
         {
             m_scannerInfo = scannerInfo;
             m_stateIndex = state;
-            Span = span;
-            Value = value;
+            Value = new LexemeValue(content, span);
 
             if (trivia != null)
             {
@@ -76,7 +74,7 @@ namespace VBF.Compilers.Scanners
             int state = m_scannerInfo.GetStateIndex(expectedTokenIndex);
             if (state < 0) throw new ArgumentException("Expected token index is invalid", "expectedTokenIndex");
 
-            return new Lexeme(m_scannerInfo, state, new SourceSpan(Span.StartLocation, Span.StartLocation), expectedValue, null);
+            return new Lexeme(m_scannerInfo, state, new SourceSpan(Value.Span.StartLocation, Value.Span.StartLocation), expectedValue, null);
         }
     }
 }

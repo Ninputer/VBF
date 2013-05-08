@@ -65,6 +65,7 @@
     <Compile Include="Generator\CompressedTransitionTable.cs" />
     <Compile Include="KleeneStarExpression.cs" />
     <Compile Include="Lexeme.cs" />
+    <Compile Include="LexemeValue.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="Lexicon.cs" />
     <Compile Include="PeekableScanner.cs" />

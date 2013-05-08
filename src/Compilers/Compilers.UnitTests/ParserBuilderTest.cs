@@ -236,7 +236,7 @@ namespace Compilers.UnitTests
             var p1 = from i in ID
                      from g in GREATER
                      from g2 in GREATER
-                     where Grammar.Check(g2.PrefixTrivia.Count == 0, 4, g2.Span)
+                     where Grammar.Check(g2.PrefixTrivia.Count == 0, 4, g2.Value.Span)
                      from n in NUM
                      select "A";
 
@@ -348,7 +348,7 @@ namespace Compilers.UnitTests
                  from _2 in COMMA
                  from right in NodeParser
                  from _3 in RIGHTPH
-                 select new Node(a.Value, left, right))
+                 select new Node(a.Value.Content, left, right))
                 | Grammar.Empty<Node>(null);
 
             var builder = new ForkableScannerBuilder(binaryTreeSyntax.CreateScannerInfo());
@@ -425,7 +425,7 @@ namespace Compilers.UnitTests
                      from _2 in COMMA
                      from right in NodeParser
                      from _3 in RIGHTPH
-                     select new Node(a.Value, left, right))
+                     select new Node(a.Value.Content, left, right))
                     | Grammar.Empty<Node>(null);
 
                 return NodeParser;
@@ -494,7 +494,7 @@ namespace Compilers.UnitTests
                 from lb in LB
                 from getdef in getDef
                 from rb in RB
-                select new PropDef{ PropName = id.Value, GetDef = getdef };
+                select new PropDef{ PropName = id.Value.Content, GetDef = getdef };
 
             string source = "property get { get { get = 1; } }";
             SourceReader sr = new SourceReader(
@@ -564,7 +564,7 @@ namespace Compilers.UnitTests
                 Production<IEnumerable<string>> P = new Production<IEnumerable<string>>();
                 P.Rule =                    
                     from list in LETTER.Many(COMMA)
-                    select list.Select(z => z.Value).ToArray() as IEnumerable<string>;
+                    select list.Select(z => z.Value.Content).ToArray() as IEnumerable<string>;
 
                 return P;
             }
