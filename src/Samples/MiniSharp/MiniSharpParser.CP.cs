@@ -234,7 +234,7 @@ namespace VBF.MiniSharp.CombinatorParser
                 from statements in PStatement.Many1()
                 from _7 in RIGHT_BR
                 from _8 in RIGHT_BR
-                select new MainClass(className, arg, statements.ToArray());
+                select new MainClass(className.Value, arg.Value, statements.ToArray());
 
             var classMembers =
                 from _1 in LEFT_BR
@@ -257,13 +257,13 @@ namespace VBF.MiniSharp.CombinatorParser
                 from _class in K_CLASS
                 from className in ID
                 from def in (classDeclSimple | classDeclInherits)
-                select new ClassDecl(className, def.BaseClassName, def.Members.Fields, def.Members.Methods);
+                select new ClassDecl(className.Value, def.BaseClassName.GetValue(), def.Members.Fields, def.Members.Methods);
 
             PFieldDecl.Reference = // Type id;
                 from type in PType
                 from varName in ID
                 from _sc in SEMICOLON
-                select new FieldDecl(type, varName);
+                select new FieldDecl(type, varName.Value);
 
             var methodBody =
                 from _1 in LEFT_BR
@@ -286,12 +286,12 @@ namespace VBF.MiniSharp.CombinatorParser
                 from formals in PFormalList
                 from _2 in RIGHT_PH
                 from body in (methodBody | methodNoBody)
-                select new MethodDecl(methodName, type, formals, body.Statements, body.ReturnExp);
+                select new MethodDecl(methodName.Value, type, formals, body.Statements, body.ReturnExp);
 
             var paramFormal =
                 from paramType in PType
                 from paramName in ID
-                select new Formal(paramType, paramName);
+                select new Formal(paramType, paramName.Value);
 
             PFormalList.Reference = // Type id FormalRest* | <empty>
                  from list in paramFormal.Many(COMMA)
@@ -316,7 +316,7 @@ namespace VBF.MiniSharp.CombinatorParser
 
             PIdType.Reference = // id
                 from type in ID
-                select (Ast.Type)new IdentifierType(type);
+                select (Ast.Type)new IdentifierType(type.Value);
 
             //statements
 
@@ -337,7 +337,7 @@ namespace VBF.MiniSharp.CombinatorParser
                 from truePart in PStatement
                 from _else in K_ELSE
                 from falsePart in PStatement
-                select (Statement)new IfElse(condExp, truePart, falsePart, _if.Span, _else.Span);
+                select (Statement)new IfElse(condExp, truePart, falsePart, _if.Value.Span, _else.Value.Span);
 
             PWhile.Reference = // while ( exp ) statement
                 from _while in K_WHILE
@@ -345,7 +345,7 @@ namespace VBF.MiniSharp.CombinatorParser
                 from condExp in PExp
                 from _2 in RIGHT_PH
                 from loopBody in PStatement
-                select (Statement)new While(condExp, loopBody, _while.Span);
+                select (Statement)new While(condExp, loopBody, _while.Value.Span);
 
             PWriteLine.Reference = // System.Console.WriteLine( exp );
                 from _sys in K_SYSTEM
@@ -357,14 +357,14 @@ namespace VBF.MiniSharp.CombinatorParser
                 from exp in PExp
                 from _4 in RIGHT_PH
                 from _sc in SEMICOLON
-                select (Statement)new WriteLine(exp, new SourceSpan(_sys.Span.StartLocation, _wl.Span.EndLocation));
+                select (Statement)new WriteLine(exp, new SourceSpan(_sys.Value.Span.StartLocation, _wl.Value.Span.EndLocation));
 
             PAssignment.Reference = // id = exp;
                 from variable in ID
                 from _eq in ASSIGN
                 from value in PExp
                 from _sc in SEMICOLON
-                select (Statement)new Assign(variable, value);
+                select (Statement)new Assign(variable.Value, value);
 
             PArrayAssignment.Reference = // id[ exp ] = exp ;
                 from variable in ID
@@ -374,39 +374,39 @@ namespace VBF.MiniSharp.CombinatorParser
                 from _eq in ASSIGN
                 from value in PExp
                 from _sc in SEMICOLON
-                select (Statement)new ArrayAssign(variable, index, value);
+                select (Statement)new ArrayAssign(variable.Value, index, value);
 
             PVarDeclStmt.Reference = // Type id;
                 from type in PType
                 from varName in ID
                 from _sc in SEMICOLON
-                select (Statement)new VarDecl(type, varName);
+                select (Statement)new VarDecl(type, varName.Value);
 
             //expressions
 
             //basic
             PNumberLiteral.Reference = // number
                 from intvalue in INTEGER_LITERAL
-                select (Expression)new IntegerLiteral(intvalue);
+                select (Expression)new IntegerLiteral(intvalue.Value);
 
             PBoolLiteral.Reference = // true | false
                 from b in K_TRUE.AsParser() | K_FALSE.AsParser()
-                select (Expression)new BooleanLiteral(b);
+                select (Expression)new BooleanLiteral(b.Value);
 
             PThis.Reference = // this
                 from _this in K_THIS
-                select (Expression)new This(_this.Span);
+                select (Expression)new This(_this.Value.Span);
 
             PVariable.Reference = // id
                 from varName in ID
-                select (Expression)new Variable(varName);
+                select (Expression)new Variable(varName.Value);
 
             PNewObj.Reference = // new id()
                 from _new in K_NEW
                 from typeName in ID
                 from _1 in LEFT_PH
                 from _2 in RIGHT_PH
-                select (Expression)new NewObject(typeName);
+                select (Expression)new NewObject(typeName.Value);
 
             PNewArray.Reference = // new int [exp]
                 from _new in K_NEW
@@ -414,7 +414,7 @@ namespace VBF.MiniSharp.CombinatorParser
                 from _1 in LEFT_BK
                 from length in PExp
                 from _2 in RIGHT_BR
-                select (Expression)new NewArray(length, new SourceSpan(_1.Span.EndLocation, _2.Span.StartLocation));
+                select (Expression)new NewArray(length, new SourceSpan(_1.Value.Span.EndLocation, _2.Value.Span.StartLocation));
 
             var foundationExp = // (exp) | number literal | true | false | this | id | new
                 PNumberLiteral |
@@ -433,20 +433,20 @@ namespace VBF.MiniSharp.CombinatorParser
                 from args in PExpList
                 from _2 in RIGHT_PH
                 select new Func<Expression, Expression>(e =>
-                    new Call(e, methodName, args));
+                    new Call(e, methodName.Value, args));
 
             PArrayLookup.Reference = // exp[exp]
                 from _1 in LEFT_BK
                 from index in PExp
                 from _2 in RIGHT_BK
                 select new Func<Expression, Expression>(e =>
-                    new ArrayLookup(e, index, new SourceSpan(_1.Span.EndLocation, _2.Span.StartLocation)));
+                    new ArrayLookup(e, index, new SourceSpan(_1.Value.Span.EndLocation, _2.Value.Span.StartLocation)));
 
             PArrayLength.Reference = // exp.Length
                 from _d in DOT
                 from _length in K_LENGTH
                 select new Func<Expression, Expression>(e =>
-                    new ArrayLength(e, _length.Span));
+                    new ArrayLength(e, _length.Value.Span));
 
             var basicExp = //foundation >> call | id[exp] | id.Length
                 from exp in foundationExp
@@ -459,7 +459,7 @@ namespace VBF.MiniSharp.CombinatorParser
                 basicExp |
                 from _n in LOGICAL_NOT
                 from exp in PNot
-                select (Expression)new Not(exp, _n.Span);
+                select (Expression)new Not(exp, _n.Value.Span);
 
             //binary
 
@@ -474,7 +474,7 @@ namespace VBF.MiniSharp.CombinatorParser
             PTerm.Reference = // term * factor | factor
                 from factor in PFactor
                 from rest in termRest.Many()
-                select rest.Aggregate(factor, (f, r) => new Binary(r.Op, f, r.Right));
+                select rest.Aggregate(factor, (f, r) => new Binary(r.Op.Value, f, r.Right));
 
             var comparandRest =
                 from op in (PLUS.AsParser() | MINUS.AsParser())
@@ -484,7 +484,7 @@ namespace VBF.MiniSharp.CombinatorParser
             PComparand.Reference = // comparand + term | term
                 from term in PTerm
                 from rest in comparandRest.Many()
-                select rest.Aggregate(term, (t, r) => new Binary(r.Op, t, r.Right));
+                select rest.Aggregate(term, (t, r) => new Binary(r.Op.Value, t, r.Right));
 
 
             var comparisonRest =
@@ -495,7 +495,7 @@ namespace VBF.MiniSharp.CombinatorParser
             PComparison.Reference = // comparison < comparand | comparand
                 from comparand in PComparand
                 from rest in comparisonRest.Many()
-                select rest.Aggregate(comparand, (c, r) => new Binary(r.Op, c, r.Right));
+                select rest.Aggregate(comparand, (c, r) => new Binary(r.Op.Value, c, r.Right));
 
             var andRest =
                 from op in LOGICAL_AND
@@ -505,7 +505,7 @@ namespace VBF.MiniSharp.CombinatorParser
             PAnd.Reference = // andexp && comparison | comparison
                 from comparison in PComparison
                 from rest in andRest.Many()
-                select rest.Aggregate(comparison, (c, r) => new Binary(r.Op, c, r.Right));
+                select rest.Aggregate(comparison, (c, r) => new Binary(r.Op.Value, c, r.Right));
 
             var orRest =
                 from op in LOGICAL_OR
@@ -515,7 +515,7 @@ namespace VBF.MiniSharp.CombinatorParser
             POr.Reference = // orexp || andexp | andexp
                 from and in PAnd
                 from rest in orRest.Many()
-                select rest.Aggregate(and, (c, r) => new Binary(r.Op, c, r.Right));
+                select rest.Aggregate(and, (c, r) => new Binary(r.Op.Value, c, r.Right));
 
             PExp.Reference = POr;
 

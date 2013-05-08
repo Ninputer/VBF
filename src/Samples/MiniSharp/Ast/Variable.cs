@@ -10,7 +10,7 @@ namespace VBF.MiniSharp.Ast
     {
         public VariableRef VariableRef { get; private set; }
 
-        public Variable(Lexeme name)
+        public Variable(LexemeValue name)
         {
             VariableRef = new VariableRef(name);
         }

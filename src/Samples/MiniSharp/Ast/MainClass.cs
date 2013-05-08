@@ -9,13 +9,13 @@ namespace VBF.MiniSharp.Ast
 {
     public class MainClass : AstNode
     {
-        public Lexeme Name { get; private set; }
-        public Lexeme ArgName { get; private set; }
+        public LexemeValue Name { get; private set; }
+        public LexemeValue ArgName { get; private set; }
         public ReadOnlyCollection<Statement> Statements { get; private set; }
 
         public TypeBase Type { get; set; }
 
-        public MainClass(Lexeme name, Lexeme argName, IList<Statement> statements)
+        public MainClass(LexemeValue name, LexemeValue argName, IList<Statement> statements)
         {
             Name = name;
             ArgName = argName;

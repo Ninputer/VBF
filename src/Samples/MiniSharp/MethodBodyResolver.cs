@@ -93,16 +93,16 @@ namespace VBF.MiniSharp
             m_types = types;
         }
 
-        private VariableInfo ResolveVariable(Lexeme identifier)
+        private VariableInfo ResolveVariable(LexemeValue identifier)
         {
             //step1, check local parameter & variable definitions
-            if (m_currentMethodParameters.Contains(identifier.Value))
+            if (m_currentMethodParameters.Contains(identifier.Content))
             {
-                return m_currentMethodParameters[identifier.Value];
+                return m_currentMethodParameters[identifier.Content];
             }
-            else if (m_currentMethodVariables.Contains(identifier.Value))
+            else if (m_currentMethodVariables.Contains(identifier.Content))
             {
-                return m_currentMethodVariables[identifier.Value];
+                return m_currentMethodVariables[identifier.Content];
             }
             //step2, if not static method, check fields
             if (!m_currentMethod.IsStatic)
@@ -110,16 +110,16 @@ namespace VBF.MiniSharp
                 return ResolveField(m_currentType, identifier);
             }
 
-            m_errorManager.AddError(c_SE_VariableDeclMissing, identifier.Span, identifier.Value);
+            m_errorManager.AddError(c_SE_VariableDeclMissing, identifier.Span, identifier.Content);
             return null;
         }
 
-        private VariableInfo ResolveField(CodeClassType type, Lexeme identifier)
+        private VariableInfo ResolveField(CodeClassType type, LexemeValue identifier)
         {
             //step1, see current class
-            if (type.Fields.Contains(identifier.Value))
+            if (type.Fields.Contains(identifier.Content))
             {
-                return type.Fields[identifier.Value];
+                return type.Fields[identifier.Content];
             }
 
             //step2, see base class
@@ -128,21 +128,21 @@ namespace VBF.MiniSharp
                 return ResolveField(m_currentType.BaseType, identifier);
             }
 
-            m_errorManager.AddError(c_SE_VariableDeclMissing, identifier.Span, identifier.Value);
+            m_errorManager.AddError(c_SE_VariableDeclMissing, identifier.Span, identifier.Content);
             return null;
         }
 
         private bool CheckVariableDecl(VarDecl ast)
         {
             //step1, check local parameter & variable definitions
-            if (m_currentMethodParameters.Contains(ast.VariableName.Value))
+            if (m_currentMethodParameters.Contains(ast.VariableName.Content))
             {
-                m_errorManager.AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Value);
+                m_errorManager.AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Content);
                 return false;
             }
-            else if (m_currentMethodVariables.Contains(ast.VariableName.Value))
+            else if (m_currentMethodVariables.Contains(ast.VariableName.Content))
             {
-                m_errorManager.AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Value);
+                m_errorManager.AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Content);
                 return false;
             }
 
@@ -156,13 +156,13 @@ namespace VBF.MiniSharp
             TypeBase resolvedType = PrimaryType.Unknown;
             var name = typeRef.TypeName;
 
-            if (!m_types.Contains(name.Value))
+            if (!m_types.Contains(name.Content))
             {
-                m_errorManager.AddError(MemberDeclResolver.c_SE_TypeNameMissing, name.Span, name.Value);
+                m_errorManager.AddError(MemberDeclResolver.c_SE_TypeNameMissing, name.Span, name.Content);
             }
             else
             {
-                typeRef.Type = m_types[name.Value];
+                typeRef.Type = m_types[name.Content];
                 resolvedType = typeRef.Type;
             }
 
@@ -195,7 +195,7 @@ namespace VBF.MiniSharp
             Debug.Assert(m_currentType.StaticMethods.Count == 1);
             m_currentMethod = m_currentType.StaticMethods[0];
             m_currentVariableIndex = 0;
-            m_currentMethodParameters = new VariableCollection<Parameter>() { new Parameter() { Name = ast.ArgName.Value, Type = ArrayType.StrArray } };
+            m_currentMethodParameters = new VariableCollection<Parameter>() { new Parameter() { Name = ast.ArgName.Content, Type = ArrayType.StrArray } };
             m_currentMethodVariables = new VariableCollection<VariableInfo>();
 
             foreach (var statement in ast.Statements)
@@ -396,7 +396,7 @@ namespace VBF.MiniSharp
             if (CheckVariableDecl(ast))
             {
                 //add to current variable table
-                m_currentMethodVariables.Add(new VariableInfo() { Name = ast.VariableName.Value, Type = ast.Type.ResolvedType, Index = m_currentVariableIndex });
+                m_currentMethodVariables.Add(new VariableInfo() { Name = ast.VariableName.Content, Type = ast.Type.ResolvedType, Index = m_currentVariableIndex });
                 ++m_currentVariableIndex;
             }
 
@@ -441,9 +441,9 @@ namespace VBF.MiniSharp
 
             //check literal
             int value;
-            if (!Int32.TryParse(ast.Literal.Value, out value))
+            if (!Int32.TryParse(ast.Literal.Content, out value))
             {
-                m_errorManager.AddError(c_SE_InvalidIntLiteral, ast.Literal.Span, ast.Literal.Value);
+                m_errorManager.AddError(c_SE_InvalidIntLiteral, ast.Literal.Span, ast.Literal.Content);
             }
             else
             {
@@ -614,7 +614,7 @@ namespace VBF.MiniSharp
 
             if (checkFailed)
             {
-                m_errorManager.AddError(c_SE_BinaryOpTypeInvalid, ast.OpLexeme.Span, ast.OpLexeme.Value, ast.Left.ExpressionType.Name, ast.Right.ExpressionType.Name);
+                m_errorManager.AddError(c_SE_BinaryOpTypeInvalid, ast.OpLexeme.Span, ast.OpLexeme.Content, ast.Left.ExpressionType.Name, ast.Right.ExpressionType.Name);
             }
 
             return ast;
@@ -635,7 +635,7 @@ namespace VBF.MiniSharp
 
             if (targetType == null)
             {
-                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Value);
+                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Content);
                 ast.ExpressionType = PrimaryType.Unknown;
                 return ast;
             }
@@ -650,7 +650,7 @@ namespace VBF.MiniSharp
         {
             if (targetType == null)
             {
-                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Value);
+                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Content);
                 ast.ExpressionType = PrimaryType.Unknown;
 
                 return;
@@ -658,7 +658,7 @@ namespace VBF.MiniSharp
 
             // step 1: collect candidates from current type
             var candidates = (from m in targetType.Methods
-                              where String.Equals(m.Name, ast.Method.MethodName.Value, StringComparison.InvariantCulture) 
+                              where String.Equals(m.Name, ast.Method.MethodName.Content, StringComparison.InvariantCulture) 
                               && m.Parameters.Count == ast.Arguments.Count
                               select m).ToArray();
 

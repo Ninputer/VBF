@@ -10,7 +10,7 @@ namespace VBF.MiniSharp.Ast
     {
         public TypeRef Type { get; private set; }
 
-        public NewObject(Lexeme typeName)
+        public NewObject(LexemeValue typeName)
         {
             Type = new TypeRef(typeName);
         }

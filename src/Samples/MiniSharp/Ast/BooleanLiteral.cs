@@ -12,9 +12,9 @@ namespace VBF.MiniSharp.Ast
         public bool Value { get; private set; }
         private SourceSpan m_literalSpan;
 
-        public BooleanLiteral(Lexeme literal)
+        public BooleanLiteral(LexemeValue literal)
         {
-            Value = Boolean.Parse(literal.Value);
+            Value = Boolean.Parse(literal.Content);
             m_literalSpan = literal.Span;
         }
 

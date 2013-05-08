@@ -11,12 +11,12 @@ namespace VBF.MiniSharp.Ast
     {
         public Method MethodInfo { get; set; }
         public Type ReturnType { get; private set; }
-        public Lexeme Name { get; private set; }
+        public LexemeValue Name { get; private set; }
         public ReadOnlyCollection<Formal> Parameters { get; private set; }
         public ReadOnlyCollection<Statement> Statements { get; private set; }
         public Expression ReturnExpression { get; private set; }
 
-        public MethodDecl(Lexeme name, Type retType, IList<Formal> parameters, IList<Statement> stmts, Expression retExp)
+        public MethodDecl(LexemeValue name, Type retType, IList<Formal> parameters, IList<Statement> stmts, Expression retExp)
         {
             Name = name;
             ReturnType = retType;

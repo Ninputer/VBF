@@ -43,11 +43,11 @@ namespace VBF.MiniSharp.Ast
         public Expression Left { get; private set; }
         public Expression Right { get; private set; }
         public BinaryOperator Operator { get; private set; }
-        public Lexeme OpLexeme { get; private set; }
+        public LexemeValue OpLexeme { get; private set; }
 
-        public Binary(Lexeme op, Expression left, Expression right)
+        public Binary(LexemeValue op, Expression left, Expression right)
         {
-            Operator = s_OperatorMap[op.Value];
+            Operator = s_OperatorMap[op.Content];
             Left = left;
             Right = right;
             OpLexeme = op;

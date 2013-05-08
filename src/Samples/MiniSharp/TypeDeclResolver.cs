@@ -43,7 +43,7 @@ namespace VBF.MiniSharp
         {
             //main class must be the first class.
             Debug.Assert(m_types.Count == 0);
-            var name = ast.Name.Value;
+            var name = ast.Name.Content;
 
             var mainclassType = new CodeClassType() { Name = name, IsStatic = true };
 
@@ -55,7 +55,7 @@ namespace VBF.MiniSharp
 
         public override AstNode VisitClassDecl(ClassDecl ast)
         {
-            var name = ast.Name.Value;
+            var name = ast.Name.Content;
 
             if (m_types.Contains(name))
             {

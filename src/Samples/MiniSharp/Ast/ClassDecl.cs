@@ -10,13 +10,13 @@ namespace VBF.MiniSharp.Ast
     public class ClassDecl : AstNode
     {
         public TypeRef BaseClass { get; private set; }
-        public Lexeme Name { get; private set; }
+        public LexemeValue Name { get; private set; }
         public ReadOnlyCollection<FieldDecl> Fields { get; private set; }
         public ReadOnlyCollection<MethodDecl> Methods { get; private set; }
 
         public TypeBase Type { get; set; }
 
-        public ClassDecl(Lexeme name, Lexeme baseClassName, IList<FieldDecl> fields, IList<MethodDecl> methods)
+        public ClassDecl(LexemeValue name, LexemeValue baseClassName, IList<FieldDecl> fields, IList<MethodDecl> methods)
         {
             BaseClass = new TypeRef(baseClassName);
             Name = name;

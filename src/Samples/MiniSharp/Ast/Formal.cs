@@ -9,9 +9,9 @@ namespace VBF.MiniSharp.Ast
     public class Formal : AstNode
     {
         public Type Type { get; private set; }
-        public Lexeme ParameterName { get; private set; }
+        public LexemeValue ParameterName { get; private set; }
 
-        public Formal(Type type, Lexeme paramName)
+        public Formal(Type type, LexemeValue paramName)
         {
             Type = type;
             ParameterName = paramName;

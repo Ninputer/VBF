@@ -52,13 +52,13 @@ namespace VBF.MiniSharp
             TypeBase resolvedType = PrimaryType.Unknown;
             var name = typeRef.TypeName;
 
-            if (!m_types.Contains(name.Value))
+            if (!m_types.Contains(name.Content))
             {
-                m_errorManager.AddError(c_SE_TypeNameMissing, name.Span, name.Value);
+                m_errorManager.AddError(c_SE_TypeNameMissing, name.Span, name.Content);
             }
             else
             {
-                typeRef.Type = m_types[name.Value];
+                typeRef.Type = m_types[name.Content];
                 resolvedType = typeRef.Type;
             }
 
@@ -91,7 +91,7 @@ namespace VBF.MiniSharp
                 {
                     if (currentBase == cd.Type)
                     {
-                        m_errorManager.AddError(c_SE_CyclicBaseType, cd.BaseClass.TypeName.Span, cd.BaseClass.TypeName.Value, cd.Name.Value);
+                        m_errorManager.AddError(c_SE_CyclicBaseType, cd.BaseClass.TypeName.Span, cd.BaseClass.TypeName.Content, cd.Name.Content);
                         break;
                     }
 
@@ -119,7 +119,7 @@ namespace VBF.MiniSharp
             if (ast.BaseClass.TypeName != null)
             {
                 //resolve base class
-                var baseTypeName = ast.BaseClass.TypeName.Value;
+                var baseTypeName = ast.BaseClass.TypeName.Content;
 
                 if (!m_types.Contains(baseTypeName))
                 {
@@ -167,12 +167,12 @@ namespace VBF.MiniSharp
             var declType = ast.FieldInfo.DeclaringType as CodeClassType;
             var fieldName = ast.FieldName;
             //check name conflict
-            if (declType.Fields.Contains(fieldName.Value))
+            if (declType.Fields.Contains(fieldName.Content))
             {
-                m_errorManager.AddError(c_SE_FieldDuplicates, fieldName.Span, declType.Name, fieldName.Value);
+                m_errorManager.AddError(c_SE_FieldDuplicates, fieldName.Span, declType.Name, fieldName.Content);
             }
 
-            ast.FieldInfo.Name = fieldName.Value;
+            ast.FieldInfo.Name = fieldName.Content;
 
             var typeNode = ast.Type;
             //check type
@@ -188,7 +188,7 @@ namespace VBF.MiniSharp
         {
             var method = ast.MethodInfo;
 
-            method.Name = ast.Name.Value;
+            method.Name = ast.Name.Content;
             method.IsStatic = false;
 
             //step 1, resolve return type
@@ -212,7 +212,7 @@ namespace VBF.MiniSharp
                     allValid = false;
                 }
 
-                var paramInfo = new Parameter() { Name = parameter.ParameterName.Value, Type = paramType, Index = paramIndex };
+                var paramInfo = new Parameter() { Name = parameter.ParameterName.Content, Type = paramType, Index = paramIndex };
 
                 if (paramNames.Contains(paramInfo.Name))
                 {

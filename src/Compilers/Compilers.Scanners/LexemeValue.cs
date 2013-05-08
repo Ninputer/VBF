@@ -22,4 +22,24 @@ namespace VBF.Compilers.Scanners
             return Content;
         }
     }
+
+    public static class LexemeExtensions
+    {
+        /// <summary>
+        /// Gets the Value of a lexeme if it is not null, otherwise null(Nothing in Visual Basic).
+        /// </summary>
+        /// <param name="lexeme">The lexeme that the value is going to get from.</param>
+        /// <returns>Value of a lexeme if it is not null, otherwise null(Nothing in Visual Basic).</returns>
+        public static LexemeValue GetValue(this Lexeme lexeme)
+        {
+            if (lexeme != null)
+            {
+                return lexeme.Value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
 }

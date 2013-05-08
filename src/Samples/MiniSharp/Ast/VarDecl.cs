@@ -9,9 +9,9 @@ namespace VBF.MiniSharp.Ast
     public class VarDecl : Statement
     {
         public Type Type { get; private set; }
-        public Lexeme VariableName { get; private set; }
+        public LexemeValue VariableName { get; private set; }
 
-        public VarDecl(Type type, Lexeme variableName)
+        public VarDecl(Type type, LexemeValue variableName)
         {
             Type = type;
             VariableName = variableName;

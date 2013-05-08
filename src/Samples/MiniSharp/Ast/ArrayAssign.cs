@@ -12,7 +12,7 @@ namespace VBF.MiniSharp.Ast
         public Expression Index { get; private set; }
         public Expression Value { get; private set; }
 
-        public ArrayAssign(Lexeme arrayName, Expression index, Expression value)
+        public ArrayAssign(LexemeValue arrayName, Expression index, Expression value)
         {
             Array = new VariableRef(arrayName);
             Index = index;

@@ -11,7 +11,7 @@ namespace VBF.MiniSharp.Ast
         public VariableRef Variable { get; private set; }
         public Expression Value { get; internal set; }
 
-        public Assign(Lexeme varName, Expression value)
+        public Assign(LexemeValue varName, Expression value)
         {
             Variable = new VariableRef(varName);
             Value = value;

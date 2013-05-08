@@ -13,7 +13,7 @@ namespace VBF.MiniSharp.Ast
         public MethodRef Method { get; private set; }
         public ReadOnlyCollection<Expression> Arguments { get; private set; }
 
-        public Call(Expression target, Lexeme methodName, IList<Expression> argList)
+        public Call(Expression target, LexemeValue methodName, IList<Expression> argList)
         {
             Target = target;
             Method = new MethodRef(methodName);

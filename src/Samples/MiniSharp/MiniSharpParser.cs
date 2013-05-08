@@ -234,7 +234,7 @@ namespace VBF.MiniSharp
                 from statements in PStatement.Many1()
                 from _7 in RIGHT_BR
                 from _8 in RIGHT_BR
-                select new MainClass(className, arg, statements.ToArray());
+                select new MainClass(className.Value, arg.Value, statements.ToArray());
 
             var classMembers =
                 from _1 in LEFT_BR
@@ -257,13 +257,13 @@ namespace VBF.MiniSharp
                 from _class in K_CLASS
                 from className in ID
                 from def in (classDeclSimple | classDeclInherits)
-                select new ClassDecl(className, def.BaseClassName, def.Members.Fields, def.Members.Methods);
+                select new ClassDecl(className.Value, def.BaseClassName.GetValue(), def.Members.Fields, def.Members.Methods);
 
             PFieldDecl.Rule = // Type id;
                 from type in PType
                 from varName in ID
                 from _sc in SEMICOLON
-                select new FieldDecl(type, varName);
+                select new FieldDecl(type, varName.Value);
 
             var methodBody =
                 from _1 in LEFT_BR
@@ -286,12 +286,12 @@ namespace VBF.MiniSharp
                 from formals in PFormalList
                 from _2 in RIGHT_PH
                 from body in (methodBody | methodNoBody)
-                select new MethodDecl(methodName, type, formals, body.Statements, body.ReturnExp);
+                select new MethodDecl(methodName.Value, type, formals, body.Statements, body.ReturnExp);
 
             var paramFormal =
                 from paramType in PType
                 from paramName in ID
-                select new Formal(paramType, paramName);
+                select new Formal(paramType, paramName.Value);
 
             PFormalList.Rule = // Type id FormalRest* | <empty>
                  from list in paramFormal.Many(COMMA)
@@ -316,7 +316,7 @@ namespace VBF.MiniSharp
 
             PIdType.Rule = // id
                 from type in ID
-                select (Ast.Type)new IdentifierType(type);
+                select (Ast.Type)new IdentifierType(type.Value);
 
             //statements
 
@@ -337,7 +337,7 @@ namespace VBF.MiniSharp
                 from truePart in PStatement
                 from _else in K_ELSE
                 from falsePart in PStatement
-                select (Statement)new IfElse(condExp, truePart, falsePart, _if.Span, _else.Span);
+                select (Statement)new IfElse(condExp, truePart, falsePart, _if.Value.Span, _else.Value.Span);
 
             PWhile.Rule = // while ( exp ) statement
                 from _while in K_WHILE
@@ -345,7 +345,7 @@ namespace VBF.MiniSharp
                 from condExp in PExp
                 from _2 in RIGHT_PH
                 from loopBody in PStatement
-                select (Statement)new While(condExp, loopBody, _while.Span);
+                select (Statement)new While(condExp, loopBody, _while.Value.Span);
 
             PWriteLine.Rule = // System.Console.WriteLine( exp );
                 from _sys in K_SYSTEM
@@ -357,14 +357,14 @@ namespace VBF.MiniSharp
                 from exp in PExp
                 from _4 in RIGHT_PH
                 from _sc in SEMICOLON
-                select (Statement)new WriteLine(exp, new SourceSpan(_sys.Span.StartLocation, _wl.Span.EndLocation));
+                select (Statement)new WriteLine(exp, new SourceSpan(_sys.Value.Span.StartLocation, _wl.Value.Span.EndLocation));
 
             PAssignment.Rule = // id = exp;
                 from variable in ID
                 from _eq in ASSIGN
                 from value in PExp
                 from _sc in SEMICOLON
-                select (Statement)new Assign(variable, value);
+                select (Statement)new Assign(variable.Value, value);
 
             PArrayAssignment.Rule = // id[ exp ] = exp ;
                 from variable in ID
@@ -374,39 +374,39 @@ namespace VBF.MiniSharp
                 from _eq in ASSIGN
                 from value in PExp
                 from _sc in SEMICOLON
-                select (Statement)new ArrayAssign(variable, index, value);
+                select (Statement)new ArrayAssign(variable.Value, index, value);
 
             PVarDeclStmt.Rule = // Type id;
                 from type in PType
                 from varName in ID
                 from _sc in SEMICOLON
-                select (Statement)new VarDecl(type, varName);
+                select (Statement)new VarDecl(type, varName.Value);
 
             //expressions
 
             //basic
             PNumberLiteral.Rule = // number
                 from intvalue in INTEGER_LITERAL
-                select (Expression)new IntegerLiteral(intvalue);
+                select (Expression)new IntegerLiteral(intvalue.Value);
 
             PBoolLiteral.Rule = // true | false
                 from b in K_TRUE.AsTerminal() | K_FALSE.AsTerminal()
-                select (Expression)new BooleanLiteral(b);
+                select (Expression)new BooleanLiteral(b.Value);
 
             PThis.Rule = // this
                 from _this in K_THIS
-                select (Expression)new This(_this.Span);
+                select (Expression)new This(_this.Value.Span);
 
             PVariable.Rule = // id
                 from varName in ID
-                select (Expression)new Variable(varName);
+                select (Expression)new Variable(varName.Value);
 
             PNewObj.Rule = // new id()
                 from _new in K_NEW
                 from typeName in ID
                 from _1 in LEFT_PH
                 from _2 in RIGHT_PH
-                select (Expression)new NewObject(typeName);
+                select (Expression)new NewObject(typeName.Value);
 
             PNewArray.Rule = // new int [exp]
                 from _new in K_NEW
@@ -414,7 +414,7 @@ namespace VBF.MiniSharp
                 from _1 in LEFT_BK
                 from length in PExp
                 from _2 in RIGHT_BR
-                select (Expression)new NewArray(length, new SourceSpan(_1.Span.EndLocation, _2.Span.StartLocation));
+                select (Expression)new NewArray(length, new SourceSpan(_1.Value.Span.EndLocation, _2.Value.Span.StartLocation));
 
             var foundationExp = // (exp) | number literal | true | false | this | id | new
                 PNumberLiteral |
@@ -433,20 +433,20 @@ namespace VBF.MiniSharp
                 from _1 in LEFT_PH
                 from args in PExpList
                 from _2 in RIGHT_PH
-                select (Expression)new Call(exp, methodName, args);
+                select (Expression)new Call(exp, methodName.Value, args);
 
             PArrayLookup.Rule = // exp[exp]
                 from exp in foundationExp
                 from _1 in LEFT_BK
                 from index in PExp
                 from _2 in RIGHT_BK
-                select (Expression)new ArrayLookup(exp, index, new SourceSpan(_1.Span.EndLocation, _2.Span.StartLocation));
+                select (Expression)new ArrayLookup(exp, index, new SourceSpan(_1.Value.Span.EndLocation, _2.Value.Span.StartLocation));
 
             PArrayLength.Rule = // exp.Length
                 from exp in foundationExp
                 from _d in DOT
                 from _length in K_LENGTH
-                select (Expression)new ArrayLength(exp, _length.Span);
+                select (Expression)new ArrayLength(exp, _length.Value.Span);
 
             var basicExp = foundationExp | PCall | PArrayLookup | PArrayLength;  //foundation >> call | id[exp] | id.Length
 
@@ -456,7 +456,7 @@ namespace VBF.MiniSharp
                 basicExp |
                 from _n in LOGICAL_NOT
                 from exp in PNot
-                select (Expression)new Not(exp, _n.Span);
+                select (Expression)new Not(exp, _n.Value.Span);
 
             //binary
 
@@ -468,35 +468,35 @@ namespace VBF.MiniSharp
                 from term in PTerm
                 from op in (ASTERISK.AsTerminal() | SLASH.AsTerminal())
                 from factor in PFactor
-                select (Expression)new Binary(op, term, factor);
+                select (Expression)new Binary(op.Value, term, factor);
             
             PComparand.Rule = // comparand + term | term
                 PTerm |
                 from comparand in PComparand
                 from op in (PLUS.AsTerminal() | MINUS.AsTerminal())
                 from term in PTerm
-                select (Expression)new Binary(op, comparand, term);
+                select (Expression)new Binary(op.Value, comparand, term);
 
             PComparison.Rule =// comparison < comparand | comparand
                 PComparand |
                 from comparison in PComparison
                 from op in (LESS.AsTerminal() | GREATER.AsTerminal() | EQUAL.AsTerminal())
                 from comparand in PComparand
-                select (Expression)new Binary(op, comparison, comparand);
+                select (Expression)new Binary(op.Value, comparison, comparand);
 
             PAnd.Rule = // andexp && comparison | comparison
                 PComparison |
                 from andexp in PAnd
                 from op in LOGICAL_AND
                 from comparison in PComparison
-                select (Expression)new Binary(op, andexp, comparison);
+                select (Expression)new Binary(op.Value, andexp, comparison);
 
             POr.Rule =
                 PAnd |
                 from orexp in POr
                 from op in LOGICAL_OR
                 from andexp in PAnd
-                select (Expression)new Binary(op, orexp, andexp);
+                select (Expression)new Binary(op.Value, orexp, andexp);
 
             PExp.Rule = POr;
 

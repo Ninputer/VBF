@@ -8,10 +8,10 @@ namespace VBF.MiniSharp.Ast
 {
     public class IntegerLiteral : Expression
     {
-        public Lexeme Literal { get; private set; }
+        public LexemeValue Literal { get; private set; }
         public int Value { get; set; }
 
-        public IntegerLiteral(Lexeme literal)
+        public IntegerLiteral(LexemeValue literal)
         {
             Literal = literal;
         }

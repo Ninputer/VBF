@@ -10,9 +10,9 @@ namespace VBF.MiniSharp.Ast
     {
         public Field FieldInfo { get; set; }
         public Type Type { get; private set; }
-        public Lexeme FieldName { get; private set; }
+        public LexemeValue FieldName { get; private set; }
 
-        public FieldDecl(Type type, Lexeme fieldName)
+        public FieldDecl(Type type, LexemeValue fieldName)
         {
             Type = type;
             FieldName = fieldName;
