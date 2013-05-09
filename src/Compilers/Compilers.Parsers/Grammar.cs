@@ -219,6 +219,34 @@ namespace VBF.Compilers.Parsers
             return new AlternationProduction<T>(production1, production2);
         }
 
+        public static ProductionBase<T> Union<T>(params ProductionBase<T>[] productions)
+        {
+            CodeContract.RequiresArgumentInRange(productions.Length > 0, "productions", "There must be at least one production to be unioned");
+
+            ProductionBase<T> result = productions[0];
+
+            for (int i = 1; i < productions.Length; i++)
+            {
+                result = new AlternationProduction<T>(result, productions[i]);
+            }
+
+            return result;
+        }
+
+        public static ProductionBase<Lexeme> Union(params Token[] tokens)
+        {
+            CodeContract.RequiresArgumentInRange(tokens.Length > 0, "tokens", "There must be at least on token to be unioned");
+
+            ProductionBase<Lexeme> result = tokens[0].AsTerminal();
+
+            for (int i = 1; i < tokens.Length; i++)
+            {
+                result = new AlternationProduction<Lexeme>(result, tokens[i].AsTerminal());
+            }
+
+            return result;
+        }
+
         public static ProductionBase<Tuple<T1, T2>> Concat<T1, T2>(this ProductionBase<T1> production1, ProductionBase<T2> production2)
         {
             CodeContract.RequiresArgumentNotNull(production1, "production1");

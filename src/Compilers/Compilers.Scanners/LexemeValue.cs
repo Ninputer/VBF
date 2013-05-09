@@ -11,8 +11,10 @@ namespace VBF.Compilers.Scanners
         public string Content { get; private set; }
         public SourceSpan Span { get; private set; }
 
-        internal LexemeValue(string content, SourceSpan span)
+        public LexemeValue(string content, SourceSpan span)
         {
+            CodeContract.RequiresArgumentNotNull(span, "span");
+
             Content = content;
             Span = span;
         }
