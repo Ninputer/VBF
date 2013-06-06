@@ -86,7 +86,7 @@ namespace VBF.Compilers.Parsers
             var rootProduction = production.SuffixedBy(Grammar.Eos());
             m_productionInfoManager = new Generator.ProductionInfoManager(rootProduction);
 
-            m_transitionTable = OnCreateTransitionTable();
+            m_transitionTable = OnCreateTransitionTable(OnCreateAutomaton(m_productionInfoManager), m_scannerInfo);
 
             OnDefineParserErrors(m_errorDefinition, m_errorManager);
 
@@ -99,20 +99,18 @@ namespace VBF.Compilers.Parsers
             m_isInitialized = true;
         }
 
-#if DEBUG
-        public string Automaton { get; private set; }
-#endif
 
-        protected virtual TransitionTable OnCreateTransitionTable()
+        protected virtual LR0Model OnCreateAutomaton(ProductionInfoManager productionInfoManager)
         {
-            LR0Model lr0 = new LR0Model(m_productionInfoManager);
-            lr0.BuildModel();
+            var automaton = new LR0Model(productionInfoManager);
+            automaton.BuildModel();
 
-#if DEBUG
-            Automaton = lr0.ToString();
-#endif
+            return automaton;
+        }
 
-            return TransitionTable.Create(lr0, m_scannerInfo);
+        protected virtual TransitionTable OnCreateTransitionTable(LR0Model automaton, ScannerInfo scannerInfo)
+        {
+            return TransitionTable.Create(automaton, scannerInfo);
         }
 
         protected virtual ScannerInfo OnCreateScannerInfo()
