@@ -60,6 +60,7 @@
     <Compile Include="ParserBase.cs" />
     <Compile Include="ParserEngine.cs" />
     <Compile Include="ParserHead.cs" />
+    <Compile Include="ParsingFailureException.cs" />
     <Compile Include="Production.cs" />
     <Compile Include="ProductionBase.cs" />
     <Compile Include="Generator\ProductionInfo.cs" />

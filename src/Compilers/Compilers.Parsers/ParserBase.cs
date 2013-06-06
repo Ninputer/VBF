@@ -149,6 +149,16 @@ namespace VBF.Compilers.Parsers
                 engine.Input(r);
             } while (!r.IsEndOfStream);
 
+            if (engine.AcceptedCount == 0)
+            {
+                throw new ParsingFailureException("There's no parsing result");
+            }
+
+            if (engine.AcceptedCount > 1)
+            {
+                throw new ParsingFailureException("Multiple parsing results are found. There's ambiguity in your grammar");
+            }
+
             object result = engine.GetResult(0, m_errorManager);
 
             return (T)result;
