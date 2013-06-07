@@ -64,7 +64,7 @@ namespace VBF.Compilers.Parsers
 
         public ResultInfo GetResultInfo(int index)
         {
-            return new ResultInfo(m_acceptedHeads[index].Errors.Count);
+            return new ResultInfo(m_acceptedHeads[index].Errors == null ? 0 : m_acceptedHeads[index].Errors.Count);
         }
 
         public ParserEngine(TransitionTable transitions, SyntaxErrors errorDef)
