@@ -154,7 +154,7 @@ namespace VBF.Compilers.Parsers
                 throw new ParsingFailureException("There's no parsing result");
             }
 
-            if (engine.AcceptedCount > 1)
+            if (engine.AcceptedCount > 1 && engine.GetResultInfo(0).ErrorCount == 0)
             {
                 throw new ParsingFailureException("Multiple parsing results are found. There's ambiguity in your grammar");
             }

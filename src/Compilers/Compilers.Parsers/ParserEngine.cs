@@ -62,6 +62,11 @@ namespace VBF.Compilers.Parsers
             return head.TopStackValue;
         }
 
+        public ResultInfo GetResultInfo(int index)
+        {
+            return new ResultInfo(m_acceptedHeads[index].Errors.Count);
+        }
+
         public ParserEngine(TransitionTable transitions, SyntaxErrors errorDef)
         {
             CodeContract.RequiresArgumentNotNull(transitions, "transitions");
