@@ -366,7 +366,8 @@ namespace Compilers.UnitTests
             CompilationErrorManager errorManager = new CompilationErrorManager();
             errorManager.DefineError(1, 0, CompilationStage.Parsing, "Unexpected token '{0}'");
             errorManager.DefineError(2, 0, CompilationStage.Parsing, "Missing token '{0}'");
-            errorManager.DefineError(3, 0, CompilationStage.Parsing, "Syntax error");
+            errorManager.DefineError(3, 0, CompilationStage.Parsing, "Invalid token found, did you mean '{0}' ?");
+            errorManager.DefineError(4, 0, CompilationStage.Parsing, "Syntax error");
 
             ProductionInfoManager pim = new ProductionInfoManager(NodeParser.SuffixedBy(Grammar.Eos()));
 
@@ -377,7 +378,7 @@ namespace Compilers.UnitTests
 
             TransitionTable tt = TransitionTable.Create(lr0, info);
 
-            SyntaxErrors errDef = new SyntaxErrors() { TokenUnexpectedId = 1, TokenMissingId = 2, OtherErrorId = 3 };
+            SyntaxErrors errDef = new SyntaxErrors() { TokenUnexpectedId = 1, TokenMissingId = 2, OtherErrorId = 4, TokenMistakeId = 3 };
 
             ParserEngine driver = new ParserEngine(tt, errDef);
 

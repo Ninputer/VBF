@@ -53,13 +53,31 @@ namespace VBF.Compilers.Parsers
             //validate result
             if (mappingProduction.ValidationRule != null)
             {
-                if (!mappingProduction.ValidationRule(result))
+                bool validation = false;
+
+                try
+                {
+                    validation = mappingProduction.ValidationRule(result);
+                }
+                catch (Exception)
+                {
+                    validation = false;
+                }
+                
+                if (!validation)
                 {
                     SourceSpan position = null;
 
                     if (mappingProduction.PositionGetter != null)
                     {
-                        position = mappingProduction.PositionGetter(result);
+                        try
+                        {
+                            position = mappingProduction.PositionGetter(result);
+                        }
+                        catch (Exception)
+                        {
+                            position = null;
+                        }
                     }
 
                     //generates error

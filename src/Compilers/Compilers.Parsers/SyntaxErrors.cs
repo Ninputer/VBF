@@ -10,6 +10,7 @@ namespace VBF.Compilers.Parsers
     {
         public int TokenMissingId { get; set; }
         public int TokenUnexpectedId { get; set; }
+        public int TokenMistakeId { get; set; }
         public int OtherErrorId { get; set; }
         public int LexicalErrorId { get; set; }
     }

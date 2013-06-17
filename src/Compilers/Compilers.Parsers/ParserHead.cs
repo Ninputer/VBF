@@ -182,12 +182,45 @@ namespace VBF.Compilers.Parsers
         {
             var prev1 = h1.m_topStack.PrevNode;
             var prev2 = h2.m_topStack.PrevNode;
-            if (prev1 != null && prev2 !=null && Object.ReferenceEquals(prev1, prev2))
+            if (prev1 != null && prev2 != null && Object.ReferenceEquals(prev1, prev2))
             {
                 return true;
             }
 
             return false;
+        }
+
+        public IProduction PanicRecover(TransitionTable transitions, SourceSpan lastLocation)
+        {
+            while(true)
+            {
+                int currentStateIndex = m_topStack.StateIndex;
+                for (int i = 0; i < transitions.ProductionCount; i++)
+                {
+                    int gotoState = transitions.GetGoto(currentStateIndex, i);
+
+                    if (gotoState > 0)
+                    {
+                        var recoverNT = transitions.NonTerminals[i];
+
+                        m_topStack = m_topStack.PrevNode;
+
+                        var newNode = new StackNode(gotoState, m_topStack, null);
+                        IncreaseErrorRecoverLevel();
+                        AddError(new ErrorRecord(null, lastLocation));
+                        m_topStack = newNode;
+
+                        return recoverNT;
+                    }
+                }
+
+                if (m_topStack.PrevNode == null)
+                {
+                    throw new ParsingFailureException("There's no way to recover from parser error");
+                }
+
+                m_topStack = m_topStack.PrevNode;
+            }
         }
     }
 }

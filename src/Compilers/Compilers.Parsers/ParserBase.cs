@@ -54,7 +54,8 @@ namespace VBF.Compilers.Parsers
                 LexicalErrorId = 101,
                 TokenUnexpectedId = 201,
                 TokenMissingId = 202,
-                OtherErrorId = 203
+                TokenMistakeId = 203,
+                OtherErrorId = 200
             };
 
             m_triviaTokens = new List<Token>();
@@ -123,6 +124,7 @@ namespace VBF.Compilers.Parsers
             errorManager.DefineError(errorDefinition.LexicalErrorId, 0, CompilationStage.Scanning, "Invalid token: {0}");
             errorManager.DefineError(errorDefinition.TokenUnexpectedId, 0, CompilationStage.Parsing, "Unexpected token: {0}");
             errorManager.DefineError(errorDefinition.TokenMissingId, 0, CompilationStage.Parsing, "Missing token: {0}");
+            errorManager.DefineError(errorDefinition.TokenMistakeId, 0, CompilationStage.Parsing, "Invalid token found, did you mean: {0} ?");
             errorManager.DefineError(errorDefinition.OtherErrorId, 0, CompilationStage.Parsing, "Syntax error");
         }
 
@@ -141,13 +143,35 @@ namespace VBF.Compilers.Parsers
 
             ParserEngine engine = new ParserEngine(m_transitionTable, m_errorDefinition);
 
-            Lexeme r;
-            do
+            Lexeme r = scanner.Read();
+            while (true)
             {
-                r = scanner.Read();
+                try
+                {
 
-                engine.Input(r);
-            } while (!r.IsEndOfStream);
+                    engine.Input(r);
+                }
+                catch (PanicRecoverException prex)
+                {
+                    var follow = prex.PossibleFollow;
+
+                    HashSet<int> validTokens = new HashSet<int>(follow.Select(p => (p as Terminal).Token.Index));
+
+                    while (!validTokens.Contains(r.TokenIndex) && !r.IsEndOfStream)
+                    {
+                        r = scanner.Read();
+                    }
+
+                    continue;
+                }
+
+                if (r.IsEndOfStream)
+                {
+                    break;
+                }
+
+                r = scanner.Read();
+            }
 
             if (engine.AcceptedCount == 0)
             {

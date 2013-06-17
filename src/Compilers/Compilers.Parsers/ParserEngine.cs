@@ -11,6 +11,8 @@ namespace VBF.Compilers.Parsers
 {
     public class ParserEngine
     {
+        private const int c_panicRecoveryThreshold = 2048;
+
         private TransitionTable m_transitions;
         private ReduceVisitor m_reducer;
 
@@ -219,6 +221,30 @@ namespace VBF.Compilers.Parsers
 
             Debug.Assert(errorHeadCount > 0);
 
+            if (errorHeadCount > c_panicRecoveryThreshold)
+            {
+                //too many errors, could not do local error recovery
+                //TODO: panic recovery
+                //to the 1st head:
+                //pop stack until there's a state S, which has a Goto action of a non-terminal A
+                //discard input until there's an token a in Follow(A)
+                //push Goto(s, A) into stack
+                //discard all other heads
+
+                shiftedHeads.RemoveAll(h => h.ErrorRecoverLevel > 0);
+                ParserHead errorHead1 = m_errorCandidates[0];
+                m_errorCandidates.Clear();
+                m_heads.Clear();
+
+                IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span);
+
+                var follow = (p as ProductionBase).Info.Follow;
+
+                m_heads.Add(errorHead1);
+
+                throw new PanicRecoverException(follow);
+            }
+
             for (int i = 0; i < errorHeadCount; i++)
             {
                 var head = m_errorCandidates[i];                
@@ -235,88 +261,97 @@ namespace VBF.Compilers.Parsers
                     shiftedHeads.Add(deleteHead);
                 }
 
-                //option 2: insert
+                //option 2: replace
+                //replace the current input char with all possible shifts token and continue
+                ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId);
+
+                //option 3: insert
                 //insert all possible shifts token and continue
-                Queue<ParserHead> recoverQueue = new Queue<ParserHead>();
+                ReduceAndShiftForRecovery(z, head, m_heads, m_errorDef.TokenMissingId);
+            }
+        }
 
-                for (int j = 0; j < m_transitions.TokenCount - 1; j++)
+        private void ReduceAndShiftForRecovery(Lexeme z, ParserHead head, IList<ParserHead> shiftTarget, int syntaxError)
+        {
+            Queue<ParserHead> recoverQueue = new Queue<ParserHead>();
+
+            for (int j = 0; j < m_transitions.TokenCount - 1; j++)
+            {
+                recoverQueue.Enqueue(head);
+
+                while (recoverQueue.Count > 0)
                 {
-                    recoverQueue.Enqueue(head);
+                    var recoverHead = recoverQueue.Dequeue();
+                    int recoverStateNumber = recoverHead.TopStackStateIndex;
 
-                    while (recoverQueue.Count > 0)
+                    var shiftLexer = m_transitions.GetLexersInShifting(recoverStateNumber);
+
+                    int tokenIndex;
+                    if (shiftLexer == null)
                     {
-                        var recoverHead = recoverQueue.Dequeue();
-                        int recoverStateNumber = recoverHead.TopStackStateIndex;
+                        tokenIndex = z.TokenIndex;
+                    }
+                    else
+                    {
+                        tokenIndex = z.GetTokenIndex(shiftLexer.Value);
+                    }
 
-                        var shiftLexer = m_transitions.GetLexersInShifting(recoverStateNumber);
+                    var recoverShifts = m_transitions.GetShift(recoverStateNumber, j);
+                    var recoverShift = recoverShifts;
 
-                        int tokenIndex;
-                        if (shiftLexer == null)
+                    while (recoverShift != null)
+                    {
+                        var insertHead = recoverHead.Clone();
+
+                        var insertLexeme = z.GetErrorCorrectionLexeme(j, m_transitions.GetTokenDescription(j));
+                        insertHead.Shift(insertLexeme, recoverShift.Value);
+                        insertHead.IncreaseErrorRecoverLevel();
+                        insertHead.AddError(new ErrorRecord(syntaxError, z.Value.Span) { ErrorArgument = insertLexeme.Value });
+
+                        shiftTarget.Add(insertHead);
+
+                        recoverShift = recoverShift.GetNext();
+                    }
+
+                    var reduceLexer = m_transitions.GetLexersInReducing(recoverStateNumber);
+
+                    if (reduceLexer == null)
+                    {
+                        tokenIndex = z.TokenIndex;
+                    }
+                    else
+                    {
+                        tokenIndex = z.GetTokenIndex(reduceLexer.Value);
+                    }
+
+                    var recoverReduces = m_transitions.GetReduce(recoverStateNumber, j);
+                    var recoverReduce = recoverReduces;
+
+                    while (recoverReduce != null)
+                    {
+                        int productionIndex = recoverReduce.Value;
+                        IProduction production = m_transitions.NonTerminals[productionIndex];
+
+                        var reducedHead = recoverHead.Clone();
+
+                        reducedHead.Reduce(production, m_reducer, z);
+
+                        //add back to queue, until shifted
+                        m_recoverReducedHeads.Add(reducedHead);
+
+                        //get next reduce
+                        recoverReduce = recoverReduce.GetNext();
+                    }
+
+                    if (m_recoverReducedHeads.Count > 0)
+                    {
+                        m_tempHeads.Clear();
+                        m_cleaner.CleanHeads(m_recoverReducedHeads, m_tempHeads);
+                        m_recoverReducedHeads.Clear();
+
+                        foreach (var recoveredHead in m_tempHeads)
                         {
-                            tokenIndex = z.TokenIndex;
-                        }
-                        else
-                        {
-                            tokenIndex = z.GetTokenIndex(shiftLexer.Value);
-                        }
-
-                        var recoverShifts = m_transitions.GetShift(recoverStateNumber, j);
-                        var recoverShift = recoverShifts;
-
-                        while (recoverShift != null)
-                        {
-                            var insertHead = recoverHead.Clone();
-
-                            var insertLexeme = z.GetErrorCorrectionLexeme(j, m_transitions.GetTokenDescription(j));
-                            insertHead.Shift(insertLexeme, recoverShift.Value);
-                            insertHead.IncreaseErrorRecoverLevel();
-                            insertHead.AddError(new ErrorRecord(m_errorDef.TokenMissingId, z.Value.Span) { ErrorArgument = insertLexeme.Value });
-
-                            m_heads.Add(insertHead);
-
-                            recoverShift = recoverShift.GetNext();
-                        }
-
-                        var reduceLexer = m_transitions.GetLexersInReducing(recoverStateNumber);
-
-                        if (reduceLexer == null)
-                        {
-                            tokenIndex = z.TokenIndex;
-                        }
-                        else
-                        {
-                            tokenIndex = z.GetTokenIndex(reduceLexer.Value);
-                        }
-
-                        var recoverReduces = m_transitions.GetReduce(recoverStateNumber, j);
-                        var recoverReduce = recoverReduces;
-
-                        while (recoverReduce != null)
-                        {
-                            int productionIndex = recoverReduce.Value;
-                            IProduction production = m_transitions.NonTerminals[productionIndex];
-
-                            var reducedHead = recoverHead.Clone();
-
-                            reducedHead.Reduce(production, m_reducer, z);
-
-                            //add back to queue, until shifted
-                            m_recoverReducedHeads.Add(reducedHead);
-
-                            //get next reduce
-                            recoverReduce = recoverReduce.GetNext();
-                        }
-
-                        if (m_recoverReducedHeads.Count > 0)
-                        {
-                            m_tempHeads.Clear();
-                            m_cleaner.CleanHeads(m_recoverReducedHeads, m_tempHeads);
-                            m_recoverReducedHeads.Clear();
-
-                            foreach (var recoveredHead in m_tempHeads)
-                            {
-                                recoverQueue.Enqueue(recoveredHead);
-                            }
+                            recoverQueue.Enqueue(recoveredHead);
                         }
                     }
                 }
