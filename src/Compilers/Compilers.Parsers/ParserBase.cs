@@ -155,7 +155,20 @@ namespace VBF.Compilers.Parsers
                 {
                     var follow = prex.PossibleFollow;
 
-                    HashSet<int> validTokens = new HashSet<int>(follow.Select(p => (p as Terminal).Token.Index));
+                    HashSet<int> validTokens = new HashSet<int>(follow.Select(p =>
+                    {
+                        Terminal t = p as Terminal;
+                        if (t != null)
+                        {
+                            return t.Token.Index;
+                        }
+                        else
+                        {
+                            return m_scannerInfo.EndOfStreamTokenIndex;
+                        }
+
+
+                    }));
 
                     while (!validTokens.Contains(r.TokenIndex) && !r.IsEndOfStream)
                     {

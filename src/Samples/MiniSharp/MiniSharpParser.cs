@@ -321,7 +321,7 @@ namespace VBF.MiniSharp
             //statements
 
             PStatement.Rule = // { statement*} | ifelse | while | writeline | assign | array assign | var decl
-                (from _1 in LEFT_BR from stmts in PStatement.Many() from _2 in RIGHT_BR select (Statement)new Block(stmts.ToArray())) |
+                (from _1 in LEFT_BR from stmts in PStatement.Many() from _2 in RIGHT_BR select (Statement)new Block(stmts != null ? stmts.ToArray() : null)) |
                 PIfElse |
                 PWhile |
                 PWriteLine |
@@ -462,14 +462,14 @@ namespace VBF.MiniSharp
 
             PFactor.Rule = // exp | !exp
                 PNot;
-            
+
             PTerm.Rule = // term * factor | factor
                 PFactor |
                 from term in PTerm
                 from op in (ASTERISK.AsTerminal() | SLASH.AsTerminal())
                 from factor in PFactor
                 select (Expression)new Binary(op.Value, term, factor);
-            
+
             PComparand.Rule = // comparand + term | term
                 PTerm |
                 from comparand in PComparand

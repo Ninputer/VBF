@@ -12,6 +12,10 @@ namespace VBF.MiniSharp.Ast
 
         public Block(IList<Statement> statements)
         {
+            if (statements == null)
+            {
+                return;
+            }
             Statements = new ReadOnlyCollection<Statement>(statements);
         }
 

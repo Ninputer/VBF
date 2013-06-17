@@ -176,7 +176,7 @@ namespace VBF.Compilers.Parsers
                         else
                         {
                             //add back to queue, until shifted
-                            m_reducedHeads.Add(reducedHead);                                
+                            m_reducedHeads.Add(reducedHead);
                         }
 
                         //get next reduce
@@ -189,7 +189,7 @@ namespace VBF.Compilers.Parsers
                     }
 
                 }
-                
+
                 if (m_reducedHeads.Count > 0)
                 {
                     m_heads.Clear();
@@ -223,18 +223,19 @@ namespace VBF.Compilers.Parsers
 
             if (errorHeadCount > c_panicRecoveryThreshold)
             {
-                //too many errors, could not do local error recovery
-                //TODO: panic recovery
+                //Panic recovery
                 //to the 1st head:
                 //pop stack until there's a state S, which has a Goto action of a non-terminal A
                 //discard input until there's an token a in Follow(A)
                 //push Goto(s, A) into stack
                 //discard all other heads
 
-                shiftedHeads.RemoveAll(h => h.ErrorRecoverLevel > 0);
+                m_heads.Clear();
+                m_heads.AddRange(shiftedHeads.Where(h => h.ErrorRecoverLevel == 0));
+                shiftedHeads.Clear();
+
                 ParserHead errorHead1 = m_errorCandidates[0];
                 m_errorCandidates.Clear();
-                m_heads.Clear();
 
                 IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span);
 
@@ -247,7 +248,7 @@ namespace VBF.Compilers.Parsers
 
             for (int i = 0; i < errorHeadCount; i++)
             {
-                var head = m_errorCandidates[i];                
+                var head = m_errorCandidates[i];
 
                 //option 1: remove
                 //remove current token and continue
@@ -356,7 +357,7 @@ namespace VBF.Compilers.Parsers
                     }
                 }
             }
-        }        
+        }
 
         private void CleanShiftedAndAcceptedHeads()
         {
@@ -372,14 +373,14 @@ namespace VBF.Compilers.Parsers
                 var swap = m_tempHeads;
                 m_tempHeads = m_acceptedHeads;
                 m_acceptedHeads = swap;
-            }            
+            }
 
             if (m_shiftedHeads.Count > 0)
             {
                 m_cleaner.CleanHeads(m_shiftedHeads, m_heads);
                 m_shiftedHeads.Clear();
             }
-            
+
         }
 
     }
