@@ -250,21 +250,21 @@ namespace VBF.Compilers.Parsers
             {
                 var head = m_errorCandidates[i];
 
-                //option 1: remove
-                //remove current token and continue
                 if (!z.IsEndOfStream)
                 {
+                    //option 1: remove
+                    //remove current token and continue
                     var deleteHead = head.Clone();
 
                     deleteHead.IncreaseErrorRecoverLevel();
                     deleteHead.AddError(new ErrorRecord(m_errorDef.TokenUnexpectedId, z.Value.Span) { ErrorArgument = z.Value });
 
                     shiftedHeads.Add(deleteHead);
-                }
 
-                //option 2: replace
-                //replace the current input char with all possible shifts token and continue
-                ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId);
+                    //option 2: replace
+                    //replace the current input char with all possible shifts token and continue
+                    ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId);
+                }
 
                 //option 3: insert
                 //insert all possible shifts token and continue
