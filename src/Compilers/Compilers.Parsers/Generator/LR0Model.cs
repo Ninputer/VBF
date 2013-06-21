@@ -203,7 +203,7 @@ namespace VBF.Compilers.Parsers.Generator
                 isChanged = false;
                 foreach (var item in initSet.ToArray())
                 {
-                    isChanged = m_infoManager.Productions[item.ProductionIndex].Accept(m_closureVisitor, Tuple.Create(item.DotLocation, isChanged, initSet));
+                    isChanged = m_infoManager.Productions[item.ProductionIndex].Accept(m_closureVisitor, new ClosureInfo(item.DotLocation, isChanged, initSet));
                 }
             } while (isChanged);
 

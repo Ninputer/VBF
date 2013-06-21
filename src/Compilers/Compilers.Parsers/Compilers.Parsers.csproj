@@ -45,6 +45,7 @@
       <Link>CodeContract.cs</Link>
     </Compile>
     <Compile Include="AlternationProduction.cs" />
+    <Compile Include="Generator\ClosureVisitor.cs" />
     <Compile Include="PanicRecoverException.cs" />
     <Compile Include="ParserHeadCleaner.cs" />
     <Compile Include="AmbiguityAggregator.cs" />
