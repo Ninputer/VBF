@@ -121,10 +121,10 @@ namespace VBF.Compilers.Parsers
 
         protected virtual void OnDefineParserErrors(SyntaxErrors errorDefinition, CompilationErrorManager errorManager)
         {
-            errorManager.DefineError(errorDefinition.LexicalErrorId, 0, CompilationStage.Scanning, "Invalid token: {0}");
-            errorManager.DefineError(errorDefinition.TokenUnexpectedId, 0, CompilationStage.Parsing, "Unexpected token: {0}");
-            errorManager.DefineError(errorDefinition.TokenMissingId, 0, CompilationStage.Parsing, "Missing token: {0}");
-            errorManager.DefineError(errorDefinition.TokenMistakeId, 0, CompilationStage.Parsing, "Invalid token found, did you mean: {0} ?");
+            errorManager.DefineError(errorDefinition.LexicalErrorId, 0, CompilationStage.Scanning, "Invalid token: '{0}'");
+            errorManager.DefineError(errorDefinition.TokenUnexpectedId, 0, CompilationStage.Parsing, "Unexpected token: '{0}'");
+            errorManager.DefineError(errorDefinition.TokenMissingId, 0, CompilationStage.Parsing, "Missing token: '{0}'");
+            errorManager.DefineError(errorDefinition.TokenMistakeId, 0, CompilationStage.Parsing, "Invalid token: '{1}', did you mean: '{0}' ?");
             errorManager.DefineError(errorDefinition.OtherErrorId, 0, CompilationStage.Parsing, "Syntax error");
         }
 

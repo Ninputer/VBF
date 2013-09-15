@@ -11,6 +11,7 @@ namespace VBF.Compilers.Parsers
         public int? ErrorId;
         public SourceSpan ErrorPosition;
         public Object ErrorArgument;
+        public Object ErrorArgument2;
 
         public ErrorRecord(int? id, SourceSpan position)
         {

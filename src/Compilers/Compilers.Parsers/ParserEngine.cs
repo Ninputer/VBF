@@ -57,7 +57,7 @@ namespace VBF.Compilers.Parsers
                 {
                     int errorId = error.ErrorId ?? m_errorDef.OtherErrorId;
 
-                    errorManager.AddError(errorId, error.ErrorPosition, error.ErrorArgument);
+                    errorManager.AddError(errorId, error.ErrorPosition, error.ErrorArgument, error.ErrorArgument2);
                 }
             }
 
@@ -307,7 +307,11 @@ namespace VBF.Compilers.Parsers
                         var insertLexeme = z.GetErrorCorrectionLexeme(j, m_transitions.GetTokenDescription(j));
                         insertHead.Shift(insertLexeme, recoverShift.Value);
                         insertHead.IncreaseErrorRecoverLevel();
-                        insertHead.AddError(new ErrorRecord(syntaxError, z.Value.Span) { ErrorArgument = insertLexeme.Value });
+                        insertHead.AddError(new ErrorRecord(syntaxError, z.Value.Span) 
+                        { 
+                            ErrorArgument = insertLexeme.Value,
+                            ErrorArgument2 = z.Value
+                        });
 
                         shiftTarget.Add(insertHead);
 
