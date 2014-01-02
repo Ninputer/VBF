@@ -39,7 +39,7 @@ namespace VBF.Compilers.Parsers
         /// <returns>The production object represents the 'end of stream' terminal.</returns>
         public static ProductionBase<Lexeme> Eos()
         {
-            return new EndOfStream();
+            return EndOfStream.Instance;
         }
 
         /// <summary>

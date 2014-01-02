@@ -190,7 +190,7 @@ namespace VBF.Compilers.Parsers
             return false;
         }
 
-        public IProduction PanicRecover(TransitionTable transitions, SourceSpan lastLocation)
+        public IProduction PanicRecover(TransitionTable transitions, SourceSpan lastLocation, bool isEos)
         {
             while(true)
             {
@@ -202,6 +202,17 @@ namespace VBF.Compilers.Parsers
                     if (gotoState > 0)
                     {
                         var recoverNT = transitions.NonTerminals[i];
+
+                        if (isEos)
+                        {
+                            //the recoverNT must have EOS in its follow, otherwise continue
+                            var follow = (recoverNT as ProductionBase).Info.Follow;
+
+                            if (!follow.Contains(EndOfStream.Instance))
+                            {
+                                continue;
+                            }
+                        }
 
                         m_topStack = m_topStack.PrevNode;
 

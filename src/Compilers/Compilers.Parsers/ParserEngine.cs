@@ -237,7 +237,7 @@ namespace VBF.Compilers.Parsers
                 ParserHead errorHead1 = m_errorCandidates[0];
                 m_errorCandidates.Clear();
 
-                IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span);
+                IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span, z.IsEndOfStream);
 
                 var follow = (p as ProductionBase).Info.Follow;
 
