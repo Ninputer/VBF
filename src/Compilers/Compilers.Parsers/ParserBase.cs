@@ -17,6 +17,12 @@ namespace VBF.Compilers.Parsers
     {
         private TransitionTable m_transitionTable;
         private CompilationErrorManager m_errorManager;
+
+        public CompilationErrorManager ErrorManager
+        {
+            get { return m_errorManager; }
+        }
+
         private Lexicon m_lexicon;
         private ScannerInfo m_scannerInfo;
         private Scanner m_scanner;
@@ -24,6 +30,12 @@ namespace VBF.Compilers.Parsers
         private SyntaxErrors m_errorDefinition;
 
         private bool m_isInitialized = false;
+
+        public bool IsInitialized
+        {
+            get { return m_isInitialized; }
+        }
+
         private List<Token> m_triviaTokens;
 
         protected Lexicon Lexicon { get { return m_lexicon; } }
