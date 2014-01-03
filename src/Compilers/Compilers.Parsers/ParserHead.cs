@@ -12,6 +12,7 @@ namespace VBF.Compilers.Parsers
     internal class ParserHead
     {
         private StackNode m_topStack;
+        private StackNode m_lastShiftStack;
 
         //Indicates current error recover level
         //level = 0 means not error
@@ -95,6 +96,7 @@ namespace VBF.Compilers.Parsers
         public ParserHead(StackNode topStack)
         {
             m_topStack = topStack;
+            m_lastShiftStack = topStack;
             m_errorRecoverLevel = 0;
         }
 
@@ -107,6 +109,7 @@ namespace VBF.Compilers.Parsers
             StackNode shiftNode = new StackNode(targetStateIndex, m_topStack, z);
 
             m_topStack = shiftNode;
+            m_lastShiftStack = shiftNode;
 
 #if HISTORY
             var to = m_topStack.StateIndex;
@@ -156,6 +159,14 @@ namespace VBF.Compilers.Parsers
             var to = m_topStack.StateIndex;
             History.Add(String.Format("R{0}:{1}", from, to));
 #endif
+        }
+
+        /// <summary>
+        /// Restore the stack to the state after last shift action, for error recovery
+        /// </summary>
+        public void RestoreToLastShift()
+        {
+            m_topStack = m_lastShiftStack;
         }
 
         public void IncreaseErrorRecoverLevel()
@@ -231,6 +242,7 @@ namespace VBF.Compilers.Parsers
                 }
 
                 m_topStack = m_topStack.PrevNode;
+                m_lastShiftStack = m_topStack;
             }
         }
     }

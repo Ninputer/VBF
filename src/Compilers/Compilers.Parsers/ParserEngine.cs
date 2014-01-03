@@ -250,6 +250,9 @@ namespace VBF.Compilers.Parsers
             {
                 var head = m_errorCandidates[i];
 
+                //restore stack before reduce, in case of an invalided reduce has been performed
+                head.RestoreToLastShift();
+
                 if (!z.IsEndOfStream)
                 {
                     //option 1: remove
@@ -282,7 +285,8 @@ namespace VBF.Compilers.Parsers
 
                 while (recoverQueue.Count > 0)
                 {
-                    var recoverHead = recoverQueue.Dequeue();
+                    var recoverHead = recoverQueue.Dequeue();                   
+
                     int recoverStateNumber = recoverHead.TopStackStateIndex;
 
                     var shiftLexer = m_transitions.GetLexersInShifting(recoverStateNumber);
