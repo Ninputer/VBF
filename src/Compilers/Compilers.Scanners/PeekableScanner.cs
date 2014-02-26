@@ -5,6 +5,7 @@ using System.Text;
 
 namespace VBF.Compilers.Scanners
 {
+    [Obsolete("Please use VBF.Compilers.Scanners.Scanner class instead")]
     public class PeekableScanner
     {
         private Scanner m_masterScanner;

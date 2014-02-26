@@ -20,7 +20,14 @@ namespace VBF.Compilers.Scanners
         private int m_lastState;
         private SourceLocation m_lastTokenStart;
         private StringBuilder m_lexemeValueBuilder;
-        private List<Lexeme> m_triviaCache;
+        //private List<Lexeme> m_triviaCache;
+        private List<Lexeme> m_fullHistory;
+        private List<int> m_valuableHistory;
+        private HistoryList m_historyList;
+
+        private int m_valuableCursor;
+
+        private int m_lastNotSkippedLexemeIndex;
 
         private int[] m_tokenAttributes;
 
@@ -36,7 +43,12 @@ namespace VBF.Compilers.Scanners
             m_lexemeValueBuilder = new StringBuilder(32);
             m_tokenAttributes = new int[scannerInfo.TokenCount];
 
-            m_triviaCache = new List<Lexeme>();
+            m_fullHistory = new List<Lexeme>();
+            m_valuableHistory = new List<int>();
+            m_historyList = new HistoryList(m_fullHistory, m_valuableHistory);
+
+            m_valuableCursor = 0;
+            m_lastNotSkippedLexemeIndex = 0;
 
             Initialize();
         }
@@ -78,10 +90,17 @@ namespace VBF.Compilers.Scanners
 
         public Lexeme Read()
         {
-            m_triviaCache.Clear();
+            if (m_valuableCursor < m_valuableHistory.Count)
+            {
+                int fullCursor = m_valuableHistory[m_valuableCursor++];
+
+                return m_fullHistory[fullCursor];
+            }
+
+            //m_triviaCache.Clear();
             bool isLastSkipped = false;
 
-            do
+            while (true)
             {
                 //run to next stopped state
                 m_engine.Reset();
@@ -93,50 +112,153 @@ namespace VBF.Compilers.Scanners
                 if (m_source.PeekChar() < 0)
                 {
                     //return End Of Stream token
-                    return new Lexeme(m_scannerInfo, m_scannerInfo.EndOfStreamState,
-                        new SourceSpan(m_lastTokenStart, m_lastTokenStart), null, m_triviaCache);
+                    AddHistory(new Lexeme(m_scannerInfo, m_scannerInfo.EndOfStreamState,
+                        new SourceSpan(m_lastTokenStart, m_lastTokenStart), null));
+
+                    break;
                 }
-
-                while (true)
+                else
                 {
-                    int inputCharValue = m_source.PeekChar();
-
-                    if (inputCharValue < 0)
+                    while (true)
                     {
-                        //end of stream, treat as stopped
-                        break;
+                        int inputCharValue = m_source.PeekChar();
+
+                        if (inputCharValue < 0)
+                        {
+                            //end of stream, treat as stopped
+                            break;
+                        }
+
+                        char inputChar = (char)inputCharValue;
+                        m_engine.Input(inputChar);
+
+                        if (m_engine.IsAtStoppedState)
+                        {
+                            //stop immediately at a stopped state
+                            break;
+                        }
+                        else
+                        {
+                            m_lastState = m_engine.CurrentState;
+                        }
+
+                        m_source.ReadChar();
+                        m_lexemeValueBuilder.Append(inputChar);
                     }
 
-                    char inputChar = (char)inputCharValue;
-                    m_engine.Input(inputChar);
+                    //skip tokens that marked with "Skip" attribute
+                    isLastSkipped = IsLastTokenSkippable();
 
-                    if (m_engine.IsAtStoppedState)
+                    if (isLastSkipped)
                     {
-                        //stop immediately at a stopped state
-                        break;
+                        AddHistory(new Lexeme(m_scannerInfo, m_lastState,
+                            new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()), false);
                     }
                     else
                     {
-                        m_lastState = m_engine.CurrentState;
+                        AddHistory(new Lexeme(m_scannerInfo, m_lastState,
+                            new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()));
+
+
+                        break;
                     }
-
-                    m_source.ReadChar();
-                    m_lexemeValueBuilder.Append(inputChar);
                 }
 
-                //skip tokens that marked with "Skip" attribute
-                isLastSkipped = IsLastTokenSkippable();
+            }
 
-                if (isLastSkipped)
+            int lastTokenfullCursor = m_valuableHistory[m_valuableCursor - 1];
+            return m_fullHistory[lastTokenfullCursor];
+        }
+
+        public void Seek(int index)
+        {
+            CodeContract.RequiresArgumentInRange(index >= 0, "index", "Seek index must be greater than or equal to 0");
+
+            if (index <= m_valuableHistory.Count)
+            {
+                m_valuableCursor = index;
+            }
+            else
+            {
+                //index > m_history.Count
+                int restCount = index - m_valuableHistory.Count;
+
+                m_valuableCursor = m_valuableHistory.Count;
+                for (int i = 0; i < restCount; i++)
                 {
-                    m_triviaCache.Add(new Lexeme(m_scannerInfo, m_lastState,
-                        new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString(), null));
+                    Read();
+                }
+            }
+        }
+
+        public int ReadingIndex
+        {
+            get
+            {
+                return m_valuableCursor;
+            }
+        }        
+
+        public IReadOnlyList<Lexeme> History
+        {
+            get
+            {
+                return m_historyList;
+            }
+        }
+
+        public int Peek(int lookAhead)
+        {
+            CodeContract.RequiresArgumentInRange(lookAhead > 0, "lookAhead", "The lookAhead must be greater than zero");
+
+            Lexeme lookAheadLexeme = PeekLexeme(lookAhead);
+            return lookAheadLexeme.TokenIndex;
+
+        }
+
+        public int Peek()
+        {
+            return Peek(1);
+        }
+
+        public int Peek2()
+        {
+            return Peek(2);
+        }
+
+        public int PeekInLexerState(int lexerStateIndex, int lookAhead)
+        {
+            CodeContract.RequiresArgumentInRange(lookAhead > 0, "lookAhead", "The lookAhead must be greater than zero");
+            CodeContract.RequiresArgumentInRange(lexerStateIndex >= 0 && lexerStateIndex < ScannerInfo.LexerStateCount, "lexerStateIndex", "Invalid lexer state index");
+
+            Lexeme lookAheadLexeme = PeekLexeme(lookAhead);
+            return lookAheadLexeme.GetTokenIndex(lexerStateIndex);
+        }
+
+        private void AddHistory(Lexeme lexeme, bool setTrivia = true)
+        {
+            Debug.Assert(m_valuableCursor == m_valuableHistory.Count);
+
+            m_fullHistory.Add(lexeme);
+            int fullCursor = m_fullHistory.Count();
+
+            if (setTrivia)
+            {
+                int lastTriviaStartIndex = m_lastNotSkippedLexemeIndex + 1;
+                int lastTriviaLength = fullCursor - 1 - lastTriviaStartIndex;
+
+                if (lastTriviaLength < 0)
+                {
+                    lastTriviaLength = 0;
                 }
 
-            } while (isLastSkipped);
+                lexeme.SetTrivia(new LexemeRange(m_fullHistory, lastTriviaStartIndex, lastTriviaLength));
+                m_lastNotSkippedLexemeIndex = fullCursor - 1;
 
-            return new Lexeme(m_scannerInfo, m_lastState,
-                new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString(), m_triviaCache.Count == 0 ? null : m_triviaCache);
+                m_valuableHistory.Add(fullCursor - 1);
+                m_valuableCursor = m_valuableHistory.Count;
+            }
+
         }
 
         private bool IsLastTokenSkippable()
@@ -158,5 +280,23 @@ namespace VBF.Compilers.Scanners
 
             return acceptTokenIndex >= 0 && m_tokenAttributes[acceptTokenIndex] == Skip;
         }
+
+        private Lexeme PeekLexeme(int lookAhead)
+        {
+            int currentCursor = m_valuableCursor;
+
+            m_valuableCursor = m_valuableHistory.Count;
+            while (currentCursor + lookAhead - 1 >= m_valuableHistory.Count)
+            {
+                //look ahead more
+                Read();
+            }
+            int lookAheadFullIndex = m_valuableHistory[currentCursor + lookAhead - 1];
+            Lexeme lookAheadLexeme = m_fullHistory[lookAheadFullIndex];
+
+            m_valuableCursor = currentCursor;
+
+            return lookAheadLexeme;
+        }     
     }
 }

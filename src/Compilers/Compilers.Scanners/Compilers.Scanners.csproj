@@ -63,8 +63,10 @@
     <Compile Include="Generator\NFAModel.cs" />
     <Compile Include="Generator\NFAState.cs" />
     <Compile Include="Generator\CompressedTransitionTable.cs" />
+    <Compile Include="HistoryList.cs" />
     <Compile Include="KleeneStarExpression.cs" />
     <Compile Include="Lexeme.cs" />
+    <Compile Include="LexemeRange.cs" />
     <Compile Include="LexemeValue.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="Lexicon.cs" />

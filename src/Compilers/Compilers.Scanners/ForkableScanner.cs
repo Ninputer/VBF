@@ -9,16 +9,16 @@ namespace VBF.Compilers.Scanners
     public struct ForkableScanner
     {
         private int m_offset;
-        private ForkableScannerCore m_core;
+        private Scanner m_masterScanner;
 
         internal static ForkableScanner Create(Scanner masterScanner)
         {
-            return new ForkableScanner(new ForkableScannerCore(masterScanner));
+            return new ForkableScanner(masterScanner);
         }
 
-        private ForkableScanner(ForkableScannerCore core)
+        private ForkableScanner(Scanner masterScanner)
         {
-            m_core = core;
+            m_masterScanner = masterScanner;
             m_offset = 0;
         }
 
@@ -26,16 +26,15 @@ namespace VBF.Compilers.Scanners
         {
 
             Lexeme result;
-            Debug.Assert(m_offset <= m_core.LookAheadQueue.Count);
-            if (m_offset < m_core.LookAheadQueue.Count)
+            Debug.Assert(m_offset <= m_masterScanner.History.Count);
+            if (m_offset < m_masterScanner.History.Count)
             {
                 //queue is available to fetch tokens
-                result = m_core.LookAheadQueue[m_offset];
+                result = m_masterScanner.History[m_offset];
             }
             else
             {
-                result = m_core.MasterScanner.Read();
-                m_core.LookAheadQueue.Enqueue(result);
+                result = m_masterScanner.Read();
             }
 
             m_offset += 1;
@@ -51,7 +50,7 @@ namespace VBF.Compilers.Scanners
 
         public void Join(ForkableScanner scanner)
         {
-            m_core = scanner.m_core;
+            m_masterScanner = scanner.m_masterScanner;
             m_offset = scanner.m_offset;
         }
 
@@ -59,12 +58,12 @@ namespace VBF.Compilers.Scanners
         {
             get
             {
-                if (m_core == null)
+                if (m_masterScanner == null)
                 {
                     throw new InvalidOperationException("The ForkableScanner instance is not valid. Please use ForkableScannerBuilder to create ForkableScanner.");
                 }
 
-                return m_core.MasterScanner.ScannerInfo;
+                return m_masterScanner.ScannerInfo;
             }
         }
     }
