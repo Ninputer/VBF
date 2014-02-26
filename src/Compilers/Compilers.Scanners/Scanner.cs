@@ -43,13 +43,6 @@ namespace VBF.Compilers.Scanners
             m_lexemeValueBuilder = new StringBuilder(32);
             m_tokenAttributes = new int[scannerInfo.TokenCount];
 
-            m_fullHistory = new List<Lexeme>();
-            m_valuableHistory = new List<int>();
-            m_historyList = new HistoryList(m_fullHistory, m_valuableHistory);
-
-            m_valuableCursor = 0;
-            m_lastNotSkippedLexemeIndex = 0;
-
             Initialize();
         }
 
@@ -59,8 +52,9 @@ namespace VBF.Compilers.Scanners
             m_lastState = 0;
             m_lexemeValueBuilder.Clear();
 
-            m_fullHistory.Clear();
-            m_valuableHistory.Clear();
+            m_fullHistory = new List<Lexeme>();
+            m_valuableHistory = new List<int>();
+            m_historyList = new HistoryList(m_fullHistory, m_valuableHistory);
 
             m_valuableCursor = 0;
             m_lastNotSkippedLexemeIndex = 0;
