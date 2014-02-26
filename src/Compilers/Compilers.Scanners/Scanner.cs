@@ -58,6 +58,12 @@ namespace VBF.Compilers.Scanners
             m_engine.Reset();
             m_lastState = 0;
             m_lexemeValueBuilder.Clear();
+
+            m_fullHistory.Clear();
+            m_valuableHistory.Clear();
+
+            m_valuableCursor = 0;
+            m_lastNotSkippedLexemeIndex = 0;
         }
 
         public void SetSource(SourceReader source)

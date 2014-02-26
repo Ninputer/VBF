@@ -42,6 +42,7 @@ namespace VBF.Compilers.Parsers
         protected ScannerInfo ScannerInfo { get { return m_scannerInfo; } }
         protected ProductionInfoManager ProductionInfoManager { get { return m_productionInfoManager; } }
         protected SyntaxErrors ErrorDefinitions { get { return m_errorDefinition; } }
+        protected Scanner Scanner { get { return m_scanner;  } }
 
         /// <summary>
         /// Implement this method to define lexer
