@@ -51,15 +51,5 @@ namespace VBF.Compilers
             m_errors = new List<CompilationError>();
             m_errorManager = errorManager;
         }
-
-        internal ReadOnlyCollection<CompilationError> AsReadOnly()
-        {
-            return m_errors.AsReadOnly();
-        }
-
-        internal void Clear()
-        {
-            m_errors.Clear();
-        }
     }
 }
