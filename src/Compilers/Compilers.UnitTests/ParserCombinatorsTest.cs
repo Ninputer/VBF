@@ -46,7 +46,11 @@ namespace Compilers.UnitTests
             builder.SetTriviaTokens(WHITESPACE.Index);
 
             var errorManager = new CompilationErrorManager();
+            var el = errorManager.CreateErrorList();
             var context = new ParserContext(errorManager, 1, 2);
+
+            context.ErrorList = el;
+
             context.DefineDefaultCompilationErrorInfo(0);
 
             ParserRunner<string> runner = new ParserRunner<string>(parser1, context);
@@ -59,7 +63,7 @@ namespace Compilers.UnitTests
             var result1 = runner.Run(scanner1);
 
             Assert.AreEqual("A", result1);
-            Assert.AreEqual(0, errorManager.Errors.Count);
+            Assert.AreEqual(0, el.Count);
 
             string source2 = "abc > > 123";
             var sr2 = new SourceReader(new StringReader(source2));
@@ -68,7 +72,7 @@ namespace Compilers.UnitTests
 
             var result2 = runner.Run(scanner2);
             Assert.AreEqual("B", result2);
-            Assert.AreEqual(0, errorManager.Errors.Count);
+            Assert.AreEqual(0, el.Count);
 
         }
 
@@ -97,8 +101,12 @@ namespace Compilers.UnitTests
             builder.SetTriviaTokens(WHITESPACE.Index);
 
             var errorManager = new CompilationErrorManager();
+            var el = errorManager.CreateErrorList();
+
             var context = new ParserContext(errorManager, 1, 2);
+            
             context.DefineDefaultCompilationErrorInfo(0);
+            context.ErrorList = el;
 
             ParserRunner<float> runner = new ParserRunner<float>(parser1, context);
 
@@ -110,7 +118,7 @@ namespace Compilers.UnitTests
             var result1 = runner.Run(scanner1);
 
             Assert.AreEqual(1.0f, result1);
-            Assert.AreEqual(0, errorManager.Errors.Count);
+            Assert.AreEqual(0, el.Count);
         }
 
         [Test]
@@ -141,6 +149,9 @@ namespace Compilers.UnitTests
             var context = new ParserContext(errorManager, 1, 2);
             context.DefineDefaultCompilationErrorInfo(0);
 
+            var el = errorManager.CreateErrorList();
+            context.ErrorList = el;
+
             ParserRunner<object> runner = new ParserRunner<object>(parser1, context);
 
             string source1 = "abc >> 123";
@@ -151,7 +162,7 @@ namespace Compilers.UnitTests
             var result1 = runner.Run(scanner1);
 
             Assert.AreEqual("hello", result1);
-            Assert.AreEqual(0, errorManager.Errors.Count);
+            Assert.AreEqual(0, el.Count);
         }
     }
 }

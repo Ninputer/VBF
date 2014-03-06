@@ -31,7 +31,7 @@ namespace VBF.Compilers.Scanners
 
         private int[] m_tokenAttributes;
 
-        public CompilationErrorManager ErrorManager { get; set; }
+        public CompilationErrorList ErrorList { get; set; }
         public bool RecoverErrors { get; set; }
         public int LexicalErrorId { get; set; }
 
@@ -270,9 +270,9 @@ namespace VBF.Compilers.Scanners
                 //eat one char to continue
                 m_lexemeValueBuilder.Append((char)m_source.ReadChar());
 
-                if (ErrorManager != null)
+                if (ErrorList != null)
                 {
-                    ErrorManager.AddError(LexicalErrorId, new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString());
+                    ErrorList.AddError(LexicalErrorId, new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString());
                 }
 
                 return true;

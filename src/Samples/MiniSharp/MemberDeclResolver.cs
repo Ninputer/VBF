@@ -13,6 +13,14 @@ namespace VBF.MiniSharp
         private TypeCollection m_types;
 
         private CompilationErrorManager m_errorManager;
+        private CompilationErrorList m_errorList;
+
+        public CompilationErrorList ErrorList
+        {
+            get { return m_errorList; }
+            set { m_errorList = value; }
+        }
+
         internal const int c_SE_TypeNameMissing = 302;
         private const int c_SE_StaticBaseType = 303;
         private const int c_SE_CyclicBaseType = 304;
@@ -47,6 +55,14 @@ namespace VBF.MiniSharp
             m_types = types;
         }
 
+        private void AddError(int errorId, SourceSpan errorPosition, params object[] args)
+        {
+            if (m_errorList != null)
+            {
+                m_errorList.AddError(errorId, errorPosition, args);
+            }
+        }
+
         private TypeBase ResolveTypeRef(TypeRef typeRef)
         {
             TypeBase resolvedType = PrimaryType.Unknown;
@@ -54,7 +70,7 @@ namespace VBF.MiniSharp
 
             if (!m_types.Contains(name.Content))
             {
-                m_errorManager.AddError(c_SE_TypeNameMissing, name.Span, name.Content);
+                AddError(c_SE_TypeNameMissing, name.Span, name.Content);
             }
             else
             {
@@ -91,7 +107,7 @@ namespace VBF.MiniSharp
                 {
                     if (currentBase == cd.Type)
                     {
-                        m_errorManager.AddError(c_SE_CyclicBaseType, cd.BaseClass.TypeName.Span, cd.BaseClass.TypeName.Content, cd.Name.Content);
+                        AddError(c_SE_CyclicBaseType, cd.BaseClass.TypeName.Span, cd.BaseClass.TypeName.Content, cd.Name.Content);
                         break;
                     }
 
@@ -123,7 +139,7 @@ namespace VBF.MiniSharp
 
                 if (!m_types.Contains(baseTypeName))
                 {
-                    m_errorManager.AddError(c_SE_TypeNameMissing, ast.BaseClass.TypeName.Span, baseTypeName);
+                    AddError(c_SE_TypeNameMissing, ast.BaseClass.TypeName.Span, baseTypeName);
 
                     //leave ast.BaseClass.Type empty
                 }
@@ -135,7 +151,7 @@ namespace VBF.MiniSharp
 
                     if (type.IsStatic)
                     {
-                        m_errorManager.AddError(c_SE_StaticBaseType, ast.BaseClass.TypeName.Span, baseTypeName);
+                        AddError(c_SE_StaticBaseType, ast.BaseClass.TypeName.Span, baseTypeName);
                     }
 
                     ast.BaseClass.Type = type;
@@ -169,7 +185,7 @@ namespace VBF.MiniSharp
             //check name conflict
             if (declType.Fields.Contains(fieldName.Content))
             {
-                m_errorManager.AddError(c_SE_FieldDuplicates, fieldName.Span, declType.Name, fieldName.Content);
+                AddError(c_SE_FieldDuplicates, fieldName.Span, declType.Name, fieldName.Content);
             }
 
             ast.FieldInfo.Name = fieldName.Content;
@@ -216,7 +232,7 @@ namespace VBF.MiniSharp
 
                 if (paramNames.Contains(paramInfo.Name))
                 {
-                    m_errorManager.AddError(c_SE_ParameterDuplicates, parameter.ParameterName.Span, method.Name, paramInfo.Name);
+                    AddError(c_SE_ParameterDuplicates, parameter.ParameterName.Span, method.Name, paramInfo.Name);
                     allValid = false;
                 }
                 else
@@ -255,7 +271,7 @@ namespace VBF.MiniSharp
 
                     if (allTypeSame)
                     {
-                        m_errorManager.AddError(c_SE_MethodDuplicates, ast.Name.Span, method.DeclaringType.Name, method.Name);
+                        AddError(c_SE_MethodDuplicates, ast.Name.Span, method.DeclaringType.Name, method.Name);
                     }
                 }
             }

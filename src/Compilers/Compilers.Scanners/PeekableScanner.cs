@@ -96,15 +96,15 @@ namespace VBF.Compilers.Scanners
             m_masterScanner.SetTriviaTokens(triviaTokenIndices);
         }
 
-        public CompilationErrorManager ErrorManager
+        public CompilationErrorList ErrorList
         {
             get
             {
-                return m_masterScanner.ErrorManager;
+                return m_masterScanner.ErrorList;
             }
             set
             {
-                m_masterScanner.ErrorManager = value;
+                m_masterScanner.ErrorList = value;
             }
         }
 

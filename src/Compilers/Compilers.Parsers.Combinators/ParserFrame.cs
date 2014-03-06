@@ -68,8 +68,7 @@ namespace VBF.Compilers.Parsers.Combinators
             m_parserRunner = new ParserRunner<T>(m_parser, m_context);
 
             m_scannerBuilder = new ForkableScannerBuilder(m_scannerInfo);
-            m_scannerBuilder.SetTriviaTokens(m_triviaTokens.Select(t => t.Index).ToArray());
-            m_scannerBuilder.ErrorManager = m_errorManager;
+            m_scannerBuilder.SetTriviaTokens(m_triviaTokens.Select(t => t.Index).ToArray());           
             m_scannerBuilder.RecoverErrors = true;
             m_scannerBuilder.LexicalErrorId = m_lexicalErrorId;
 
@@ -107,7 +106,7 @@ namespace VBF.Compilers.Parsers.Combinators
             }
         }
 
-        public T Parse(SourceReader source)
+        public T Parse(SourceReader source, CompilationErrorList errorList)
         {
             CodeContract.RequiresArgumentNotNull(source, "source");
 
@@ -116,21 +115,23 @@ namespace VBF.Compilers.Parsers.Combinators
                 OnInitialize();
             }
 
+            m_scannerBuilder.ErrorList = errorList;
+            m_context.ErrorList = errorList;
             ForkableScanner scanner = m_scannerBuilder.Create(source);
 
             return m_parserRunner.Run(scanner);
         }
 
-        public T Parse(TextReader source)
+        public T Parse(TextReader source, CompilationErrorList errorList)
         {
             CodeContract.RequiresArgumentNotNull(source, "source");
-            return Parse(new SourceReader(source));
+            return Parse(new SourceReader(source), errorList);
         }
 
-        public T Parse(string source)
+        public T Parse(string source, CompilationErrorList errorList)
         {
             CodeContract.RequiresArgumentNotNull(source, "source");
-            return Parse(new StringReader(source));
+            return Parse(new StringReader(source), errorList);
         }
     }
 }

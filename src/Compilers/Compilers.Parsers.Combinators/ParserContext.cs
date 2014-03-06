@@ -12,13 +12,15 @@ namespace VBF.Compilers.Parsers.Combinators
         //private long m_failedSteps = 0L;
         //private long m_succeedSteps = 0L;
 
-        public CompilationErrorManager ErrorManager { get; set; }
+        public CompilationErrorList ErrorList { get; set; }
         public int InsertionErrorId { get; set; }
         public int DeletionErrorId { get; set; }
 
+        private CompilationErrorManager m_errorManager;
+
         public ParserContext(CompilationErrorManager errorManager, int deletionErrorId, int insertionErrorId)
         {
-            ErrorManager = errorManager;
+            m_errorManager = errorManager;
             InsertionErrorId = insertionErrorId;
             DeletionErrorId = deletionErrorId;
         }
@@ -28,13 +30,13 @@ namespace VBF.Compilers.Parsers.Combinators
 
         public void DefineDefaultCompilationErrorInfo(int errorLevel)
         {
-            if (ErrorManager == null)
+            if (m_errorManager == null)
             {
                 throw new InvalidOperationException("ErrorManager is not specified");
             }
 
-            ErrorManager.DefineError(DeletionErrorId, errorLevel, CompilationStage.Parsing, "Unexpected token \"{0}\"");
-            ErrorManager.DefineError(InsertionErrorId, errorLevel, CompilationStage.Parsing, "Missing {0}");
+            m_errorManager.DefineError(DeletionErrorId, errorLevel, CompilationStage.Parsing, "Unexpected token \"{0}\"");
+            m_errorManager.DefineError(InsertionErrorId, errorLevel, CompilationStage.Parsing, "Missing {0}");
         }
 
         //public void ResetFailedStepCount()

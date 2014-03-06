@@ -118,7 +118,11 @@ namespace Compilers.UnitTests
             ParserEngine driver = new ParserEngine(tt, new SyntaxErrors());
 
             ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
-            builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
+
+            var em = new VBF.Compilers.CompilationErrorManager();
+            var el = em.CreateErrorList();
+
+            builder.ErrorList = el;
             var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x*x")));
 
             var z1 = scanner.Read();
@@ -189,7 +193,10 @@ namespace Compilers.UnitTests
             ParserEngine driver = new ParserEngine(tt, new SyntaxErrors() { TokenUnexpectedId = 1 });
 
             ForkableScannerBuilder builder = new ForkableScannerBuilder(scannerinfo);
-            builder.ErrorManager = new VBF.Compilers.CompilationErrorManager();
+            var em = new VBF.Compilers.CompilationErrorManager();;
+            var el = em.CreateErrorList();
+
+            builder.ErrorList = el; 
             var scanner = builder.Create(new VBF.Compilers.SourceReader(new StringReader("x+x+x")));
 
             var z1 = scanner.Read();
@@ -257,6 +264,8 @@ namespace Compilers.UnitTests
             errorManager.DefineError(3, 0, CompilationStage.Parsing, "Syntax error");
             errorManager.DefineError(4, 0, CompilationStage.Parsing, "White spaces between >> are not allowed");
 
+            var el = errorManager.CreateErrorList();
+
             ProductionInfoManager pim = new ProductionInfoManager(parser1.SuffixedBy(Grammar.Eos()));
 
             LR0Model lr0 = new LR0Model(pim);
@@ -284,8 +293,8 @@ namespace Compilers.UnitTests
             } while (!r.IsEndOfStream);
 
             Assert.AreEqual(1, driver.AcceptedCount);
-            Assert.AreEqual("A", driver.GetResult(0, errorManager));
-            Assert.AreEqual(0, errorManager.Errors.Count);
+            Assert.AreEqual("A", driver.GetResult(0, el));
+            Assert.AreEqual(0, el.Count);
 
             ParserEngine driver2 = new ParserEngine(tt, errdef);
 
@@ -300,9 +309,11 @@ namespace Compilers.UnitTests
                 driver2.Input(r);
             } while (!r.IsEndOfStream);
 
+            var el2 = errorManager.CreateErrorList();
+
             Assert.AreEqual(1, driver2.AcceptedCount);
-            Assert.AreEqual("B", driver2.GetResult(0, errorManager));
-            Assert.AreEqual(0, errorManager.Errors.Count);
+            Assert.AreEqual("B", driver2.GetResult(0, el2));
+            Assert.AreEqual(0, el2.Count);
         }
 
         class Node
@@ -390,7 +401,7 @@ namespace Compilers.UnitTests
                 driver.Input(r);
             } while (!r.IsEndOfStream);
 
-            var result = driver.GetResult(0, errorManager);
+            var result = driver.GetResult(0, errorManager.CreateErrorList());
 
             ;
         }
@@ -441,7 +452,7 @@ namespace Compilers.UnitTests
 
             var parser = new TreeParser(em);
 
-            var result = parser.Parse(source);
+            var result = parser.Parse(source, em.CreateErrorList());
             ;
         }
 
@@ -532,9 +543,11 @@ namespace Compilers.UnitTests
                 driver.Input(r);
             } while (!r.IsEndOfStream);
 
-            var result = (PropDef)driver.GetResult(0, errorManager);
+            var el = errorManager.CreateErrorList();
 
-            Assert.AreEqual(0, errorManager.Errors.Count);
+            var result = (PropDef)driver.GetResult(0, el);
+
+            Assert.AreEqual(0, el.Count);
             Assert.AreEqual("get", result.PropName);
             Assert.AreEqual("get=1", result.GetDef.Statements.First());
         }
@@ -579,7 +592,7 @@ namespace Compilers.UnitTests
 
             var parser = new OperatorManyParser(em);
 
-            var result = parser.Parse(source);
+            var result = parser.Parse(source, em.CreateErrorList());
             ;
         }
     }

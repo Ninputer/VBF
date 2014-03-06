@@ -36,6 +36,22 @@ namespace VBF.MiniSharp
         private const int c_SE_ThisInStaticMethod = 337;
         private const int c_SE_NotSupported = 390;
 
+        private CompilationErrorList m_errorList;
+
+        public CompilationErrorList ErrorList
+        {
+            get { return m_errorList; }
+            set { m_errorList = value; }
+        }
+
+        private void AddError(int errorId, SourceSpan errorPosition, params object[] args)
+        {
+            if (m_errorList != null)
+            {
+                m_errorList.AddError(errorId, errorPosition, args);
+            }
+        }
+
         public void DefineErrors()
         {
             m_errorManager.DefineError(c_SE_VariableDuplicates, 0, CompilationStage.SemanticAnalysis,
@@ -110,7 +126,7 @@ namespace VBF.MiniSharp
                 return ResolveField(m_currentType, identifier);
             }
 
-            m_errorManager.AddError(c_SE_VariableDeclMissing, identifier.Span, identifier.Content);
+            AddError(c_SE_VariableDeclMissing, identifier.Span, identifier.Content);
             return null;
         }
 
@@ -128,7 +144,7 @@ namespace VBF.MiniSharp
                 return ResolveField(m_currentType.BaseType, identifier);
             }
 
-            m_errorManager.AddError(c_SE_VariableDeclMissing, identifier.Span, identifier.Content);
+            AddError(c_SE_VariableDeclMissing, identifier.Span, identifier.Content);
             return null;
         }
 
@@ -137,12 +153,12 @@ namespace VBF.MiniSharp
             //step1, check local parameter & variable definitions
             if (m_currentMethodParameters.Contains(ast.VariableName.Content))
             {
-                m_errorManager.AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Content);
+                AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Content);
                 return false;
             }
             else if (m_currentMethodVariables.Contains(ast.VariableName.Content))
             {
-                m_errorManager.AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Content);
+                AddError(c_SE_VariableDuplicates, ast.VariableName.Span, ast.VariableName.Content);
                 return false;
             }
 
@@ -158,7 +174,7 @@ namespace VBF.MiniSharp
 
             if (!m_types.Contains(name.Content))
             {
-                m_errorManager.AddError(MemberDeclResolver.c_SE_TypeNameMissing, name.Span, name.Content);
+                AddError(MemberDeclResolver.c_SE_TypeNameMissing, name.Span, name.Content);
             }
             else
             {
@@ -233,7 +249,7 @@ namespace VBF.MiniSharp
 
             if (ast.Statements == null || ast.ReturnExpression == null)
             {
-                m_errorManager.AddError(c_SE_NotSupported, ast.Name.Span, "A method must have body defined");
+                AddError(c_SE_NotSupported, ast.Name.Span, "A method must have body defined");
                 return ast;
             }
 
@@ -290,7 +306,7 @@ namespace VBF.MiniSharp
 
             if (ast.Condition.ExpressionType != PrimaryType.Boolean)
             {
-                m_errorManager.AddError(c_SE_IfStmtTypeInvalid, ast.IfSpan);
+                AddError(c_SE_IfStmtTypeInvalid, ast.IfSpan);
             }
 
             Visit(ast.TruePart);
@@ -306,7 +322,7 @@ namespace VBF.MiniSharp
 
             if (ast.Condition.ExpressionType != PrimaryType.Boolean)
             {
-                m_errorManager.AddError(c_SE_WhileStmtTypeInvalid, ast.WhileSpan);
+                AddError(c_SE_WhileStmtTypeInvalid, ast.WhileSpan);
             }
 
             Visit(ast.LoopBody);
@@ -320,7 +336,7 @@ namespace VBF.MiniSharp
 
             if (ast.Value.ExpressionType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_WriteLineStmtTypeInvalid, ast.WriteLineSpan);
+                AddError(c_SE_WriteLineStmtTypeInvalid, ast.WriteLineSpan);
             }
 
             return ast;
@@ -342,7 +358,7 @@ namespace VBF.MiniSharp
             //check if assignable
             if (!variable.Type.IsAssignableFrom(ast.Value.ExpressionType))
             {
-                m_errorManager.AddError(c_SE_InvalidCast, ast.Variable.VariableName.Span, ast.Value.ExpressionType.Name, variable.Type.Name);
+                AddError(c_SE_InvalidCast, ast.Variable.VariableName.Span, ast.Value.ExpressionType.Name, variable.Type.Name);
             }
 
             if (variable.Type != ast.Value.ExpressionType)
@@ -371,21 +387,21 @@ namespace VBF.MiniSharp
             ArrayType arrayType = arrayVariable.Type as ArrayType;
             if (arrayType == null)
             {
-                m_errorManager.AddError(c_SE_NotArray, ast.Array.VariableName.Span, ast.Array.VariableName);
+                AddError(c_SE_NotArray, ast.Array.VariableName.Span, ast.Array.VariableName);
             }
             else if (arrayType.ElementType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_NotSupported, ast.Array.VariableName.Span, "Arrays rather than int[] are not operatable");
+                AddError(c_SE_NotSupported, ast.Array.VariableName.Span, "Arrays rather than int[] are not operatable");
             }
 
             if (ast.Index.ExpressionType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_InvalidCast, ast.Array.VariableName.Span, ast.Index.ExpressionType.Name, PrimaryType.Int.Name);
+                AddError(c_SE_InvalidCast, ast.Array.VariableName.Span, ast.Index.ExpressionType.Name, PrimaryType.Int.Name);
             }
 
             if (ast.Value.ExpressionType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_InvalidCast, ast.Array.VariableName.Span, ast.Value.ExpressionType.Name, PrimaryType.Int.Name);
+                AddError(c_SE_InvalidCast, ast.Array.VariableName.Span, ast.Value.ExpressionType.Name, PrimaryType.Int.Name);
             }
 
             return ast;
@@ -409,7 +425,7 @@ namespace VBF.MiniSharp
         {
             if (m_currentMethod.IsStatic)
             {
-                m_errorManager.AddError(c_SE_ThisInStaticMethod, ast.ThisSpan);
+                AddError(c_SE_ThisInStaticMethod, ast.ThisSpan);
             }
             ast.ExpressionType = m_currentType;
             return ast;
@@ -421,7 +437,7 @@ namespace VBF.MiniSharp
 
             if (ast.Operand.ExpressionType != PrimaryType.Boolean)
             {
-                m_errorManager.AddError(c_SE_UnaryOpTypeInvalid, ast.OpSpan, "!", ast.Operand.ExpressionType.Name);
+                AddError(c_SE_UnaryOpTypeInvalid, ast.OpSpan, "!", ast.Operand.ExpressionType.Name);
             }
 
             ast.ExpressionType = PrimaryType.Boolean;
@@ -443,7 +459,7 @@ namespace VBF.MiniSharp
             int value;
             if (!Int32.TryParse(ast.Literal.Content, out value))
             {
-                m_errorManager.AddError(c_SE_InvalidIntLiteral, ast.Literal.Span, ast.Literal.Content);
+                AddError(c_SE_InvalidIntLiteral, ast.Literal.Span, ast.Literal.Content);
             }
             else
             {
@@ -476,7 +492,7 @@ namespace VBF.MiniSharp
 
             if (ast.Length.ExpressionType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_InvalidCast, ast.LengthSpan, ast.Length.ExpressionType.Name, PrimaryType.Int.Name);
+                AddError(c_SE_InvalidCast, ast.LengthSpan, ast.Length.ExpressionType.Name, PrimaryType.Int.Name);
             }
 
             ast.ExpressionType = ArrayType.IntArray;
@@ -498,11 +514,11 @@ namespace VBF.MiniSharp
             ArrayType arrayType = ast.Array.ExpressionType as ArrayType;
             if (arrayType == null)
             {
-                m_errorManager.AddError(c_SE_ExpressionNotArray, ast.LengthSpan);
+                AddError(c_SE_ExpressionNotArray, ast.LengthSpan);
             }
             else if (arrayType.ElementType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_NotSupported, ast.LengthSpan, "Arrays rather than int[] are not operatable");
+                AddError(c_SE_NotSupported, ast.LengthSpan, "Arrays rather than int[] are not operatable");
             }
 
             ast.ExpressionType = PrimaryType.Int;
@@ -517,18 +533,18 @@ namespace VBF.MiniSharp
             ArrayType arrayType = ast.Array.ExpressionType as ArrayType;
             if (arrayType == null)
             {
-                m_errorManager.AddError(c_SE_ExpressionNotArray, ast.IndexSpan);
+                AddError(c_SE_ExpressionNotArray, ast.IndexSpan);
             }
             else if (arrayType.ElementType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_NotSupported, ast.IndexSpan, "Arrays rather than int[] are not operatable");
+                AddError(c_SE_NotSupported, ast.IndexSpan, "Arrays rather than int[] are not operatable");
             }
 
             Visit(ast.Index);
 
             if (ast.Index.ExpressionType != PrimaryType.Int)
             {
-                m_errorManager.AddError(c_SE_InvalidCast, ast.IndexSpan, ast.Index.ExpressionType.Name, PrimaryType.Int.Name);
+                AddError(c_SE_InvalidCast, ast.IndexSpan, ast.Index.ExpressionType.Name, PrimaryType.Int.Name);
             }
 
             ast.ExpressionType = arrayType == null ? PrimaryType.Unknown : arrayType.ElementType;
@@ -614,7 +630,7 @@ namespace VBF.MiniSharp
 
             if (checkFailed)
             {
-                m_errorManager.AddError(c_SE_BinaryOpTypeInvalid, ast.OpLexeme.Span, ast.OpLexeme.Content, ast.Left.ExpressionType.Name, ast.Right.ExpressionType.Name);
+                AddError(c_SE_BinaryOpTypeInvalid, ast.OpLexeme.Span, ast.OpLexeme.Content, ast.Left.ExpressionType.Name, ast.Right.ExpressionType.Name);
             }
 
             return ast;
@@ -635,7 +651,7 @@ namespace VBF.MiniSharp
 
             if (targetType == null)
             {
-                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Content);
+                AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Content);
                 ast.ExpressionType = PrimaryType.Unknown;
                 return ast;
             }
@@ -650,7 +666,7 @@ namespace VBF.MiniSharp
         {
             if (targetType == null)
             {
-                m_errorManager.AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Content);
+                AddError(c_SE_MethodMissing, ast.Method.MethodName.Span, ast.Method.MethodName.Content);
                 ast.ExpressionType = PrimaryType.Unknown;
 
                 return;
@@ -709,7 +725,7 @@ namespace VBF.MiniSharp
                 else
                 {
                     //ambiguous between first & second
-                    m_errorManager.AddError(c_SE_MethodAmbiguous, ast.Method.MethodName.Span, 
+                    AddError(c_SE_MethodAmbiguous, ast.Method.MethodName.Span, 
                         firstCandidate.GetSignatureString(), secondCandidate.GetSignatureString());
                     ast.ExpressionType = PrimaryType.Unknown;
                 }

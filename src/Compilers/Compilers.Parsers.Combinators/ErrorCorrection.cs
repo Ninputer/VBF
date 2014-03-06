@@ -39,9 +39,9 @@ namespace VBF.Compilers.Parsers.Combinators
 
         public override void AddError(ParserContext context)
         {
-            if (context != null && context.ErrorManager != null)
+            if (context != null && context.ErrorList != null)
             {
-                context.ErrorManager.AddError(
+                context.ErrorList.AddError(
                     context.InsertionErrorId, InsertPoint, CorrectionToken);
             }
         }
@@ -59,9 +59,9 @@ namespace VBF.Compilers.Parsers.Combinators
 
         public override void AddError(ParserContext context)
         {
-            if (context != null && context.ErrorManager != null)
+            if (context != null && context.ErrorList != null)
             {
-                context.ErrorManager.AddError(
+                context.ErrorList.AddError(
                     context.DeletionErrorId, UnexpectedLexeme.Value.Span, UnexpectedLexeme.Value);
             }
         }
@@ -83,9 +83,9 @@ namespace VBF.Compilers.Parsers.Combinators
 
         public override void AddError(ParserContext context)
         {
-            if (context != null && context.ErrorManager != null)
+            if (context != null && context.ErrorList != null)
             {
-                context.ErrorManager.AddError(
+                context.ErrorList.AddError(
                     ErrorId, ErrorSpan, Parameters);
             }
         }

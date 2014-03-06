@@ -8,7 +8,7 @@ namespace VBF.Compilers.Scanners
     public class ForkableScannerBuilder
     {
 
-        public CompilationErrorManager ErrorManager { get; set; }
+        public CompilationErrorList ErrorList { get; set; }
 
         public bool RecoverErrors { get; set; }
 
@@ -51,7 +51,7 @@ namespace VBF.Compilers.Scanners
             Scanner masterScanner = new Scanner(ScannerInfo);
             masterScanner.SetSource(source);
             masterScanner.SetTriviaTokens(m_triviaTokens);
-            masterScanner.ErrorManager = ErrorManager;
+            masterScanner.ErrorList = ErrorList;
             masterScanner.RecoverErrors = RecoverErrors;
             masterScanner.LexicalErrorId = LexicalErrorId;
 

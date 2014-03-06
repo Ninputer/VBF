@@ -172,7 +172,7 @@ namespace Compilers.UnitTests
 
             const string input = "a<b>c;a<b>c;a<b>c;a<b>c;a<b>c;";
 
-            var result = parser.Parse(input);
+            var result = parser.Parse(input, em.CreateErrorList());
             var resarr = result.ToArray();
 
             Assert.AreEqual(5, resarr.Length);
@@ -211,12 +211,13 @@ namespace Compilers.UnitTests
 
             const string input = "a<b>>c;";
 
-            var result = parser.Parse(input);
+            var el = em.CreateErrorList();
+            var result = parser.Parse(input, el);
 
             var r = result.First() as AmbiguityStatementNode;
 
             Assert.IsNotNull(r);
-            Assert.AreEqual(1, em.Errors.Count);
+            Assert.AreEqual(1, el.Count);
 
         }
     }

@@ -45,6 +45,7 @@
     <Compile Include="CompilationError.cs" />
     <Compile Include="CompilationErrorInfo.cs" />
     <Compile Include="CompilationErrorInfoCollection.cs" />
+    <Compile Include="CompilationErrorList.cs" />
     <Compile Include="CompilationErrorManager.cs" />
     <Compile Include="CompilationStage.cs" />
     <Compile Include="Common\DepthFirstSearch.cs" />

@@ -44,20 +44,20 @@ namespace VBF.Compilers.Parsers
             }
         }
 
-        public object GetResult(int index, CompilationErrorManager errorManager)
+        public object GetResult(int index, CompilationErrorList errorList)
         {
             CodeContract.RequiresArgumentInRange(index >= 0 && index < m_acceptedHeads.Count, "index", "index is out of range");
 
             var head = m_acceptedHeads[index];
 
-            if (head.Errors != null && errorManager != null)
+            if (head.Errors != null && errorList != null)
             {
                 //aggregate errors
                 foreach (var error in head.Errors)
                 {
                     int errorId = error.ErrorId ?? m_errorDef.OtherErrorId;
 
-                    errorManager.AddError(errorId, error.ErrorPosition, error.ErrorArgument, error.ErrorArgument2);
+                    errorList.AddError(errorId, error.ErrorPosition, error.ErrorArgument, error.ErrorArgument2);
                 }
             }
 
@@ -68,6 +68,10 @@ namespace VBF.Compilers.Parsers
         {
             return new ResultInfo(m_acceptedHeads[index].Errors == null ? 0 : m_acceptedHeads[index].Errors.Count);
         }
+
+        public bool EnableReplacementRecovery { get; set; }
+        public bool EnableInsertionRecovery { get; set; }
+        public bool EnableDeletionRecovery { get; set; }
 
         public ParserEngine(TransitionTable transitions, SyntaxErrors errorDef)
         {
@@ -88,6 +92,9 @@ namespace VBF.Compilers.Parsers
             m_errorDef = errorDef;
 
             m_cleaner = new ParserHeadCleaner();
+            EnableDeletionRecovery = true;
+            EnableInsertionRecovery = true;
+            EnableReplacementRecovery = true;
 
             //init state
             m_heads.Add(new ParserHead(new StackNode(0, null, null)));
@@ -223,27 +230,7 @@ namespace VBF.Compilers.Parsers
 
             if (errorHeadCount > c_panicRecoveryThreshold)
             {
-                //Panic recovery
-                //to the 1st head:
-                //pop stack until there's a state S, which has a Goto action of a non-terminal A
-                //discard input until there's an token a in Follow(A)
-                //push Goto(s, A) into stack
-                //discard all other heads
-
-                m_heads.Clear();
-                m_heads.AddRange(shiftedHeads.Where(h => h.ErrorRecoverLevel == 0));
-                shiftedHeads.Clear();
-
-                ParserHead errorHead1 = m_errorCandidates[0];
-                m_errorCandidates.Clear();
-
-                IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span, z.IsEndOfStream);
-
-                var follow = (p as ProductionBase).Info.Follow;
-
-                m_heads.Add(errorHead1);
-
-                throw new PanicRecoverException(follow);
+                PerformPanicRecovery(z, shiftedHeads);
             }
 
             for (int i = 0; i < errorHeadCount; i++)
@@ -257,22 +244,61 @@ namespace VBF.Compilers.Parsers
                 {
                     //option 1: remove
                     //remove current token and continue
-                    var deleteHead = head.Clone();
+                    if (EnableDeletionRecovery)
+                    {
+                        var deleteHead = head.Clone();
 
-                    deleteHead.IncreaseErrorRecoverLevel();
-                    deleteHead.AddError(new ErrorRecord(m_errorDef.TokenUnexpectedId, z.Value.Span) { ErrorArgument = z.Value });
+                        deleteHead.IncreaseErrorRecoverLevel();
+                        deleteHead.AddError(new ErrorRecord(m_errorDef.TokenUnexpectedId, z.Value.Span) { ErrorArgument = z.Value });
 
-                    shiftedHeads.Add(deleteHead);
+                        shiftedHeads.Add(deleteHead); 
+                    }
 
-                    //option 2: replace
-                    //replace the current input char with all possible shifts token and continue
-                    ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId);
+                    if (EnableReplacementRecovery)
+                    {
+                        //option 2: replace
+                        //replace the current input char with all possible shifts token and continue
+                        ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId); 
+                    }
                 }
 
-                //option 3: insert
-                //insert all possible shifts token and continue
-                ReduceAndShiftForRecovery(z, head, m_heads, m_errorDef.TokenMissingId);
+                if (EnableInsertionRecovery)
+                {
+                    //option 3: insert
+                    //insert all possible shifts token and continue
+                    ReduceAndShiftForRecovery(z, head, m_heads, m_errorDef.TokenMissingId); 
+                }
+                else if(z.IsEndOfStream)
+                {
+                    //no other choices
+                    PerformPanicRecovery(z, shiftedHeads);
+                }
             }
+        }
+
+        private void PerformPanicRecovery(Lexeme z, List<ParserHead> shiftedHeads)
+        {
+            //Panic recovery
+            //to the 1st head:
+            //pop stack until there's a state S, which has a Goto action of a non-terminal A
+            //discard input until there's an token a in Follow(A)
+            //push Goto(s, A) into stack
+            //discard all other heads
+
+            m_heads.Clear();
+            m_heads.AddRange(shiftedHeads.Where(h => h.ErrorRecoverLevel == 0));
+            shiftedHeads.Clear();
+
+            ParserHead errorHead1 = m_errorCandidates[0];
+            m_errorCandidates.Clear();
+
+            IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span, z.IsEndOfStream);
+
+            var follow = (p as ProductionBase).Info.Follow;
+
+            m_heads.Add(errorHead1);
+
+            throw new PanicRecoverException(follow);
         }
 
         private void ReduceAndShiftForRecovery(Lexeme z, ParserHead head, IList<ParserHead> shiftTarget, int syntaxError)

@@ -25,7 +25,7 @@ namespace VBF.Compilers.Parsers
 
         private Lexicon m_lexicon;
         private ScannerInfo m_scannerInfo;
-        private Scanner m_scanner;
+        //private Scanner m_scanner;
         private ProductionInfoManager m_productionInfoManager;
         private SyntaxErrors m_errorDefinition;
 
@@ -42,7 +42,11 @@ namespace VBF.Compilers.Parsers
         protected ScannerInfo ScannerInfo { get { return m_scannerInfo; } }
         protected ProductionInfoManager ProductionInfoManager { get { return m_productionInfoManager; } }
         protected SyntaxErrors ErrorDefinitions { get { return m_errorDefinition; } }
-        protected Scanner Scanner { get { return m_scanner;  } }
+        //protected Scanner Scanner { get { return m_scanner; } }
+
+        public bool EnableReplacementRecovery { get; set; }
+        public bool EnableInsertionRecovery { get; set; }
+        public bool EnableDeletionRecovery { get; set; }
 
         /// <summary>
         /// Implement this method to define lexer
@@ -72,6 +76,10 @@ namespace VBF.Compilers.Parsers
             };
 
             m_triviaTokens = new List<Token>();
+
+            EnableReplacementRecovery = true;
+            EnableInsertionRecovery = true;
+            EnableDeletionRecovery = true;
         }
 
         public void Initialize()
@@ -104,12 +112,6 @@ namespace VBF.Compilers.Parsers
 
             OnDefineParserErrors(m_errorDefinition, m_errorManager);
 
-            m_scanner = new Scanner(m_scannerInfo);
-            m_scanner.SetTriviaTokens(m_triviaTokens.Select(t => t.Index).ToArray());
-            m_scanner.ErrorManager = m_errorManager;
-            m_scanner.RecoverErrors = true;
-            m_scanner.LexicalErrorId = m_errorDefinition.LexicalErrorId;
-
             m_isInitialized = true;
         }
 
@@ -141,7 +143,7 @@ namespace VBF.Compilers.Parsers
             errorManager.DefineError(errorDefinition.OtherErrorId, 0, CompilationStage.Parsing, "Syntax error");
         }
 
-        public T Parse(SourceReader source)
+        public T Parse(SourceReader source, CompilationErrorList errorList)
         {
             CodeContract.RequiresArgumentNotNull(source, "source");
 
@@ -150,11 +152,21 @@ namespace VBF.Compilers.Parsers
                 OnInitialize();
             }
 
-            Scanner scanner = m_scanner;
+            Scanner scanner;
+
+            scanner = new Scanner(m_scannerInfo);
+            scanner.SetTriviaTokens(m_triviaTokens.Select(t => t.Index).ToArray());
+            scanner.ErrorList = errorList;
+            scanner.RecoverErrors = true;
+            scanner.LexicalErrorId = m_errorDefinition.LexicalErrorId;
 
             scanner.SetSource(source);
 
             ParserEngine engine = new ParserEngine(m_transitionTable, m_errorDefinition);
+
+            engine.EnableDeletionRecovery = EnableDeletionRecovery;
+            engine.EnableInsertionRecovery = EnableInsertionRecovery;
+            engine.EnableReplacementRecovery = EnableReplacementRecovery;
 
             Lexeme r = scanner.Read();
             while (true)
@@ -209,21 +221,21 @@ namespace VBF.Compilers.Parsers
                 throw new ParsingFailureException("Multiple parsing results are found. There's ambiguity in your grammar");
             }
 
-            object result = engine.GetResult(0, m_errorManager);
+            object result = engine.GetResult(0, errorList);
 
             return (T)result;
         }
 
-        public T Parse(TextReader source)
+        public T Parse(TextReader source, CompilationErrorList errorList)
         {
             CodeContract.RequiresArgumentNotNull(source, "source");
-            return Parse(new SourceReader(source));
+            return Parse(new SourceReader(source), errorList);
         }
 
-        public T Parse(string source)
+        public T Parse(string source, CompilationErrorList errorList)
         {
             CodeContract.RequiresArgumentNotNull(source, "source");
-            return Parse(new StringReader(source));
+            return Parse(new StringReader(source), errorList);
         }
     }
 }

@@ -49,6 +49,7 @@ class Fac
             sw.Start();
 
             CompilationErrorManager errorManager = new CompilationErrorManager();
+            CompilationErrorList errorList = errorManager.CreateErrorList();
             MiniSharpParser p = new MiniSharpParser(errorManager);
             p.Initialize();
 
@@ -56,36 +57,39 @@ class Fac
             Console.WriteLine("Initialize time: {0} ms", sw.ElapsedMilliseconds);
             sw.Restart();
 
-            var ast = p.Parse(source);
+            var ast = p.Parse(source, errorList);
 
             sw.Stop();
             Console.WriteLine("Parsing time: {0} ms", sw.ElapsedMilliseconds);
             sw.Restart();
 
-            if (errorManager.Errors.Count != 0)
+            if (errorList.Count != 0)
             {
-                ReportErrors(errorManager);
+                ReportErrors(errorList);
                 return;
             }
 
             TypeDeclResolver resolver1 = new TypeDeclResolver(errorManager);
             resolver1.DefineErrors();
+            resolver1.ErrorList = errorList;
             resolver1.Visit(ast);
 
             MemberDeclResolver resolver2 = new MemberDeclResolver(errorManager, resolver1.Types);
             resolver2.DefineErrors();
+            resolver2.ErrorList = errorList;
             resolver2.Visit(ast);
 
             MethodBodyResolver resolver3 = new MethodBodyResolver(errorManager, resolver1.Types);
             resolver3.DefineErrors();
+            resolver3.ErrorList = errorList;
             resolver3.Visit(ast);
 
             sw.Stop();
             Console.WriteLine("Semantic analysis time: {0} ms", sw.ElapsedMilliseconds);
 
-            if (errorManager.Errors.Count != 0)
+            if (errorList.Count != 0)
             {
-                ReportErrors(errorManager);
+                ReportErrors(errorList);
                 return;
             }
 
@@ -98,11 +102,11 @@ class Fac
             ;
         }
 
-        private static void ReportErrors(CompilationErrorManager errorManager)
+        private static void ReportErrors(CompilationErrorList errorList)
         {
-            if (errorManager.Errors.Count > 0)
+            if (errorList.Count > 0)
             {
-                foreach (var error in errorManager.Errors.OrderBy(e => e.ErrorPosition.StartLocation.CharIndex))
+                foreach (var error in errorList.OrderBy(e => e.ErrorPosition.StartLocation.CharIndex))
                 {
                     Console.WriteLine(error.ToString());
                 }

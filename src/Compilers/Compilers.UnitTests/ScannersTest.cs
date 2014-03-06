@@ -566,7 +566,9 @@ namespace Compilers.UnitTests
             CompilationErrorManager em = new CompilationErrorManager();
             em.DefineError(101, 0, CompilationStage.Scanning, "Invalid token: {0}");
 
-            scanner.ErrorManager = em;
+            var el = em.CreateErrorList();
+
+            scanner.ErrorList = el;
             scanner.LexicalErrorId = 101;
 
             Lexeme l1 = scanner.Read();
@@ -575,13 +577,13 @@ namespace Compilers.UnitTests
             Lexeme l2 = scanner.Read();
             Assert.AreEqual(NUM.Index, l2.TokenIndex);
 
-            Assert.AreEqual(0, em.Errors.Count);
+            Assert.AreEqual(0, el.Count);
 
             Lexeme l3 = scanner.Read();
             Assert.AreEqual(ID.Index, l3.TokenIndex);
 
-            Assert.IsTrue(em.Errors.Count > 0);
-            Assert.AreEqual(101, em.Errors[0].Info.Id);
+            Assert.IsTrue(el.Count > 0);
+            Assert.AreEqual(101, el[0].Info.Id);
         }
     }
 }

@@ -14,6 +14,22 @@ namespace VBF.MiniSharp
         private CompilationErrorManager m_errorManager;
 
         private const int c_SE_TypeNameDuplicates = 301;
+
+        private CompilationErrorList m_errorList;
+
+        public CompilationErrorList ErrorList
+        {
+            get { return m_errorList; }
+            set { m_errorList = value; }
+        }
+
+        private void AddError(int errorId, SourceSpan errorPosition, params object[] args)
+        {
+            if (m_errorList != null)
+            {
+                m_errorList.AddError(errorId, errorPosition, args);
+            }
+        }
         
         public void DefineErrors()
         {
@@ -59,7 +75,7 @@ namespace VBF.MiniSharp
 
             if (m_types.Contains(name))
             {
-                m_errorManager.AddError(c_SE_TypeNameDuplicates, ast.Name.Span, name);
+                AddError(c_SE_TypeNameDuplicates, ast.Name.Span, name);
                 return ast;
             }
 

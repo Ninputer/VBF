@@ -9,23 +9,11 @@ namespace VBF.Compilers
     public class CompilationErrorManager
     {
         private CompilationErrorInfoCollection m_errorInfoStore;
-        private List<CompilationError> m_errors;
-        private ReadOnlyCollection<CompilationError> m_readOnlyErrors;
 
         public CompilationErrorManager()
         {
             m_errorInfoStore = new CompilationErrorInfoCollection();
-            m_errors = new List<CompilationError>();
-            m_readOnlyErrors = m_errors.AsReadOnly();
-        }
-
-        public ReadOnlyCollection<CompilationError> Errors
-        {
-            get
-            {
-                return m_readOnlyErrors;
-            }
-        }
+        }       
 
         public void DefineError(int id, int level, CompilationStage stage, string messageTemplate)
         {
@@ -40,19 +28,14 @@ namespace VBF.Compilers
             return m_errorInfoStore[id];
         }
 
-        public void AddError(int id, SourceSpan errorPosition, params object[] args)
+        public bool ContainsErrorDefinition(int id)
         {
-            CodeContract.RequiresArgumentInRange(m_errorInfoStore.Contains(id), "id", "Error id is invalid");
+            return m_errorInfoStore.Contains(id);
+        }        
 
-            var errorInfo = m_errorInfoStore[id];
-            var errorMessage = String.Format(errorInfo.MessageTemplate, args);
-
-            m_errors.Add(new CompilationError(errorInfo, errorPosition, errorMessage));
-        }
-
-        public void ClearErrors()
+        public CompilationErrorList CreateErrorList()
         {
-            m_errors.Clear();
+            return new CompilationErrorList(this);
         }
     }
 }
