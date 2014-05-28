@@ -448,12 +448,14 @@ namespace Compilers.UnitTests
         public void ParserBaseTest()
         {
             string source = "A((B(,),C(,)";
+            string correct = "A(B(,),C(,))";
             CompilationErrorManager em = new CompilationErrorManager();
 
             var parser = new TreeParser(em);
 
             var result = parser.Parse(source, em.CreateErrorList());
-            ;
+
+            Assert.AreEqual(correct, result.ToString());
         }
 
         class GetDef

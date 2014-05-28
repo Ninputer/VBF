@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VBF.Compilers.Parsers.Generator;
 using VBF.Compilers.Scanners;
@@ -102,6 +103,11 @@ namespace VBF.Compilers.Parsers
 
         public void Input(Lexeme z)
         {
+            Input(z, Task.Factory.CancellationToken);
+        }
+
+        public void Input(Lexeme z, CancellationToken ctoken)
+        {
             while (true)
             {
                 var heads = m_heads;
@@ -135,6 +141,8 @@ namespace VBF.Compilers.Parsers
 
                     while (shift != null)
                     {
+                        ctoken.ThrowIfCancellationRequested();
+
                         isShiftedOrReduced = true;
 
                         var newHead = head.Clone();
@@ -167,6 +175,8 @@ namespace VBF.Compilers.Parsers
 
                     while (reduce != null)
                     {
+                        ctoken.ThrowIfCancellationRequested();
+
                         isShiftedOrReduced = true;
 
                         int productionIndex = reduce.Value;
@@ -208,7 +218,7 @@ namespace VBF.Compilers.Parsers
                 else if (m_shiftedHeads.Count == 0 && m_acceptedHeads.Count == 0)
                 {
                     //no action for current lexeme, error recovery
-                    RecoverError(z);
+                    RecoverError(z, ctoken);
                 }
                 else
                 {
@@ -219,7 +229,7 @@ namespace VBF.Compilers.Parsers
             CleanShiftedAndAcceptedHeads();
         }
 
-        private void RecoverError(Lexeme z)
+        private void RecoverError(Lexeme z, CancellationToken ctoken)
         {
             List<ParserHead> shiftedHeads = m_shiftedHeads;
 
@@ -235,6 +245,8 @@ namespace VBF.Compilers.Parsers
 
             for (int i = 0; i < errorHeadCount; i++)
             {
+                ctoken.ThrowIfCancellationRequested();
+
                 var head = m_errorCandidates[i];
 
                 //restore stack before reduce, in case of an invalided reduce has been performed
@@ -258,7 +270,7 @@ namespace VBF.Compilers.Parsers
                     {
                         //option 2: replace
                         //replace the current input char with all possible shifts token and continue
-                        ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId); 
+                        ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId, ctoken); 
                     }
                 }
 
@@ -266,7 +278,7 @@ namespace VBF.Compilers.Parsers
                 {
                     //option 3: insert
                     //insert all possible shifts token and continue
-                    ReduceAndShiftForRecovery(z, head, m_heads, m_errorDef.TokenMissingId); 
+                    ReduceAndShiftForRecovery(z, head, m_heads, m_errorDef.TokenMissingId, ctoken); 
                 }
                 else if(z.IsEndOfStream)
                 {
@@ -301,7 +313,7 @@ namespace VBF.Compilers.Parsers
             throw new PanicRecoverException(follow);
         }
 
-        private void ReduceAndShiftForRecovery(Lexeme z, ParserHead head, IList<ParserHead> shiftTarget, int syntaxError)
+        private void ReduceAndShiftForRecovery(Lexeme z, ParserHead head, IList<ParserHead> shiftTarget, int syntaxError, CancellationToken ctoken)
         {
             Queue<ParserHead> recoverQueue = new Queue<ParserHead>();
 
@@ -332,6 +344,8 @@ namespace VBF.Compilers.Parsers
 
                     while (recoverShift != null)
                     {
+                        ctoken.ThrowIfCancellationRequested();
+
                         var insertHead = recoverHead.Clone();
 
                         var insertLexeme = z.GetErrorCorrectionLexeme(j, m_transitions.GetTokenDescription(j));
@@ -364,6 +378,8 @@ namespace VBF.Compilers.Parsers
 
                     while (recoverReduce != null)
                     {
+                        ctoken.ThrowIfCancellationRequested();
+
                         int productionIndex = recoverReduce.Value;
                         IProduction production = m_transitions.NonTerminals[productionIndex];
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VBF.Compilers.Parsers.Generator;
 using VBF.Compilers.Scanners;
@@ -145,6 +146,11 @@ namespace VBF.Compilers.Parsers
 
         public T Parse(SourceReader source, CompilationErrorList errorList)
         {
+            return Parse(source, errorList, Task.Factory.CancellationToken);
+        }
+
+        public T Parse(SourceReader source, CompilationErrorList errorList, CancellationToken ctoken)
+        {
             CodeContract.RequiresArgumentNotNull(source, "source");
 
             if (!m_isInitialized)
@@ -174,7 +180,7 @@ namespace VBF.Compilers.Parsers
                 try
                 {
 
-                    engine.Input(r);
+                    engine.Input(r, ctoken);
                 }
                 catch (PanicRecoverException prex)
                 {
@@ -232,10 +238,22 @@ namespace VBF.Compilers.Parsers
             return Parse(new SourceReader(source), errorList);
         }
 
+        public T Parse(TextReader source, CompilationErrorList errorList, CancellationToken ctoken)
+        {
+            CodeContract.RequiresArgumentNotNull(source, "source");
+            return Parse(new SourceReader(source), errorList, ctoken);
+        }
+
         public T Parse(string source, CompilationErrorList errorList)
         {
             CodeContract.RequiresArgumentNotNull(source, "source");
             return Parse(new StringReader(source), errorList);
+        }
+
+        public T Parse(string source, CompilationErrorList errorList, CancellationToken ctoken)
+        {
+            CodeContract.RequiresArgumentNotNull(source, "source");
+            return Parse(new StringReader(source), errorList, ctoken);
         }
     }
 }
