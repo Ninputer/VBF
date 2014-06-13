@@ -62,22 +62,19 @@ namespace VBF.Compilers.Parsers.Combinators
                     var r = context.StepResult(0, () => future(l)(scanner, context));
                     return r;
                 }
+                Lexeme correctionLexeme = l.GetErrorCorrectionLexeme(ExpectedToken.Index, MissingCorrection);
+                ErrorCorrection insertCorrection = new InsertedErrorCorrection(ExpectedToken.ToString(), correctionLexeme.Value.Span);
+
+                if (l.IsEndOfStream)
+                {
+                    scanner.Join(s1);
+                    return context.StepResult(1, () => future(correctionLexeme)(scanner, context), insertCorrection); //insert
+                }
                 else
                 {
-                    Lexeme correctionLexeme = l.GetErrorCorrectionLexeme(ExpectedToken.Index, MissingCorrection);
-                    ErrorCorrection insertCorrection = new InsertedErrorCorrection(ExpectedToken.ToString(), correctionLexeme.Value.Span);
-
-                    if (l.IsEndOfStream)
-                    {
-                        scanner.Join(s1);
-                        return context.StepResult(1, () => future(correctionLexeme)(scanner, context), insertCorrection); //insert
-                    }
-                    else
-                    {
-                        ErrorCorrection deleteCorrection = new DeletedErrorCorrection(l);
-                        return context.ChooseBest(context.StepResult(1, () => future(correctionLexeme)(s1, context), insertCorrection), //insert
-                            context.StepResult(1, () => scan(scanner, context), deleteCorrection)); //delete
-                    }
+                    ErrorCorrection deleteCorrection = new DeletedErrorCorrection(l);
+                    return context.ChooseBest(context.StepResult(1, () => future(correctionLexeme)(s1, context), insertCorrection), //insert
+                        context.StepResult(1, () => scan(scanner, context), deleteCorrection)); //delete
                 }
             };
 

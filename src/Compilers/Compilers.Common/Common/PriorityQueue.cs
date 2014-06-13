@@ -18,7 +18,7 @@ namespace VBF.Compilers.Common
 
         //return true if left is less/greater than right based on extreme type
         //less in Minimum mode, greater in maximum mode
-        private Func<T, T, bool> inRightOrder;
+        private Func<T, T, bool> m_inRightOrder;
         private List<T> m_binaryHeap;
         private Dictionary<T, int> m_indexDict;
 
@@ -40,17 +40,16 @@ namespace VBF.Compilers.Common
 
             m_comparer = comparer;
 
-            if (type == ExtremeType.Minimum)
+            switch (type)
             {
-                inRightOrder = Less;
-            }
-            else if (type == ExtremeType.Maximum)
-            {
-                inRightOrder = Greater;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("type", "ExtremeType can only be Minmun or Maximum");
+                case ExtremeType.Minimum:
+                    m_inRightOrder = Less;
+                    break;
+                case ExtremeType.Maximum:
+                    m_inRightOrder = Greater;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("type", "ExtremeType can only be Minmun or Maximum");
             }
 
             m_indexDict = new Dictionary<T, int>();
@@ -100,21 +99,20 @@ namespace VBF.Compilers.Common
 
         private void PercolateDown(int index)
         {
-            int child;
             int hole = index;
             T temp = m_binaryHeap[hole];
 
             while (hole * 2 <= m_size)
             {
-                child = hole * 2;
+                int child = hole * 2;
 
                 if (child != m_size &&
-                    inRightOrder(m_binaryHeap[child + 1], m_binaryHeap[child]))
+                    m_inRightOrder(m_binaryHeap[child + 1], m_binaryHeap[child]))
                 {
                     child++;
                 }
 
-                if (inRightOrder(m_binaryHeap[child], temp))
+                if (m_inRightOrder(m_binaryHeap[child], temp))
                 {
                     m_binaryHeap[hole] = m_binaryHeap[child];
                     m_indexDict[m_binaryHeap[hole]] = hole;
@@ -136,7 +134,7 @@ namespace VBF.Compilers.Common
             T temp = m_binaryHeap[index];
             int hole = index;
 
-            while (hole > 1 && inRightOrder(temp, m_binaryHeap[hole / 2]))
+            while (hole > 1 && m_inRightOrder(temp, m_binaryHeap[hole / 2]))
             {
                 m_binaryHeap[hole] = m_binaryHeap[hole / 2];
                 m_indexDict[m_binaryHeap[hole]] = hole;
@@ -217,7 +215,7 @@ namespace VBF.Compilers.Common
 
             m_binaryHeap[current] = newValue;
 
-            if (inRightOrder(newValue, originalValue))
+            if (m_inRightOrder(newValue, originalValue))
             {
                 //near extreme, go up
                 PercolateUp(current);

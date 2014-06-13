@@ -8,12 +8,12 @@ namespace VBF.Compilers.Parsers
 {
     public class EndOfStream : ProductionBase<Lexeme>
     {
-        private static EndOfStream s_Instance = new EndOfStream();
+        private static EndOfStream s_instance = new EndOfStream();
         public static EndOfStream Instance
         {
             get
             {
-                return s_Instance;
+                return s_instance;
             }
         }
 

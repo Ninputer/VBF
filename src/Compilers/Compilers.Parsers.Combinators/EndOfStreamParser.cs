@@ -20,11 +20,8 @@ namespace VBF.Compilers.Parsers.Combinators
                 {
                     return context.StepResult(0, () => future(l)(scanner, context));
                 }
-                else
-                {
-                    ErrorCorrection deleteCorrection = new DeletedErrorCorrection(l);
-                    return context.StepResult(1, () => scan(scanner, context), deleteCorrection); //delete to recover
-                }
+                ErrorCorrection deleteCorrection = new DeletedErrorCorrection(l);
+                return context.StepResult(1, () => scan(scanner, context), deleteCorrection); //delete to recover
             };
 
             return scan;

@@ -40,11 +40,6 @@ namespace VBF.Compilers.Parsers
             }
         }
 
-        public Production()
-        {
-
-        }
-
         public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
         {
             return Rule.Accept(visitor, argument);

@@ -306,11 +306,15 @@ namespace VBF.Compilers.Parsers
 
             IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span, z.IsEndOfStream);
 
-            var follow = (p as ProductionBase).Info.Follow;
+            ProductionBase productionBase = p as ProductionBase;
+            if (productionBase != null)
+            {
+                var follow = productionBase.Info.Follow;
 
-            m_heads.Add(errorHead1);
+                m_heads.Add(errorHead1);
 
-            throw new PanicRecoverException(follow);
+                throw new PanicRecoverException(follow);
+            }
         }
 
         private void ReduceAndShiftForRecovery(Lexeme z, ParserHead head, IList<ParserHead> shiftTarget, int syntaxError, CancellationToken ctoken)
@@ -328,16 +332,6 @@ namespace VBF.Compilers.Parsers
                     int recoverStateNumber = recoverHead.TopStackStateIndex;
 
                     var shiftLexer = m_transitions.GetLexersInShifting(recoverStateNumber);
-
-                    int tokenIndex;
-                    if (shiftLexer == null)
-                    {
-                        tokenIndex = z.TokenIndex;
-                    }
-                    else
-                    {
-                        tokenIndex = z.GetTokenIndex(shiftLexer.Value);
-                    }
 
                     var recoverShifts = m_transitions.GetShift(recoverStateNumber, j);
                     var recoverShift = recoverShifts;
@@ -363,15 +357,6 @@ namespace VBF.Compilers.Parsers
                     }
 
                     var reduceLexer = m_transitions.GetLexersInReducing(recoverStateNumber);
-
-                    if (reduceLexer == null)
-                    {
-                        tokenIndex = z.TokenIndex;
-                    }
-                    else
-                    {
-                        tokenIndex = z.GetTokenIndex(reduceLexer.Value);
-                    }
 
                     var recoverReduces = m_transitions.GetReduce(recoverStateNumber, j);
                     var recoverReduce = recoverReduces;

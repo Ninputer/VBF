@@ -101,7 +101,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return ChooseBest(result1, result2, 0);
         }
 
-        private Result<T> ChooseBest<T>(Result<T> result1, Result<T> result2, int correctionDepth)
+        private static Result<T> ChooseBest<T>(Result<T> result1, Result<T> result2, int correctionDepth)
         {
             if (result1.Type == ResultType.Stop)
             {

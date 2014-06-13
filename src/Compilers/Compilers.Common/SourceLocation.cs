@@ -26,7 +26,7 @@ namespace VBF.Compilers
             {
                 return 1;
             }
-            else if (lineDiff < 0)
+            if (lineDiff < 0)
             {
                 return -1;
             }
@@ -37,16 +37,13 @@ namespace VBF.Compilers
             {
                 return 1;
             }
-            else if (columnDiff < 0)
+            if (columnDiff < 0)
             {
                 return -1;
 
             }
-            else
-            {
-                //same line, same column.
-                return 0;
-            }
+            //same line, same column.
+            return 0;
         }
 
         public bool Equals(SourceLocation other)

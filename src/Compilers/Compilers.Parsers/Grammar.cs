@@ -322,7 +322,7 @@ namespace VBF.Compilers.Parsers
             return token.AsTerminal().Many();
         }
 
-        public static ProductionBase<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, ProductionBase<TSeparator> separator)
+        public static ProductionBase<IEnumerable<Lexeme>> Many<TSeparator>(this Token token, ProductionBase<TSeparator> separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "token");
 

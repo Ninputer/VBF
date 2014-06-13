@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.Scanners", "Compilers.Scanners\Compilers.Scanners.csproj", "{F8ECBF53-C1B2-412B-8322-9E3D6AAC66ED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilers.UnitTests", "Compilers.UnitTests\Compilers.UnitTests.csproj", "{BEF0BC9A-3CEF-4054-A496-2AE38FCC6F29}"

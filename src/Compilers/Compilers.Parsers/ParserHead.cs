@@ -17,7 +17,7 @@ namespace VBF.Compilers.Parsers
         //Indicates current error recover level
         //level = 0 means not error
         //level = 1 means recovered 1 error, etc
-        private int m_errorRecoverLevel = 0;
+        private int m_errorRecoverLevel;
         private List<ErrorRecord> m_errors;
 
         public bool IsAccepted { get; private set; }
@@ -80,17 +80,14 @@ namespace VBF.Compilers.Parsers
             {
                 return true;
             }
-            else if (other.m_errors == null || m_errors == null)
+            if (other.m_errors == null || m_errors == null)
             {
                 return false;
             }
-            else
-            {
-                HashSet<ErrorRecord> myErrors = new HashSet<ErrorRecord>(m_errors);
-                HashSet<ErrorRecord> otherErrors = new HashSet<ErrorRecord>(other.m_errors);
+            HashSet<ErrorRecord> myErrors = new HashSet<ErrorRecord>(m_errors);
+            HashSet<ErrorRecord> otherErrors = new HashSet<ErrorRecord>(other.m_errors);
 
-                return myErrors.SetEquals(otherErrors);
-            }
+            return myErrors.SetEquals(otherErrors);
         }
 
         public ParserHead(StackNode topStack)
@@ -135,7 +132,7 @@ namespace VBF.Compilers.Parsers
 
             if (production.AggregatesAmbiguities)
             {
-                AmbiguityAggregator = (production as ProductionBase).CreateAggregator();
+                AmbiguityAggregator = ((ProductionBase)production).CreateAggregator();
             }
 
             var reduceResult = production.Accept(reducer, m_topStack);
@@ -149,7 +146,7 @@ namespace VBF.Compilers.Parsers
 
                 if (reduceError.ErrorPosition == null)
                 {
-                    reduceError.ErrorPosition = lookahead.Value.Span;
+                    reduceError = new ErrorRecord(reduceError.ErrorId, lookahead.Value.Span);
                 }
 
                 AddError(reduceError);
@@ -193,7 +190,7 @@ namespace VBF.Compilers.Parsers
         {
             var prev1 = h1.m_topStack.PrevNode;
             var prev2 = h2.m_topStack.PrevNode;
-            if (prev1 != null && prev2 != null && Object.ReferenceEquals(prev1, prev2))
+            if (prev1 != null && prev2 != null && ReferenceEquals(prev1, prev2))
             {
                 return true;
             }
@@ -217,7 +214,7 @@ namespace VBF.Compilers.Parsers
                         if (isEos)
                         {
                             //the recoverNT must have EOS in its follow, otherwise continue
-                            var follow = (recoverNT as ProductionBase).Info.Follow;
+                            var follow = ((ProductionBase)recoverNT).Info.Follow;
 
                             if (!follow.Contains(EndOfStream.Instance))
                             {

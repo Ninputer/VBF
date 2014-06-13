@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -10,7 +11,7 @@ namespace VBF.Compilers.Scanners
     /// </summary>
     public class SymbolExpression : RegularExpression
     {
-        public new char Symbol { get; private set; }
+        public char Symbol { get; private set; }
 
         public SymbolExpression(char symbol)
             : base(RegularExpressionType.Symbol)
@@ -20,7 +21,7 @@ namespace VBF.Compilers.Scanners
 
         public override string ToString()
         {
-            return Symbol.ToString();
+            return Symbol.ToString(CultureInfo.InvariantCulture);
         }
 
         internal override Func<HashSet<char>>[] GetCompactableCharSets()
@@ -30,8 +31,7 @@ namespace VBF.Compilers.Scanners
 
         internal override HashSet<char> GetUncompactableCharSet()
         {
-            var result = new HashSet<char>();
-            result.Add(Symbol);
+            var result = new HashSet<char> {Symbol};
 
             return result;
         }

@@ -20,7 +20,7 @@ namespace VBF.Compilers
         //reverting service
         private StringBuilderReader m_backupReader;
         private StringBuilder m_backupStreamBuilder;
-        private int m_revertPointKeySeed = 0;
+        private int m_revertPointKeySeed;
         private RevertPointCollection m_revertPoints;
 
         public int TabSize { get; private set; }
@@ -57,13 +57,10 @@ namespace VBF.Compilers
                 {
                     return charValue;
                 }
-                else
+                //backup stream is empty
+                if (m_revertPoints.Count == 0)
                 {
-                    //backup stream is empty
-                    if (m_revertPoints.Count == 0)
-                    {
-                        DeleteBackupStream();
-                    }
+                    DeleteBackupStream();
                 }
             }
 

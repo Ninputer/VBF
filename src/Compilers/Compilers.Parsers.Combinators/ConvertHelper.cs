@@ -8,17 +8,17 @@ namespace VBF.Compilers.Parsers.Combinators
 {
     class ConvertHelper<TFrom, TTo>
     {
-        private static Func<TFrom, TTo> s_CastFunc;
+        private static Func<TFrom, TTo> s_castFunc;
 
         static ConvertHelper()
         {
             var source = Expression.Parameter(typeof(TFrom), "source");
-            s_CastFunc = Expression.Lambda<Func<TFrom, TTo>>(Expression.Convert(source, typeof(TTo)), source).Compile();
+            s_castFunc = Expression.Lambda<Func<TFrom, TTo>>(Expression.Convert(source, typeof(TTo)), source).Compile();
         }
 
         public static TTo Convert(TFrom source)
         {
-            return s_CastFunc(source);
+            return s_castFunc(source);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace VBF.Compilers.Scanners
     public class Scanner
     {
         //consts
-        private const int Skip = 1;
+        private const int c_skip = 1;
 
         //members
         private ScannerInfo m_scannerInfo;
@@ -78,7 +78,7 @@ namespace VBF.Compilers.Scanners
 
                 if (skipIndex >= 0 && skipIndex < m_tokenAttributes.Length)
                 {
-                    m_tokenAttributes[skipIndex] = Skip;
+                    m_tokenAttributes[skipIndex] = c_skip;
                 }
             }
         }
@@ -98,7 +98,6 @@ namespace VBF.Compilers.Scanners
             }
 
             //m_triviaCache.Clear();
-            bool isLastSkipped = false;
 
             while (true)
             {
@@ -117,53 +116,46 @@ namespace VBF.Compilers.Scanners
 
                     break;
                 }
-                else
+                while (true)
                 {
-                    while (true)
+                    int inputCharValue = m_source.PeekChar();
+
+                    if (inputCharValue < 0)
                     {
-                        int inputCharValue = m_source.PeekChar();
-
-                        if (inputCharValue < 0)
-                        {
-                            //end of stream, treat as stopped
-                            break;
-                        }
-
-                        char inputChar = (char)inputCharValue;
-                        m_engine.Input(inputChar);
-
-                        if (m_engine.IsAtStoppedState)
-                        {
-                            //stop immediately at a stopped state
-                            break;
-                        }
-                        else
-                        {
-                            m_lastState = m_engine.CurrentState;
-                        }
-
-                        m_source.ReadChar();
-                        m_lexemeValueBuilder.Append(inputChar);
-                    }
-
-                    //skip tokens that marked with "Skip" attribute
-                    isLastSkipped = IsLastTokenSkippable();
-
-                    if (isLastSkipped)
-                    {
-                        AddHistory(new Lexeme(m_scannerInfo, m_lastState,
-                            new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()), false);
-                    }
-                    else
-                    {
-                        AddHistory(new Lexeme(m_scannerInfo, m_lastState,
-                            new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()));
-
-
+                        //end of stream, treat as stopped
                         break;
                     }
+
+                    char inputChar = (char)inputCharValue;
+                    m_engine.Input(inputChar);
+
+                    if (m_engine.IsAtStoppedState)
+                    {
+                        //stop immediately at a stopped state
+                        break;
+                    }
+                    m_lastState = m_engine.CurrentState;
+
+                    m_source.ReadChar();
+                    m_lexemeValueBuilder.Append(inputChar);
                 }
 
+                //skip tokens that marked with "Skip" attribute
+                bool isLastSkipped = IsLastTokenSkippable();
+
+                if (isLastSkipped)
+                {
+                    AddHistory(new Lexeme(m_scannerInfo, m_lastState,
+                        new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()), false);
+                }
+                else
+                {
+                    AddHistory(new Lexeme(m_scannerInfo, m_lastState,
+                        new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()));
+
+
+                    break;
+                }
             }
 
             int lastTokenfullCursor = m_valuableHistory[m_valuableCursor - 1];
@@ -278,7 +270,7 @@ namespace VBF.Compilers.Scanners
                 return true;
             }
 
-            return acceptTokenIndex >= 0 && m_tokenAttributes[acceptTokenIndex] == Skip;
+            return acceptTokenIndex >= 0 && m_tokenAttributes[acceptTokenIndex] == c_skip;
         }
 
         private Lexeme PeekLexeme(int lookAhead)

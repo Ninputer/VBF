@@ -8,7 +8,7 @@ using System.Diagnostics;
 namespace VBF.Compilers.Parsers.Combinators
 {
     public delegate Result<T> ParserFunc<T>(ForkableScanner scanner, ParserContext context);
-    public delegate ParserFunc<TFuture> Future<T, TFuture>(T value);
+    public delegate ParserFunc<TFuture> Future<in T, TFuture>(T value);
 
     public abstract class Parser<T>
     {
@@ -23,7 +23,7 @@ namespace VBF.Compilers.Parsers.Combinators
         {
             CodeContract.RequiresArgumentNotNull(this, "parser");
 
-            return new MappingParser<T, TResult>(this, t => ConvertHelper<T, TResult>.Convert(t));
+            return new MappingParser<T, TResult>(this, ConvertHelper<T, TResult>.Convert);
         }
 
         public Parser<TResult> TryCast<TResult>()

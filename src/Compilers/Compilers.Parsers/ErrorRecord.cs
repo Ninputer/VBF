@@ -8,8 +8,8 @@ namespace VBF.Compilers.Parsers
 {
     internal class ErrorRecord
     {
-        public int? ErrorId;
-        public SourceSpan ErrorPosition;
+        public readonly int? ErrorId;
+        public readonly SourceSpan ErrorPosition;
         public Object ErrorArgument;
         public Object ErrorArgument2;
 
@@ -29,7 +29,8 @@ namespace VBF.Compilers.Parsers
 
             return ErrorId == other.ErrorId &&
                 Object.Equals(ErrorPosition, other.ErrorPosition) &&
-                Object.Equals(ErrorArgument, other.ErrorArgument);
+                Object.Equals(ErrorArgument, other.ErrorArgument) &&
+                Object.Equals(ErrorArgument2, other.ErrorArgument2);
         }
 
         public override int GetHashCode()

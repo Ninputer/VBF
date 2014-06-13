@@ -29,7 +29,6 @@ namespace VBF.Compilers.Common
         {
             int[] last = new int[m_string1.Length + 1];
             int[] current = new int[m_string1.Length + 1];
-            int[] temp = null;
 
             //initialize last (row[0])
             for (int i = 0; i <= m_string1.Length; i++)
@@ -51,7 +50,7 @@ namespace VBF.Compilers.Common
                 }
 
                 //swap odd/even
-                temp = current;
+                int[] temp = current;
                 current = last;
                 last = temp;
             }

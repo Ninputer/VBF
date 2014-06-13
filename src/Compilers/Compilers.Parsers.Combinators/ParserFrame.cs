@@ -20,7 +20,7 @@ namespace VBF.Compilers.Parsers.Combinators
         private readonly int m_unexpectedTokenErrorId;
         private readonly int m_lexicalErrorId;
 
-        private bool m_isInitialized = false;
+        private bool m_isInitialized;
         private List<Token> m_triviaTokens;
 
         protected ParserFrame(CompilationErrorManager errorManager, int lexicalErrorId, int missingTokenErrorId, int unexpectedTokenErrorId)

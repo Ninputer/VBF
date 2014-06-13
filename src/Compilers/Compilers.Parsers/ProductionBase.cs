@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using VBF.Compilers.Parsers.Generator;
@@ -42,12 +43,9 @@ namespace VBF.Compilers.Parsers
             {
                 if (Info != null)
                 {
-                    return Info.Index.ToString();
+                    return Info.Index.ToString(CultureInfo.InvariantCulture);
                 }
-                else
-                {
-                    return String.Empty;
-                }
+                return String.Empty;
             }
         }
 

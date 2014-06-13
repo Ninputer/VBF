@@ -30,22 +30,19 @@ namespace VBF.Compilers.Parsers
             m_transitions = transitions;
         }
 
-        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitTerminal(Terminal terminal, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitTerminal(Terminal terminal, StackNode topStack)
         {
             throw new NotSupportedException("No need to reduce terminals");
         }
 
-        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitMapping<TSource, TReturn>(MappingProduction<TSource, TReturn> mappingProduction, StackNode topStack)
         {
-            ErrorRecord ReduceError = null;
-
-            StackNode topStack = TopStack;
-            StackNode poppedTopStack;
+            ErrorRecord reduceError = null;
 
             var info = ((ProductionBase)mappingProduction).Info;
 
             //pop one
-            poppedTopStack = topStack.PrevNode;
+            StackNode poppedTopStack = topStack.PrevNode;
 
             //reduce
             var result = mappingProduction.Selector((TSource)topStack.ReducedValue);
@@ -81,7 +78,7 @@ namespace VBF.Compilers.Parsers
                     }
 
                     //generates error
-                    ReduceError = new ErrorRecord(mappingProduction.ValidationErrorId, position);
+                    reduceError = new ErrorRecord(mappingProduction.ValidationErrorId, position);
                 }
             }
 
@@ -91,15 +88,15 @@ namespace VBF.Compilers.Parsers
             //perform goto
             StackNode reduceNode = new StackNode(gotoAction, poppedTopStack, result);
 
-            return new ReduceResult(reduceNode, ReduceError);
+            return new ReduceResult(reduceNode, reduceError);
         }
 
-        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitEndOfStream(EndOfStream endOfStream, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitEndOfStream(EndOfStream endOfStream, StackNode topStack)
         {
             throw new NotSupportedException("No need to reduce terminal EOS");
         }
 
-        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitEmpty<T>(EmptyProduction<T> emptyProduction, StackNode topStack)
         {
             var info = ((ProductionBase)emptyProduction).Info;
 
@@ -107,32 +104,30 @@ namespace VBF.Compilers.Parsers
             var result = emptyProduction.Value;
 
             //compute goto
-            var gotoAction = m_transitions.GetGoto(TopStack.StateIndex, info.NonTerminalIndex);
+            var gotoAction = m_transitions.GetGoto(topStack.StateIndex, info.NonTerminalIndex);
 
             //perform goto
-            StackNode reduceNode = new StackNode(gotoAction, TopStack, result);
+            StackNode reduceNode = new StackNode(gotoAction, topStack, result);
 
             return new ReduceResult(reduceNode);
         }
 
-        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitAlternation<T>(AlternationProduction<T> alternationProduction, StackNode topStack)
         {
            
             var info = ((ProductionBase)alternationProduction).Info;            
 
             //compute goto
-            var gotoAction = m_transitions.GetGoto(TopStack.PrevNode.StateIndex, info.NonTerminalIndex);
+            var gotoAction = m_transitions.GetGoto(topStack.PrevNode.StateIndex, info.NonTerminalIndex);
 
             //perform goto
-            StackNode reduceNode = new StackNode(gotoAction, TopStack.PrevNode, TopStack.ReducedValue);
+            StackNode reduceNode = new StackNode(gotoAction, topStack.PrevNode, topStack.ReducedValue);
 
             return new ReduceResult(reduceNode);
         }
 
-        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, StackNode TopStack)
+        ReduceResult IProductionVisitor<StackNode, ReduceResult>.VisitConcatenation<T1, T2, TR>(ConcatenationProduction<T1, T2, TR> concatenationProduction, StackNode topStack)
         {
-            StackNode topStack = TopStack;
-            StackNode poppedTopStack;
 
             var info = ((ProductionBase)concatenationProduction).Info;
 
@@ -143,7 +138,7 @@ namespace VBF.Compilers.Parsers
 
             var val1 = topStack.ReducedValue;
 
-            poppedTopStack = topStack.PrevNode;
+            StackNode poppedTopStack = topStack.PrevNode;
 
             //reduce
             var result = concatenationProduction.Selector((T1)val1, (T2)val2);

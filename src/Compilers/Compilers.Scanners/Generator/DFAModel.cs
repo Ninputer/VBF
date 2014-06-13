@@ -118,7 +118,7 @@ namespace VBF.Compilers.Scanners.Generator
                                 select lexerState).ToArray();
 
 
-            if (acceptStates != null && acceptStates.Length > 0)
+            if (acceptStates.Length > 0)
             {
                 Queue<Lexer> stateTreeQueue = new Queue<Lexer>();
 
@@ -157,14 +157,14 @@ namespace VBF.Compilers.Scanners.Generator
             AddDFAState(state0);
 
             //state 1 is closure(nfaState[0])
-            DFAState pre_state1 = new DFAState();
+            DFAState preState1 = new DFAState();
             int nfaStartIndex = m_nfa.EntryEdge.TargetState.Index;
 
             Debug.Assert(nfaStartIndex >= 0);
 
-            pre_state1.NFAStateSet.Add(nfaStartIndex);
+            preState1.NFAStateSet.Add(nfaStartIndex);
 
-            DFAState state1 = GetClosure(pre_state1);
+            DFAState state1 = GetClosure(preState1);
             AddDFAState(state1);
 
             //begin algorithm

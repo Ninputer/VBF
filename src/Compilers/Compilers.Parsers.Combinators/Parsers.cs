@@ -172,7 +172,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return token.AsParser().Many();
         }
 
-        public static Parser<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Parser<TSeparator> separator)
+        public static Parser<IEnumerable<Lexeme>> Many<TSeparator>(this Token token, Parser<TSeparator> separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "parser");
 
@@ -186,7 +186,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return parser.Many(separator.AsParser());
         }
 
-        public static Parser<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Token separator)
+        public static Parser<IEnumerable<Lexeme>> Many(this Token token, Token separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "parser");
 
