@@ -36,6 +36,11 @@ VBF is a set of tools/libraries for compilers. It has seperated libraries for sc
 
 * For additional sample, please refer to NotBasic project: https://github.com/Ninputer/notbasic
 
+#### License
+
+All components and samples of this software are released under Apache License 2.0
+You can find a copy of license under the root directory
+
 #### Other information
 * Chinese blog: http://ninputer.cnblogs.com/
 * Chinese Weibo: http://weibo.com/ninputer
