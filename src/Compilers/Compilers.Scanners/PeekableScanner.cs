@@ -1,15 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 
 namespace VBF.Compilers.Scanners
 {
     [Obsolete("Please use VBF.Compilers.Scanners.Scanner class instead")]
     public class PeekableScanner
     {
-        private Scanner m_masterScanner;
         private CacheQueue<Lexeme> m_lookAheadQueue;
+        private Scanner m_masterScanner;
 
         public PeekableScanner(ScannerInfo scannerInfo)
         {
@@ -17,6 +30,50 @@ namespace VBF.Compilers.Scanners
 
             m_lookAheadQueue = new CacheQueue<Lexeme>();
             m_masterScanner = new Scanner(scannerInfo);
+        }
+
+        public ScannerInfo ScannerInfo
+        {
+            get
+            {
+                return m_masterScanner.ScannerInfo;
+            }
+        }
+
+        public CompilationErrorList ErrorList
+        {
+            get
+            {
+                return m_masterScanner.ErrorList;
+            }
+            set
+            {
+                m_masterScanner.ErrorList = value;
+            }
+        }
+
+        public bool RecoverErrors
+        {
+            get
+            {
+                return m_masterScanner.RecoverErrors;
+            }
+            set
+            {
+                m_masterScanner.RecoverErrors = value;
+            }
+        }
+
+        public int LexicalErrorId
+        {
+            get
+            {
+                return m_masterScanner.LexicalErrorId;
+            }
+            set
+            {
+                m_masterScanner.LexicalErrorId = value;
+            }
         }
 
         public int Peek()
@@ -68,14 +125,6 @@ namespace VBF.Compilers.Scanners
             return m_masterScanner.Read();
         }
 
-        public ScannerInfo ScannerInfo
-        {
-            get
-            {
-                return m_masterScanner.ScannerInfo;
-            }
-        }
-
         public void SetSource(SourceReader source)
         {
             if (m_lookAheadQueue.Count > 0)
@@ -94,42 +143,6 @@ namespace VBF.Compilers.Scanners
             }
 
             m_masterScanner.SetTriviaTokens(triviaTokenIndices);
-        }
-
-        public CompilationErrorList ErrorList
-        {
-            get
-            {
-                return m_masterScanner.ErrorList;
-            }
-            set
-            {
-                m_masterScanner.ErrorList = value;
-            }
-        }
-
-        public bool RecoverErrors
-        {
-            get
-            {
-                return m_masterScanner.RecoverErrors;
-            }
-            set
-            {
-                m_masterScanner.RecoverErrors = value;
-            }
-        }
-
-        public int LexicalErrorId
-        {
-            get
-            {
-                return m_masterScanner.LexicalErrorId;
-            }
-            set
-            {
-                m_masterScanner.LexicalErrorId = value;
-            }
         }
     }
 }

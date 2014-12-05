@@ -1,8 +1,22 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VBF.Compilers.Parsers.Generator;
@@ -14,65 +28,19 @@ namespace VBF.Compilers.Parsers
     {
         private const int c_panicRecoveryThreshold = 2048;
 
-        private TransitionTable m_transitions;
-        private ReduceVisitor m_reducer;
-
-        private List<ParserHead> m_heads;
-        private List<ParserHead> m_shiftedHeads;
-        private List<ParserHead> m_reducedHeads;
-        private List<ParserHead> m_recoverReducedHeads;
-        private List<ParserHead> m_tempHeads;
-        private List<ParserHead> m_errorCandidates;
         private List<ParserHead> m_acceptedHeads;
 
         ParserHeadCleaner m_cleaner;
+        private List<ParserHead> m_errorCandidates;
 
         private SyntaxErrors m_errorDef;
-
-        public int CurrentStackCount
-        {
-            get
-            {
-                return m_heads.Count;
-            }
-        }
-
-        public int AcceptedCount
-        {
-            get
-            {
-                return m_acceptedHeads.Count;
-            }
-        }
-
-        public object GetResult(int index, CompilationErrorList errorList)
-        {
-            CodeContract.RequiresArgumentInRange(index >= 0 && index < m_acceptedHeads.Count, "index", "index is out of range");
-
-            var head = m_acceptedHeads[index];
-
-            if (head.Errors != null && errorList != null)
-            {
-                //aggregate errors
-                foreach (var error in head.Errors)
-                {
-                    int errorId = error.ErrorId ?? m_errorDef.OtherErrorId;
-
-                    errorList.AddError(errorId, error.ErrorPosition, error.ErrorArgument, error.ErrorArgument2);
-                }
-            }
-
-            return head.TopStackValue;
-        }
-
-        public ResultInfo GetResultInfo(int index)
-        {
-            return new ResultInfo(m_acceptedHeads[index].Errors == null ? 0 : m_acceptedHeads[index].Errors.Count);
-        }
-
-        public bool EnableReplacementRecovery { get; set; }
-        public bool EnableInsertionRecovery { get; set; }
-        public bool EnableDeletionRecovery { get; set; }
+        private List<ParserHead> m_heads;
+        private List<ParserHead> m_recoverReducedHeads;
+        private List<ParserHead> m_reducedHeads;
+        private ReduceVisitor m_reducer;
+        private List<ParserHead> m_shiftedHeads;
+        private List<ParserHead> m_tempHeads;
+        private TransitionTable m_transitions;
 
         public ParserEngine(TransitionTable transitions, SyntaxErrors errorDef)
         {
@@ -99,6 +67,51 @@ namespace VBF.Compilers.Parsers
 
             //init state
             m_heads.Add(new ParserHead(new StackNode(0, null, null)));
+        }
+
+        public int CurrentStackCount
+        {
+            get
+            {
+                return m_heads.Count;
+            }
+        }
+
+        public int AcceptedCount
+        {
+            get
+            {
+                return m_acceptedHeads.Count;
+            }
+        }
+
+        public bool EnableReplacementRecovery { get; set; }
+        public bool EnableInsertionRecovery { get; set; }
+        public bool EnableDeletionRecovery { get; set; }
+
+        public object GetResult(int index, CompilationErrorList errorList)
+        {
+            CodeContract.RequiresArgumentInRange(index >= 0 && index < m_acceptedHeads.Count, "index", "index is out of range");
+
+            var head = m_acceptedHeads[index];
+
+            if (head.Errors != null && errorList != null)
+            {
+                //aggregate errors
+                foreach (var error in head.Errors)
+                {
+                    int errorId = error.ErrorId ?? m_errorDef.OtherErrorId;
+
+                    errorList.AddError(errorId, error.ErrorPosition, error.ErrorArgument, error.ErrorArgument2);
+                }
+            }
+
+            return head.TopStackValue;
+        }
+
+        public ResultInfo GetResultInfo(int index)
+        {
+            return new ResultInfo(m_acceptedHeads[index].Errors == null ? 0 : m_acceptedHeads[index].Errors.Count);
         }
 
         public void Input(Lexeme z)

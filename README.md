@@ -38,7 +38,7 @@ VBF is a set of tools/libraries for compilers. It has seperated libraries for sc
 
 #### License
 
-All components and samples of this software are released under Apache License 2.0
+All components and samples of this software are distributed under Apache License 2.0
 You can find a copy of license under the root directory
 
 #### Other information

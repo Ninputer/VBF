@@ -1,8 +1,24 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
@@ -12,28 +28,22 @@ namespace VBF.Compilers.Scanners
         private const int c_skip = 1;
 
         //members
-        private ScannerInfo m_scannerInfo;
 
         private FiniteAutomationEngine m_engine;
-        private SourceReader m_source;
+        //private List<Lexeme> m_triviaCache;
+        private List<Lexeme> m_fullHistory;
+        private HistoryList m_historyList;
 
+        private int m_lastNotSkippedLexemeIndex;
         private int m_lastState;
         private SourceLocation m_lastTokenStart;
         private StringBuilder m_lexemeValueBuilder;
-        //private List<Lexeme> m_triviaCache;
-        private List<Lexeme> m_fullHistory;
-        private List<int> m_valuableHistory;
-        private HistoryList m_historyList;
-
-        private int m_valuableCursor;
-
-        private int m_lastNotSkippedLexemeIndex;
+        private ScannerInfo m_scannerInfo;
+        private SourceReader m_source;
 
         private int[] m_tokenAttributes;
-
-        public CompilationErrorList ErrorList { get; set; }
-        public bool RecoverErrors { get; set; }
-        public int LexicalErrorId { get; set; }
+        private int m_valuableCursor;
+        private List<int> m_valuableHistory;
 
         public Scanner(ScannerInfo scannerInfo)
         {
@@ -44,6 +54,31 @@ namespace VBF.Compilers.Scanners
             m_tokenAttributes = new int[scannerInfo.TokenCount];
 
             Initialize();
+        }
+
+        public CompilationErrorList ErrorList { get; set; }
+        public bool RecoverErrors { get; set; }
+        public int LexicalErrorId { get; set; }
+
+        public ScannerInfo ScannerInfo
+        {
+            get { return m_scannerInfo; }
+        }
+
+        public int ReadingIndex
+        {
+            get
+            {
+                return m_valuableCursor;
+            }
+        }        
+
+        public IReadOnlyList<Lexeme> History
+        {
+            get
+            {
+                return m_historyList;
+            }
         }
 
         private void Initialize()
@@ -81,11 +116,6 @@ namespace VBF.Compilers.Scanners
                     m_tokenAttributes[skipIndex] = c_skip;
                 }
             }
-        }
-
-        public ScannerInfo ScannerInfo
-        {
-            get { return m_scannerInfo; }
         }
 
         public Lexeme Read()
@@ -180,22 +210,6 @@ namespace VBF.Compilers.Scanners
                 {
                     Read();
                 }
-            }
-        }
-
-        public int ReadingIndex
-        {
-            get
-            {
-                return m_valuableCursor;
-            }
-        }        
-
-        public IReadOnlyList<Lexeme> History
-        {
-            get
-            {
-                return m_historyList;
             }
         }
 

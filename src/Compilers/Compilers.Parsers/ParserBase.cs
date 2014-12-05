@@ -1,8 +1,23 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VBF.Compilers.Parsers.Generator;
@@ -16,28 +31,48 @@ namespace VBF.Compilers.Parsers
     /// <typeparam name="T">The type of parser result</typeparam>
     public abstract class ParserBase<T>
     {
-        private TransitionTable m_transitionTable;
+        private SyntaxErrors m_errorDefinition;
         private CompilationErrorManager m_errorManager;
+        private bool m_isInitialized = false;
+
+        private Lexicon m_lexicon;
+        //private Scanner m_scanner;
+        private ProductionInfoManager m_productionInfoManager;
+        private ScannerInfo m_scannerInfo;
+        private TransitionTable m_transitionTable;
+
+        private List<Token> m_triviaTokens;
+
+        protected ParserBase(CompilationErrorManager errorManager)
+        {
+            CodeContract.RequiresArgumentNotNull(errorManager, "errorManager");
+
+            m_errorManager = errorManager;
+            m_errorDefinition = new SyntaxErrors()
+            {
+                LexicalErrorId = 101,
+                TokenUnexpectedId = 201,
+                TokenMissingId = 202,
+                TokenMistakeId = 203,
+                OtherErrorId = 200
+            };
+
+            m_triviaTokens = new List<Token>();
+
+            EnableReplacementRecovery = true;
+            EnableInsertionRecovery = true;
+            EnableDeletionRecovery = true;
+        }
 
         public CompilationErrorManager ErrorManager
         {
             get { return m_errorManager; }
         }
 
-        private Lexicon m_lexicon;
-        private ScannerInfo m_scannerInfo;
-        //private Scanner m_scanner;
-        private ProductionInfoManager m_productionInfoManager;
-        private SyntaxErrors m_errorDefinition;
-
-        private bool m_isInitialized = false;
-
         public bool IsInitialized
         {
             get { return m_isInitialized; }
         }
-
-        private List<Token> m_triviaTokens;
 
         protected Lexicon Lexicon { get { return m_lexicon; } }
         protected ScannerInfo ScannerInfo { get { return m_scannerInfo; } }
@@ -61,27 +96,6 @@ namespace VBF.Compilers.Parsers
         /// </summary>
         /// <returns>The root production of the grammar.</returns>
         protected abstract ProductionBase<T> OnDefineGrammar();
-
-        protected ParserBase(CompilationErrorManager errorManager)
-        {
-            CodeContract.RequiresArgumentNotNull(errorManager, "errorManager");
-
-            m_errorManager = errorManager;
-            m_errorDefinition = new SyntaxErrors()
-            {
-                LexicalErrorId = 101,
-                TokenUnexpectedId = 201,
-                TokenMissingId = 202,
-                TokenMistakeId = 203,
-                OtherErrorId = 200
-            };
-
-            m_triviaTokens = new List<Token>();
-
-            EnableReplacementRecovery = true;
-            EnableInsertionRecovery = true;
-            EnableDeletionRecovery = true;
-        }
 
         public void Initialize()
         {
@@ -107,7 +121,7 @@ namespace VBF.Compilers.Parsers
             }
 
             var rootProduction = production.SuffixedBy(Grammar.Eos());
-            m_productionInfoManager = new Generator.ProductionInfoManager(rootProduction);
+            m_productionInfoManager = new ProductionInfoManager(rootProduction);
 
             m_transitionTable = OnCreateTransitionTable(OnCreateAutomaton(m_productionInfoManager), m_scannerInfo);
 

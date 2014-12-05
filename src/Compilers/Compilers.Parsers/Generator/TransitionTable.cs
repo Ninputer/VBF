@@ -1,8 +1,21 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers.Generator
@@ -11,7 +24,6 @@ namespace VBF.Compilers.Parsers.Generator
 
     public class ActionListNode<T> : IEnumerable<T>
     {
-        public T Value { get; private set; }
         private ActionListNode<T> m_nextNode;
 
         public ActionListNode(T value)
@@ -19,17 +31,7 @@ namespace VBF.Compilers.Parsers.Generator
             Value = value;
         }
 
-        public ActionListNode<T> Append(ActionListNode<T> next)
-        {
-            m_nextNode = next;
-
-            return m_nextNode;
-        }
-
-        public ActionListNode<T> GetNext()
-        {
-            return m_nextNode;
-        }
+        public T Value { get; private set; }
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -42,9 +44,21 @@ namespace VBF.Compilers.Parsers.Generator
             } while (currentNode != null);
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public ActionListNode<T> Append(ActionListNode<T> next)
+        {
+            m_nextNode = next;
+
+            return m_nextNode;
+        }
+
+        public ActionListNode<T> GetNext()
+        {
+            return m_nextNode;
         }
 
         internal static void AppendToLast(ref ActionListNode<T> list, T value)
@@ -70,17 +84,12 @@ namespace VBF.Compilers.Parsers.Generator
 
     public class TransitionTable
     {
-        public int TokenCount { get; private set; }
-        public int StateCount { get; private set; }
-        public int ProductionCount { get; private set; }
-
-        private int[,] m_gotoTable;
-        private ActionListNode<int>[,] m_shiftTable;
-        private ActionListNode<int>[,] m_reduceTable;
-        private IProduction[] m_nonTerminals;
-        private string[] m_tokenDescriptions;
-
         private int m_acceptProductionIndex;
+        private int[,] m_gotoTable;
+        private IProduction[] m_nonTerminals;
+        private ActionListNode<int>[,] m_reduceTable;
+        private ActionListNode<int>[,] m_shiftTable;
+        private string[] m_tokenDescriptions;
 
         private TransitionTable(int tokenCount, int stateCount, int productionCount, string[] tokenDescriptions)
         {
@@ -92,6 +101,18 @@ namespace VBF.Compilers.Parsers.Generator
             m_shiftTable = new ActionListNode<int>[stateCount, tokenCount + 1];
             m_reduceTable = new ActionListNode<int>[stateCount, tokenCount + 1];
             m_tokenDescriptions = tokenDescriptions;
+        }
+
+        public int TokenCount { get; private set; }
+        public int StateCount { get; private set; }
+        public int ProductionCount { get; private set; }
+
+        public IReadOnlyList<IProduction> NonTerminals
+        {
+            get
+            {
+                return m_nonTerminals;
+            }
         }
 
         public ActionListNode<int> GetLexersInShifting(int state)
@@ -117,14 +138,6 @@ namespace VBF.Compilers.Parsers.Generator
         public ActionListNode<int> GetReduce(int state, int tokenIndex)
         {
             return m_reduceTable[state, tokenIndex];
-        }
-
-        public IReadOnlyList<IProduction> NonTerminals
-        {
-            get
-            {
-                return m_nonTerminals;
-            }
         }
 
         public string GetTokenDescription(int tokenIndex)

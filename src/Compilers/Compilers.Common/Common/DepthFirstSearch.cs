@@ -1,8 +1,21 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace VBF.Compilers.Common
 {
@@ -10,13 +23,14 @@ namespace VBF.Compilers.Common
 
     public class DepthFirstSearch<T>
     {
-        protected struct DFSInfo
-        {
-            public int PreIndex;
-            public int PostIndex;
-            public int PrevNodeIndex;
-            public int ComponentNumber;
-        }
+        private ChildrenGetter<T> m_childrenGetter;
+        private int m_componentNumber;
+        private Dictionary<T, int> m_nodeIndexLookup;
+        private T[] m_nodes;
+        private DFSInfo[] m_nodesInfo;
+        private int m_postClock;
+        private int m_preClock;
+        private bool[] m_visited;
 
         public DepthFirstSearch(IEnumerable<T> nodes, ChildrenGetter<T> childrenGetter)
         {
@@ -36,12 +50,6 @@ namespace VBF.Compilers.Common
             }
         }
 
-        private ChildrenGetter<T> m_childrenGetter;
-        private DFSInfo[] m_nodesInfo;
-        private T[] m_nodes;
-        private bool[] m_visited;
-        private Dictionary<T, int> m_nodeIndexLookup;
-
         protected T[] Nodes
         {
             get
@@ -57,9 +65,6 @@ namespace VBF.Compilers.Common
                 return m_nodesInfo;
             }
         }
-
-        private int m_preClock;
-        private int m_postClock;
 
         protected virtual void PreVisit(int nodeIndex)
         {
@@ -92,8 +97,6 @@ namespace VBF.Compilers.Common
 
             PostVisit(nodeIndex);
         }
-
-        private int m_componentNumber;
 
         public void Start()
         {
@@ -131,6 +134,12 @@ namespace VBF.Compilers.Common
             return m_nodeIndexLookup[node];
         }
 
-       
+        protected struct DFSInfo
+        {
+            public int ComponentNumber;
+            public int PostIndex;
+            public int PreIndex;
+            public int PrevNodeIndex;
+        }
     }
 }

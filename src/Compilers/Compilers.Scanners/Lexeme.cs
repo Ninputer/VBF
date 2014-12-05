@@ -1,22 +1,32 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
-using System.Collections.ObjectModel;
 
 namespace VBF.Compilers.Scanners
 {
     [DebuggerDisplay("Token:{TokenIndex} {Value.ToString()}")]
     public sealed class Lexeme
     {
+        private static readonly Lexeme[] s_emptyTrivia = new Lexeme[0];
         private ScannerInfo m_scannerInfo;
         private int m_stateIndex;
         private IReadOnlyList<Lexeme> m_trivia;
-
-        private static readonly Lexeme[] s_emptyTrivia = new Lexeme[0];
-
-        public LexemeValue Value { get; private set; }
 
         internal Lexeme(ScannerInfo scannerInfo, int state, SourceSpan span, string content)
         {
@@ -27,10 +37,7 @@ namespace VBF.Compilers.Scanners
             m_trivia = s_emptyTrivia;
         }
 
-        internal void SetTrivia(IReadOnlyList<Lexeme> trivia)
-        {
-            m_trivia = trivia;
-        }
+        public LexemeValue Value { get; private set; }
 
         public int TokenIndex
         {
@@ -48,17 +55,22 @@ namespace VBF.Compilers.Scanners
             }
         }
 
-        public int GetTokenIndex(int lexerState)
-        {
-            return m_scannerInfo.GetTokenIndex(m_stateIndex, lexerState);
-        }
-
         public bool IsEndOfStream
         {
             get
             {
                 return m_stateIndex == m_scannerInfo.EndOfStreamState;
             }
+        }
+
+        internal void SetTrivia(IReadOnlyList<Lexeme> trivia)
+        {
+            m_trivia = trivia;
+        }
+
+        public int GetTokenIndex(int lexerState)
+        {
+            return m_scannerInfo.GetTokenIndex(m_stateIndex, lexerState);
         }
 
         public Lexeme GetErrorCorrectionLexeme(int expectedTokenIndex, string expectedValue)

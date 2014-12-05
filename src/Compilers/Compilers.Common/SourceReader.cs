@@ -1,9 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Diagnostics;
+using System.IO;
+using System.Text;
 
 namespace VBF.Compilers
 {
@@ -11,19 +25,14 @@ namespace VBF.Compilers
     {
         public const int DefaultTabSize = 4;
 
-        private TextReader m_textReader;
-
-        //scanner location service
-        private SourceLocation m_location;
-        private SourceLocation m_lastLocation;
-
         //reverting service
         private StringBuilderReader m_backupReader;
         private StringBuilder m_backupStreamBuilder;
+        private SourceLocation m_lastLocation;
+        private SourceLocation m_location;
         private int m_revertPointKeySeed;
         private RevertPointCollection m_revertPoints;
-
-        public int TabSize { get; private set; }
+        private TextReader m_textReader;
 
         public SourceReader(TextReader textReader, int tabSize)
         {
@@ -38,12 +47,21 @@ namespace VBF.Compilers
         }
 
         public SourceReader(TextReader textReader) : this(textReader, DefaultTabSize) { }
+        public int TabSize { get; private set; }
 
         public bool IsEndOfStream
         {
             get
             {
                 return PeekChar() < 0;
+            }
+        }
+
+        public SourceLocation Location
+        {
+            get
+            {
+                return m_lastLocation;
             }
         }
 
@@ -109,14 +127,6 @@ namespace VBF.Compilers
             }
 
             return charValue;
-        }
-
-        public SourceLocation Location
-        {
-            get
-            {
-                return m_lastLocation;
-            }
         }
 
         public RevertPoint CreateRevertPoint()
