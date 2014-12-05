@@ -226,5 +226,29 @@ namespace Compilers.UnitTests
                 last = curr;
             }
         }
+
+        [Test]
+        public void PriorityQueueDuplicateElementsTest()
+        {
+            var values = new[] { 3, 3, 3, 5, 3, 3, 3, 3 };
+            var maxpq = new PriorityQueue<int>(ExtremeType.Maximum);
+
+            Assert.IsTrue(maxpq.IsEmpty);
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                maxpq.Insert(values[i]);
+            }
+
+            Assert.AreEqual(5, maxpq.DeleteExtreme());
+
+
+            while (!maxpq.IsEmpty)
+            {
+                int curr = maxpq.DeleteExtreme();
+
+                Assert.AreEqual(3, curr);
+            }
+        }
     }
 }
