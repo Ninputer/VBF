@@ -1,16 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 
 namespace VBF.Compilers
 {
     public struct SourceLocation : IEquatable<SourceLocation>, IComparable<SourceLocation>
     {
-        public int Line { get; internal set; }
-        public int Column { get; internal set; }
-        public int CharIndex { get; internal set; }
-
         public SourceLocation(int index, int line, int column)
             : this()
         {
@@ -19,6 +28,10 @@ namespace VBF.Compilers
             Column = column;
         }
 
+        public int Line { get; internal set; }
+        public int Column { get; internal set; }
+        public int CharIndex { get; internal set; }
+
         public int CompareTo(SourceLocation other)
         {
             var lineDiff = Line - other.Line;
@@ -26,7 +39,7 @@ namespace VBF.Compilers
             {
                 return 1;
             }
-            else if (lineDiff < 0)
+            if (lineDiff < 0)
             {
                 return -1;
             }
@@ -37,16 +50,13 @@ namespace VBF.Compilers
             {
                 return 1;
             }
-            else if (columnDiff < 0)
+            if (columnDiff < 0)
             {
                 return -1;
 
             }
-            else
-            {
-                //same line, same column.
-                return 0;
-            }
+            //same line, same column.
+            return 0;
         }
 
         public bool Equals(SourceLocation other)

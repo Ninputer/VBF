@@ -1,47 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers
 {
     public class EndOfStream : ProductionBase<Lexeme>
     {
-        private static EndOfStream s_Instance = new EndOfStream();
-        public static EndOfStream Instance
-        {
-            get
-            {
-                return s_Instance;
-            }
-        }
+        private static EndOfStream s_instance = new EndOfStream();
 
         private EndOfStream()
         {
 
         }
 
-        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
+        public static EndOfStream Instance
         {
-            return visitor.VisitEndOfStream(this, argument);
-        }
-
-        public override bool Equals(object obj)
-        {
-            var otherEos = obj as EndOfStream;
-
-            if (otherEos != null)
+            get
             {
-                return true;
+                return s_instance;
             }
-
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return -3177;
         }
 
         public override bool IsTerminal
@@ -66,6 +57,28 @@ namespace VBF.Compilers.Parsers
             {
                 return "$";
             }
+        }
+
+        public override TResult Accept<TArg, TResult>(IProductionVisitor<TArg, TResult> visitor, TArg argument)
+        {
+            return visitor.VisitEndOfStream(this, argument);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var otherEos = obj as EndOfStream;
+
+            if (otherEos != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return -3177;
         }
 
         public override string ToString()

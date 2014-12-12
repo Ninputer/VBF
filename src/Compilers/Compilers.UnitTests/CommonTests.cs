@@ -1,9 +1,21 @@
-﻿using NUnit.Framework;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NUnit.Framework;
 using VBF.Compilers.Common;
 
 namespace Compilers.UnitTests
@@ -11,17 +23,6 @@ namespace Compilers.UnitTests
     [TestFixture]
     public class CommonTests
     {
-        [Test]
-        public void EditDistanceEqualTest()
-        {
-            const string str1 = "abc";
-            const string str2 = "abc";
-
-            var ed = StringHelpers.EditDistance(str1, str2);
-
-            Assert.AreEqual(0, ed);
-        }
-
         [Test]
         public void EditDistanceAdd1Test()
         {
@@ -34,25 +35,14 @@ namespace Compilers.UnitTests
         }
 
         [Test]
-        public void EditDistanceRemove1Test()
+        public void EditDistanceEqualTest()
         {
             const string str1 = "abc";
-            const string str2 = "ac";
+            const string str2 = "abc";
 
             var ed = StringHelpers.EditDistance(str1, str2);
 
-            Assert.AreEqual(1, ed);
-        }
-
-        [Test]
-        public void EditDistanceReplace1Test()
-        {
-            const string str1 = "abc";
-            const string str2 = "ebc";
-
-            var ed = StringHelpers.EditDistance(str1, str2);
-
-            Assert.AreEqual(1, ed);
+            Assert.AreEqual(0, ed);
         }
 
         [Test]
@@ -78,62 +68,33 @@ namespace Compilers.UnitTests
         }
 
         [Test]
+        public void EditDistanceRemove1Test()
+        {
+            const string str1 = "abc";
+            const string str2 = "ac";
+
+            var ed = StringHelpers.EditDistance(str1, str2);
+
+            Assert.AreEqual(1, ed);
+        }
+
+        [Test]
+        public void EditDistanceReplace1Test()
+        {
+            const string str1 = "abc";
+            const string str2 = "ebc";
+
+            var ed = StringHelpers.EditDistance(str1, str2);
+
+            Assert.AreEqual(1, ed);
+        }
+
+        [Test]
         public void EditDistanceZeroLengthTest()
         {
             var ed = StringHelpers.EditDistance(String.Empty, String.Empty);
 
             Assert.AreEqual(0, ed);
-        }
-
-        [Test]
-        public void PriorityQueueMinTest()
-        {
-            var minpq = new PriorityQueue<int>(new[] { 3, 7, 1, 4, 5, 2, 9, 6 }, ExtremeType.Minimum);
-
-            int last = 0;
-
-            while (!minpq.IsEmpty)
-            {
-                int curr = minpq.DeleteExtreme();
-
-                Assert.Greater(curr, last);
-
-                last = curr;
-            }
-        }
-
-        [Test]
-        public void PriorityQueueMaxTest()
-        {
-            var maxpq = new PriorityQueue<int>(new[] { 3, 7, 1, 4, 5, 2, 9, 6 }, ExtremeType.Maximum);
-
-            int last = Int32.MaxValue;
-
-            while (!maxpq.IsEmpty)
-            {
-                int curr = maxpq.DeleteExtreme();
-
-                Assert.Less(curr, last);
-
-                last = curr;
-            }
-        }
-
-        [Test]
-        public void PriorityQueueMinFloatTest()
-        {
-            var minpq = new PriorityQueue<float>(new[] { 0.3f, 0.7f, 0.1f, 0.4f, 0.5f, 0.2f, 0.9f, 0.6f }, ExtremeType.Minimum);
-
-            float last = 0.0f;
-
-            while (!minpq.IsEmpty)
-            {
-                float curr = minpq.DeleteExtreme();
-
-                Assert.Greater(curr, last);
-
-                last = curr;
-            }
         }
 
         [Test]
@@ -161,6 +122,30 @@ namespace Compilers.UnitTests
                 Assert.Greater(curr, last);
 
                 last = curr;
+            }
+        }
+
+        [Test]
+        public void PriorityQueueDuplicateElementsTest()
+        {
+            var values = new[] { 3, 3, 3, 5, 3, 3, 3, 3 };
+            var maxpq = new PriorityQueue<int>(ExtremeType.Maximum);
+
+            Assert.IsTrue(maxpq.IsEmpty);
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                maxpq.Insert(values[i]);
+            }
+
+            Assert.AreEqual(5, maxpq.DeleteExtreme());
+
+
+            while (!maxpq.IsEmpty)
+            {
+                int curr = maxpq.DeleteExtreme();
+
+                Assert.AreEqual(3, curr);
             }
         }
 
@@ -222,6 +207,57 @@ namespace Compilers.UnitTests
                 int curr = maxpq.DeleteExtreme();
 
                 Assert.Less(curr, last);
+
+                last = curr;
+            }
+        }
+
+        [Test]
+        public void PriorityQueueMaxTest()
+        {
+            var maxpq = new PriorityQueue<int>(new[] { 3, 7, 1, 4, 5, 2, 9, 6 }, ExtremeType.Maximum);
+
+            int last = Int32.MaxValue;
+
+            while (!maxpq.IsEmpty)
+            {
+                int curr = maxpq.DeleteExtreme();
+
+                Assert.Less(curr, last);
+
+                last = curr;
+            }
+        }
+
+        [Test]
+        public void PriorityQueueMinFloatTest()
+        {
+            var minpq = new PriorityQueue<float>(new[] { 0.3f, 0.7f, 0.1f, 0.4f, 0.5f, 0.2f, 0.9f, 0.6f }, ExtremeType.Minimum);
+
+            float last = 0.0f;
+
+            while (!minpq.IsEmpty)
+            {
+                float curr = minpq.DeleteExtreme();
+
+                Assert.Greater(curr, last);
+
+                last = curr;
+            }
+        }
+
+        [Test]
+        public void PriorityQueueMinTest()
+        {
+            var minpq = new PriorityQueue<int>(new[] { 3, 7, 1, 4, 5, 2, 9, 6 }, ExtremeType.Minimum);
+
+            int last = 0;
+
+            while (!minpq.IsEmpty)
+            {
+                int curr = minpq.DeleteExtreme();
+
+                Assert.Greater(curr, last);
 
                 last = curr;
             }

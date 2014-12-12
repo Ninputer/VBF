@@ -1,7 +1,21 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using VBF.Compilers.Scanners;
 
 namespace VBF.Compilers.Parsers.Combinators
@@ -172,7 +186,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return token.AsParser().Many();
         }
 
-        public static Parser<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Parser<TSeparator> separator)
+        public static Parser<IEnumerable<Lexeme>> Many<TSeparator>(this Token token, Parser<TSeparator> separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "parser");
 
@@ -186,7 +200,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return parser.Many(separator.AsParser());
         }
 
-        public static Parser<IEnumerable<Lexeme>> Many<T, TSeparator>(this Token token, Token separator)
+        public static Parser<IEnumerable<Lexeme>> Many(this Token token, Token separator)
         {
             CodeContract.RequiresArgumentNotNull(token, "parser");
 

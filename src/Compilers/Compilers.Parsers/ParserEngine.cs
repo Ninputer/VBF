@@ -1,8 +1,23 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VBF.Compilers.Parsers.Generator;
 using VBF.Compilers.Scanners;
@@ -13,65 +28,19 @@ namespace VBF.Compilers.Parsers
     {
         private const int c_panicRecoveryThreshold = 2048;
 
-        private TransitionTable m_transitions;
-        private ReduceVisitor m_reducer;
-
-        private List<ParserHead> m_heads;
-        private List<ParserHead> m_shiftedHeads;
-        private List<ParserHead> m_reducedHeads;
-        private List<ParserHead> m_recoverReducedHeads;
-        private List<ParserHead> m_tempHeads;
-        private List<ParserHead> m_errorCandidates;
         private List<ParserHead> m_acceptedHeads;
 
         ParserHeadCleaner m_cleaner;
+        private List<ParserHead> m_errorCandidates;
 
         private SyntaxErrors m_errorDef;
-
-        public int CurrentStackCount
-        {
-            get
-            {
-                return m_heads.Count;
-            }
-        }
-
-        public int AcceptedCount
-        {
-            get
-            {
-                return m_acceptedHeads.Count;
-            }
-        }
-
-        public object GetResult(int index, CompilationErrorList errorList)
-        {
-            CodeContract.RequiresArgumentInRange(index >= 0 && index < m_acceptedHeads.Count, "index", "index is out of range");
-
-            var head = m_acceptedHeads[index];
-
-            if (head.Errors != null && errorList != null)
-            {
-                //aggregate errors
-                foreach (var error in head.Errors)
-                {
-                    int errorId = error.ErrorId ?? m_errorDef.OtherErrorId;
-
-                    errorList.AddError(errorId, error.ErrorPosition, error.ErrorArgument, error.ErrorArgument2);
-                }
-            }
-
-            return head.TopStackValue;
-        }
-
-        public ResultInfo GetResultInfo(int index)
-        {
-            return new ResultInfo(m_acceptedHeads[index].Errors == null ? 0 : m_acceptedHeads[index].Errors.Count);
-        }
-
-        public bool EnableReplacementRecovery { get; set; }
-        public bool EnableInsertionRecovery { get; set; }
-        public bool EnableDeletionRecovery { get; set; }
+        private List<ParserHead> m_heads;
+        private List<ParserHead> m_recoverReducedHeads;
+        private List<ParserHead> m_reducedHeads;
+        private ReduceVisitor m_reducer;
+        private List<ParserHead> m_shiftedHeads;
+        private List<ParserHead> m_tempHeads;
+        private TransitionTable m_transitions;
 
         public ParserEngine(TransitionTable transitions, SyntaxErrors errorDef)
         {
@@ -100,7 +69,57 @@ namespace VBF.Compilers.Parsers
             m_heads.Add(new ParserHead(new StackNode(0, null, null)));
         }
 
+        public int CurrentStackCount
+        {
+            get
+            {
+                return m_heads.Count;
+            }
+        }
+
+        public int AcceptedCount
+        {
+            get
+            {
+                return m_acceptedHeads.Count;
+            }
+        }
+
+        public bool EnableReplacementRecovery { get; set; }
+        public bool EnableInsertionRecovery { get; set; }
+        public bool EnableDeletionRecovery { get; set; }
+
+        public object GetResult(int index, CompilationErrorList errorList)
+        {
+            CodeContract.RequiresArgumentInRange(index >= 0 && index < m_acceptedHeads.Count, "index", "index is out of range");
+
+            var head = m_acceptedHeads[index];
+
+            if (head.Errors != null && errorList != null)
+            {
+                //aggregate errors
+                foreach (var error in head.Errors)
+                {
+                    int errorId = error.ErrorId ?? m_errorDef.OtherErrorId;
+
+                    errorList.AddError(errorId, error.ErrorPosition, error.ErrorArgument, error.ErrorArgument2);
+                }
+            }
+
+            return head.TopStackValue;
+        }
+
+        public ResultInfo GetResultInfo(int index)
+        {
+            return new ResultInfo(m_acceptedHeads[index].Errors == null ? 0 : m_acceptedHeads[index].Errors.Count);
+        }
+
         public void Input(Lexeme z)
+        {
+            Input(z, Task.Factory.CancellationToken);
+        }
+
+        public void Input(Lexeme z, CancellationToken ctoken)
         {
             while (true)
             {
@@ -135,6 +154,8 @@ namespace VBF.Compilers.Parsers
 
                     while (shift != null)
                     {
+                        ctoken.ThrowIfCancellationRequested();
+
                         isShiftedOrReduced = true;
 
                         var newHead = head.Clone();
@@ -167,6 +188,8 @@ namespace VBF.Compilers.Parsers
 
                     while (reduce != null)
                     {
+                        ctoken.ThrowIfCancellationRequested();
+
                         isShiftedOrReduced = true;
 
                         int productionIndex = reduce.Value;
@@ -208,7 +231,7 @@ namespace VBF.Compilers.Parsers
                 else if (m_shiftedHeads.Count == 0 && m_acceptedHeads.Count == 0)
                 {
                     //no action for current lexeme, error recovery
-                    RecoverError(z);
+                    RecoverError(z, ctoken);
                 }
                 else
                 {
@@ -219,7 +242,7 @@ namespace VBF.Compilers.Parsers
             CleanShiftedAndAcceptedHeads();
         }
 
-        private void RecoverError(Lexeme z)
+        private void RecoverError(Lexeme z, CancellationToken ctoken)
         {
             List<ParserHead> shiftedHeads = m_shiftedHeads;
 
@@ -235,6 +258,8 @@ namespace VBF.Compilers.Parsers
 
             for (int i = 0; i < errorHeadCount; i++)
             {
+                ctoken.ThrowIfCancellationRequested();
+
                 var head = m_errorCandidates[i];
 
                 //restore stack before reduce, in case of an invalided reduce has been performed
@@ -258,7 +283,7 @@ namespace VBF.Compilers.Parsers
                     {
                         //option 2: replace
                         //replace the current input char with all possible shifts token and continue
-                        ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId); 
+                        ReduceAndShiftForRecovery(z, head, shiftedHeads, m_errorDef.TokenMistakeId, ctoken); 
                     }
                 }
 
@@ -266,7 +291,7 @@ namespace VBF.Compilers.Parsers
                 {
                     //option 3: insert
                     //insert all possible shifts token and continue
-                    ReduceAndShiftForRecovery(z, head, m_heads, m_errorDef.TokenMissingId); 
+                    ReduceAndShiftForRecovery(z, head, m_heads, m_errorDef.TokenMissingId, ctoken); 
                 }
                 else if(z.IsEndOfStream)
                 {
@@ -294,14 +319,18 @@ namespace VBF.Compilers.Parsers
 
             IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span, z.IsEndOfStream);
 
-            var follow = (p as ProductionBase).Info.Follow;
+            ProductionBase productionBase = p as ProductionBase;
+            if (productionBase != null)
+            {
+                var follow = productionBase.Info.Follow;
 
-            m_heads.Add(errorHead1);
+                m_heads.Add(errorHead1);
 
-            throw new PanicRecoverException(follow);
+                throw new PanicRecoverException(follow);
+            }
         }
 
-        private void ReduceAndShiftForRecovery(Lexeme z, ParserHead head, IList<ParserHead> shiftTarget, int syntaxError)
+        private void ReduceAndShiftForRecovery(Lexeme z, ParserHead head, IList<ParserHead> shiftTarget, int syntaxError, CancellationToken ctoken)
         {
             Queue<ParserHead> recoverQueue = new Queue<ParserHead>();
 
@@ -317,21 +346,13 @@ namespace VBF.Compilers.Parsers
 
                     var shiftLexer = m_transitions.GetLexersInShifting(recoverStateNumber);
 
-                    int tokenIndex;
-                    if (shiftLexer == null)
-                    {
-                        tokenIndex = z.TokenIndex;
-                    }
-                    else
-                    {
-                        tokenIndex = z.GetTokenIndex(shiftLexer.Value);
-                    }
-
                     var recoverShifts = m_transitions.GetShift(recoverStateNumber, j);
                     var recoverShift = recoverShifts;
 
                     while (recoverShift != null)
                     {
+                        ctoken.ThrowIfCancellationRequested();
+
                         var insertHead = recoverHead.Clone();
 
                         var insertLexeme = z.GetErrorCorrectionLexeme(j, m_transitions.GetTokenDescription(j));
@@ -350,20 +371,13 @@ namespace VBF.Compilers.Parsers
 
                     var reduceLexer = m_transitions.GetLexersInReducing(recoverStateNumber);
 
-                    if (reduceLexer == null)
-                    {
-                        tokenIndex = z.TokenIndex;
-                    }
-                    else
-                    {
-                        tokenIndex = z.GetTokenIndex(reduceLexer.Value);
-                    }
-
                     var recoverReduces = m_transitions.GetReduce(recoverStateNumber, j);
                     var recoverReduce = recoverReduces;
 
                     while (recoverReduce != null)
                     {
+                        ctoken.ThrowIfCancellationRequested();
+
                         int productionIndex = recoverReduce.Value;
                         IProduction production = m_transitions.NonTerminals[productionIndex];
 

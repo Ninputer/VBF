@@ -1,112 +1,122 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using VBF.Compilers;
-using VBF.Compilers.Scanners;
-using VBF.Compilers.Parsers.Combinators;
-using RE = VBF.Compilers.Scanners.RegularExpression;
 using System.Globalization;
+using System.Linq;
+using VBF.Compilers;
+using VBF.Compilers.Parsers.Combinators;
+using VBF.Compilers.Scanners;
 using VBF.MiniSharp.Ast;
+using RE = VBF.Compilers.Scanners.RegularExpression;
+using Type = VBF.MiniSharp.Ast.Type;
+
 namespace VBF.MiniSharp.CombinatorParser
 {
-    public class MiniSharpParser : ParserFrame<Ast.Program>
+    public class MiniSharpParser : ParserFrame<Program>
     {
-        public MiniSharpParser(CompilationErrorManager errorManager) : base(errorManager, 101, 201, 202) { }
-
         //keywords
-        private Token K_CLASS;
-        private Token K_PUBLIC;
-        private Token K_STATIC;
-        private Token K_VOID;
-        private Token K_MAIN;
-        private Token K_STRING;
-        private Token K_RETURN;
-        private Token K_INT;
-        private Token K_BOOL;
-        private Token K_IF;
-        private Token K_ELSE;
-        private Token K_WHILE;
-        private Token K_SYSTEM;
-        private Token K_CONSOLE;
-        private Token K_WRITELINE;
-        private Token K_LENGTH;
-        private Token K_TRUE;
-        private Token K_FALSE;
-        private Token K_THIS;
-        private Token K_NEW;
-
-        //id and literals
+        private Token ASSIGN; // =
+        private Token ASTERISK; // *
+        private Token COLON; // :
+        private Token COMMA; // ,
+        private Token COMMENT;
+        private Token DOT; // .
+        private Token EQUAL; // ==
+        private Token GREATER; // >
         private Token ID; //identifier
         private Token INTEGER_LITERAL; //integer literal
-
-        //symbols
-        private Token LOGICAL_AND; // &&
-        private Token LOGICAL_OR; // ||
-        private Token LOGICAL_NOT; // !
-        private Token LESS; // <
-        private Token GREATER; // >
-        private Token EQUAL; // ==
-        private Token ASSIGN; // =
-        private Token PLUS; // +
-        private Token MINUS; // -
-        private Token ASTERISK; // *
-        private Token SLASH; // /
-        private Token LEFT_PH; // (
-        private Token RIGHT_PH; // )
+        private Token K_BOOL;
+        private Token K_CLASS;
+        private Token K_CONSOLE;
+        private Token K_ELSE;
+        private Token K_FALSE;
+        private Token K_IF;
+        private Token K_INT;
+        private Token K_LENGTH;
+        private Token K_MAIN;
+        private Token K_NEW;
+        private Token K_PUBLIC;
+        private Token K_RETURN;
+        private Token K_STATIC;
+        private Token K_STRING;
+        private Token K_SYSTEM;
+        private Token K_THIS;
+        private Token K_TRUE;
+        private Token K_VOID;
+        private Token K_WHILE;
+        private Token K_WRITELINE;
         private Token LEFT_BK; // [
-        private Token RIGHT_BK; // ]
         private Token LEFT_BR; // {
-        private Token RIGHT_BR; // }
-        private Token COMMA; // ,
-        private Token COLON; // :
-        private Token SEMICOLON; // ;
-        private Token DOT; // .
-
-        //skips
-        private Token WHITESPACE;
-        private Token COMMENT;
+        private Token LEFT_PH; // (
+        private Token LESS; // <
         private Token LINE_BREAKER;
+        private Token LOGICAL_AND; // &&
+        private Token LOGICAL_NOT; // !
+        private Token LOGICAL_OR; // ||
+        private Token MINUS; // -
+        private ParserReference<Expression> PAnd = new ParserReference<Expression>();
+        private ParserReference<Statement> PArrayAssignment = new ParserReference<Statement>();
+        private ParserReference<Func<Expression, Expression>> PArrayLength = new ParserReference<Func<Expression, Expression>>();
+        private ParserReference<Func<Expression, Expression>> PArrayLookup = new ParserReference<Func<Expression, Expression>>();
+        private ParserReference<Statement> PAssignment = new ParserReference<Statement>();
+        private ParserReference<Expression> PBoolLiteral = new ParserReference<Expression>();
+        private ParserReference<Type> PBoolType = new ParserReference<Type>();
+        private ParserReference<Func<Expression, Expression>> PCall = new ParserReference<Func<Expression, Expression>>();
 
         //grammar
-        private ParserReference<Program> PProgram = new ParserReference<Program>();
-        private ParserReference<MainClass> PMainClass = new ParserReference<MainClass>();
         private ParserReference<ClassDecl> PClassDecl = new ParserReference<ClassDecl>();
-        private ParserReference<FieldDecl> PFieldDecl = new ParserReference<FieldDecl>();
-        private ParserReference<MethodDecl> PMethodDecl = new ParserReference<MethodDecl>();
-        private ParserReference<Formal[]> PFormalList = new ParserReference<Formal[]>();
-        private ParserReference<Ast.Type> PType = new ParserReference<Ast.Type>();
-        private ParserReference<Ast.Type> PIntArrayType = new ParserReference<Ast.Type>();
-        private ParserReference<Ast.Type> PBoolType = new ParserReference<Ast.Type>();
-        private ParserReference<Ast.Type> PIntType = new ParserReference<Ast.Type>();
-        private ParserReference<Ast.Type> PIdType = new ParserReference<Ast.Type>();
-        private ParserReference<Statement> PStatement = new ParserReference<Statement>();
-        private ParserReference<Statement> PIfElse = new ParserReference<Statement>();
-        private ParserReference<Statement> PWhile = new ParserReference<Statement>();
-        private ParserReference<Statement> PWriteLine = new ParserReference<Statement>();
-        private ParserReference<Statement> PAssignment = new ParserReference<Statement>();
-        private ParserReference<Statement> PArrayAssignment = new ParserReference<Statement>();
-        private ParserReference<Statement> PVarDeclStmt = new ParserReference<Statement>();
-        private ParserReference<Expression> PExp = new ParserReference<Expression>();
-        private ParserReference<Expression> PFactor = new ParserReference<Expression>();
-        private ParserReference<Expression> PTerm = new ParserReference<Expression>();
         private ParserReference<Expression> PComparand = new ParserReference<Expression>();
         private ParserReference<Expression> PComparison = new ParserReference<Expression>();
-        private ParserReference<Expression> PAnd = new ParserReference<Expression>();
-        private ParserReference<Expression> POr = new ParserReference<Expression>();
-        private ParserReference<Expression> PNot = new ParserReference<Expression>();
-        private ParserReference<Expression> PVariable = new ParserReference<Expression>();
-        private ParserReference<Expression> PThis = new ParserReference<Expression>();
-        private ParserReference<Func<Expression, Expression>> PArrayLookup = new ParserReference<Func<Expression, Expression>>();
-        private ParserReference<Func<Expression, Expression>> PArrayLength = new ParserReference<Func<Expression, Expression>>();
-        private ParserReference<Func<Expression, Expression>> PCall = new ParserReference<Func<Expression, Expression>>();
-        private ParserReference<Expression> PNumberLiteral = new ParserReference<Expression>();
-        private ParserReference<Expression> PBoolLiteral = new ParserReference<Expression>();
-        private ParserReference<Expression> PNewObj = new ParserReference<Expression>();
-        private ParserReference<Expression> PNewArray = new ParserReference<Expression>();
+        private ParserReference<Expression> PExp = new ParserReference<Expression>();
         private ParserReference<Expression[]> PExpList = new ParserReference<Expression[]>();
+        private ParserReference<Expression> PFactor = new ParserReference<Expression>();
+        private ParserReference<FieldDecl> PFieldDecl = new ParserReference<FieldDecl>();
+        private ParserReference<Formal[]> PFormalList = new ParserReference<Formal[]>();
+        private ParserReference<Type> PIdType = new ParserReference<Type>();
+        private ParserReference<Statement> PIfElse = new ParserReference<Statement>();
+        private ParserReference<Type> PIntArrayType = new ParserReference<Type>();
+        private ParserReference<Type> PIntType = new ParserReference<Type>();
+        private Token PLUS; // +
+        private ParserReference<MainClass> PMainClass = new ParserReference<MainClass>();
+        private ParserReference<MethodDecl> PMethodDecl = new ParserReference<MethodDecl>();
+        private ParserReference<Expression> PNewArray = new ParserReference<Expression>();
+        private ParserReference<Expression> PNewObj = new ParserReference<Expression>();
+        private ParserReference<Expression> PNot = new ParserReference<Expression>();
+        private ParserReference<Expression> PNumberLiteral = new ParserReference<Expression>();
+        private ParserReference<Expression> POr = new ParserReference<Expression>();
+        private ParserReference<Program> PProgram = new ParserReference<Program>();
+        private ParserReference<Statement> PStatement = new ParserReference<Statement>();
+        private ParserReference<Expression> PTerm = new ParserReference<Expression>();
+        private ParserReference<Expression> PThis = new ParserReference<Expression>();
+        private ParserReference<Type> PType = new ParserReference<Type>();
+        private ParserReference<Statement> PVarDeclStmt = new ParserReference<Statement>();
+        private ParserReference<Expression> PVariable = new ParserReference<Expression>();
+        private ParserReference<Statement> PWhile = new ParserReference<Statement>();
+        private ParserReference<Statement> PWriteLine = new ParserReference<Statement>();
+        private Token RIGHT_BK; // ]
+        private Token RIGHT_BR; // }
+        private Token RIGHT_PH; // )
+        private Token SEMICOLON; // ;
+        private Token SLASH; // /
+        private Token WHITESPACE;
+        public MiniSharpParser(CompilationErrorManager errorManager) : base(errorManager, 101, 201, 202) { }
 
-        protected override void OnDefineLexer(Compilers.Scanners.Lexicon lexicon, ICollection<Token> skippedTokens)
+        protected override void OnDefineLexer(Lexicon lexicon, ICollection<Token> skippedTokens)
         {
             var lettersCategories = new HashSet<UnicodeCategory>()
             { 
@@ -208,7 +218,7 @@ namespace VBF.MiniSharp.CombinatorParser
             skippedTokens.Add(COMMENT);
         }
 
-        protected override Compilers.Parsers.Combinators.Parser<Ast.Program> OnDefineParser()
+        protected override Parser<Program> OnDefineParser()
         {
             PProgram.Reference = // MainClass ClassDecl*
                 from main in PMainClass
@@ -304,19 +314,19 @@ namespace VBF.MiniSharp.CombinatorParser
                 from _int in K_INT
                 from _lb in LEFT_BK
                 from _rb in RIGHT_BK
-                select (Ast.Type)new IntArrayType();
+                select (Type)new IntArrayType();
 
             PBoolType.Reference = // bool
                 from _bool in K_BOOL
-                select (Ast.Type)new BooleanType();
+                select (Type)new BooleanType();
 
             PIntType.Reference = // int
                 from _int in K_INT
-                select (Ast.Type)new IntegerType();
+                select (Type)new IntegerType();
 
             PIdType.Reference = // id
                 from type in ID
-                select (Ast.Type)new IdentifierType(type.Value);
+                select (Type)new IdentifierType(type.Value);
 
             //statements
 

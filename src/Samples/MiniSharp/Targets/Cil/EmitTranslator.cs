@@ -1,28 +1,46 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 using VBF.MiniSharp.Ast;
-using System.Diagnostics;
+using Type = System.Type;
 
 namespace VBF.MiniSharp.Targets.Cil
 {
     public class EmitTranslator : AstVisitor
     {
+        private static readonly MethodInfo m_WriteLine = typeof(Console).GetMethod("WriteLine", BindingFlags.Public | BindingFlags.Static, Type.DefaultBinder, new[] { typeof(int) }, null);
+        private static readonly MethodInfo ArrayGetLengthMethod = typeof(int[]).GetProperty("Length").GetGetMethod();
         private readonly AssemblyBuilder m_assembly;
         private readonly ModuleBuilder m_module;
-        private TypeBuilder m_currentType;
+        private ExtensionTable<ConstructorInfo> m_ctorTable;
         private MethodBuilder m_currentMethod;
+        private TypeBuilder m_currentType;
+        private ExtensionTable<FieldInfo> m_fieldTable;
         private ILGenerator m_ilgen;
 
         private MethodInfo m_mainMethod;
 
-        private ExtensionTable<System.Type> m_typeTable;
         private ExtensionTable<MethodInfo> m_methodTable;
-        private ExtensionTable<FieldInfo> m_fieldTable;
-        private ExtensionTable<ConstructorInfo> m_ctorTable;
+        private ExtensionTable<Type> m_typeTable;
 
         public EmitTranslator(AppDomain hostDomain, string name)
         {
@@ -30,13 +48,13 @@ namespace VBF.MiniSharp.Targets.Cil
             m_assembly = hostDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndSave);
 
             m_module = m_assembly.DefineDynamicModule(name + ".exe", true);
-            m_typeTable = new ExtensionTable<System.Type>();
+            m_typeTable = new ExtensionTable<Type>();
             m_methodTable = new ExtensionTable<MethodInfo>();
             m_ctorTable = new ExtensionTable<ConstructorInfo>();
             m_fieldTable = new ExtensionTable<FieldInfo>();
         }
 
-        public void Create(Ast.AstNode ast, string url)
+        public void Create(AstNode ast, string url)
         {
             Visit(ast);
 
@@ -46,7 +64,7 @@ namespace VBF.MiniSharp.Targets.Cil
             m_assembly.Save(url);
         }
 
-        private System.Type GetClrType(TypeBase t)
+        private Type GetClrType(TypeBase t)
         {
             var clrType = m_typeTable.Get(t);
             if (clrType != null)
@@ -58,7 +76,7 @@ namespace VBF.MiniSharp.Targets.Cil
 
             if (ccType != null)
             {
-                System.Type baseClass = typeof(Object);
+                Type baseClass = typeof(Object);
 
                 if (ccType.BaseType != null)
                 {
@@ -167,11 +185,11 @@ namespace VBF.MiniSharp.Targets.Cil
             ConstructorInfo baseCtor;
             if (codeType.BaseType != null)
             {
-                baseCtor = GetClrType(codeType.BaseType).GetConstructor(new System.Type[0]);
+                baseCtor = GetClrType(codeType.BaseType).GetConstructor(new Type[0]);
             }
             else
             {
-                baseCtor = typeof(Object).GetConstructor(new System.Type[0]);
+                baseCtor = typeof(Object).GetConstructor(new Type[0]);
             }
 
             TypeBuilder type = GetClrType(t) as TypeBuilder;
@@ -180,7 +198,7 @@ namespace VBF.MiniSharp.Targets.Cil
                 MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
 
 
-            var ctorb = type.DefineConstructor(ctorAttr, CallingConventions.Standard, new System.Type[0]);
+            var ctorb = type.DefineConstructor(ctorAttr, CallingConventions.Standard, new Type[0]);
             var il = ctorb.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Call, baseCtor);
@@ -335,7 +353,6 @@ namespace VBF.MiniSharp.Targets.Cil
             return ast;
         }
 
-        private static readonly MethodInfo m_WriteLine = typeof(Console).GetMethod("WriteLine", BindingFlags.Public | BindingFlags.Static, System.Type.DefaultBinder, new[] { typeof(int) }, null);
         public override AstNode VisitWriteLine(WriteLine ast)
         {
             //push argument to e-stack
@@ -646,7 +663,6 @@ namespace VBF.MiniSharp.Targets.Cil
             return ast;
         }
 
-        private static readonly MethodInfo ArrayGetLengthMethod = typeof(int[]).GetProperty("Length").GetGetMethod();
         public override AstNode VisitArrayLength(ArrayLength ast)
         {
             //push object to e-stack

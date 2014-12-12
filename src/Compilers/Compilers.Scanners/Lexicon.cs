@@ -1,17 +1,30 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using VBF.Compilers.Scanners.Generator;
 using System.Collections.ObjectModel;
+using VBF.Compilers.Scanners.Generator;
 
 namespace VBF.Compilers.Scanners
 {
     public class Lexicon
     {
-        private List<TokenInfo> m_tokenList;
         private readonly Lexer m_defaultState;
         private List<Lexer> m_lexerStates;
+        private List<TokenInfo> m_tokenList;
 
         public Lexicon()
         {
@@ -22,32 +35,12 @@ namespace VBF.Compilers.Scanners
             m_lexerStates.Add(m_defaultState);
         }
 
-        internal TokenInfo AddToken(RegularExpression definition, Lexer state, int indexInState, string description)
-        {
-            int index = m_tokenList.Count;
-            Token tag = new Token(index, description ?? definition.ToString(), state.Index);
-            TokenInfo token = new TokenInfo(definition, this, state, tag);
-            m_tokenList.Add(token);
-
-            return token;
-        }
-
         public Lexer Lexer
         {
             get
             {
                 return m_defaultState;
             }
-        }
-
-        public ReadOnlyCollection<Lexer> GetLexers()
-        {
-            return m_lexerStates.AsReadOnly();
-        }
-
-        public ReadOnlyCollection<TokenInfo> GetTokens()
-        {
-            return m_tokenList.AsReadOnly();
         }
 
         public int LexerCount
@@ -64,6 +57,26 @@ namespace VBF.Compilers.Scanners
             {
                 return m_tokenList.Count;
             }
+        }
+
+        internal TokenInfo AddToken(RegularExpression definition, Lexer state, int indexInState, string description)
+        {
+            int index = m_tokenList.Count;
+            Token tag = new Token(index, description ?? definition.ToString(), state.Index);
+            TokenInfo token = new TokenInfo(definition, this, state, tag);
+            m_tokenList.Add(token);
+
+            return token;
+        }
+
+        public ReadOnlyCollection<Lexer> GetLexers()
+        {
+            return m_lexerStates.AsReadOnly();
+        }
+
+        public ReadOnlyCollection<TokenInfo> GetTokens()
+        {
+            return m_tokenList.AsReadOnly();
         }
 
         internal Lexer DefineLexer(Lexer baseLexer)

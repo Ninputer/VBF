@@ -1,21 +1,33 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace VBF.Compilers.Scanners.Generator
 {
     public class DFAModel
     {
-        private NFAModel m_nfa;
-        private List<DFAState> m_dfaStates;
         private List<int>[] m_acceptTables;
+        private List<DFAState> m_dfaStates;
         private Lexicon m_lexicon;
-        public CompactCharSetManager CompactCharSetManager { get; private set; }
+        private NFAModel m_nfa;
 
         private DFAModel(Lexicon lexicon)
         {
@@ -31,6 +43,8 @@ namespace VBF.Compilers.Scanners.Generator
             }
 
         }
+
+        public CompactCharSetManager CompactCharSetManager { get; private set; }
 
         public ReadOnlyCollection<DFAState> States
         {
@@ -118,7 +132,7 @@ namespace VBF.Compilers.Scanners.Generator
                                 select lexerState).ToArray();
 
 
-            if (acceptStates != null && acceptStates.Length > 0)
+            if (acceptStates.Length > 0)
             {
                 Queue<Lexer> stateTreeQueue = new Queue<Lexer>();
 
@@ -157,14 +171,14 @@ namespace VBF.Compilers.Scanners.Generator
             AddDFAState(state0);
 
             //state 1 is closure(nfaState[0])
-            DFAState pre_state1 = new DFAState();
+            DFAState preState1 = new DFAState();
             int nfaStartIndex = m_nfa.EntryEdge.TargetState.Index;
 
             Debug.Assert(nfaStartIndex >= 0);
 
-            pre_state1.NFAStateSet.Add(nfaStartIndex);
+            preState1.NFAStateSet.Add(nfaStartIndex);
 
-            DFAState state1 = GetClosure(pre_state1);
+            DFAState state1 = GetClosure(preState1);
             AddDFAState(state1);
 
             //begin algorithm

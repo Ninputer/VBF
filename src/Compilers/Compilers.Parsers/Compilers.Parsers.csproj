@@ -33,6 +33,15 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Key\VBF.Public.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -82,7 +91,11 @@
     <Compile Include="SyntaxErrors.cs" />
     <Compile Include="Terminal.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="..\Key\VBF.Public.snk">
+      <Link>VBF.Public.snk</Link>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Compilers.Common\Compilers.Common.csproj">
       <Project>{283A7585-ECF4-405A-824F-AF926C16C78C}</Project>

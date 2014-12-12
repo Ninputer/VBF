@@ -1,24 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace VBF.Compilers.Parsers.Combinators
 {
     class ConvertHelper<TFrom, TTo>
     {
-        private static Func<TFrom, TTo> s_CastFunc;
+        private static Func<TFrom, TTo> s_castFunc;
 
         static ConvertHelper()
         {
             var source = Expression.Parameter(typeof(TFrom), "source");
-            s_CastFunc = Expression.Lambda<Func<TFrom, TTo>>(Expression.Convert(source, typeof(TTo)), source).Compile();
+            s_castFunc = Expression.Lambda<Func<TFrom, TTo>>(Expression.Convert(source, typeof(TTo)), source).Compile();
         }
 
         public static TTo Convert(TFrom source)
         {
-            return s_CastFunc(source);
+            return s_castFunc(source);
         }
     }
 }

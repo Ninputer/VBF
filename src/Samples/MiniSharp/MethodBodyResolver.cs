@@ -1,24 +1,32 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using VBF.MiniSharp.Ast;
-using VBF.Compilers;
 using System.Diagnostics;
+using System.Linq;
+using VBF.Compilers;
 using VBF.Compilers.Scanners;
+using VBF.MiniSharp.Ast;
+using Type = VBF.MiniSharp.Ast.Type;
 
 namespace VBF.MiniSharp
 {
     public class MethodBodyResolver : AstVisitor
     {
-        private TypeCollection m_types;
-        private VariableCollection<Parameter> m_currentMethodParameters;
-        private VariableCollection<VariableInfo> m_currentMethodVariables;
-        private CodeClassType m_currentType;
-        private Method m_currentMethod;
-        private int m_currentVariableIndex;
-
-        private CompilationErrorManager m_errorManager;
         private const int c_SE_VariableDuplicates = 313;
         private const int c_SE_BinaryOpTypeInvalid = 320;
         private const int c_SE_UnaryOpTypeInvalid = 321;
@@ -35,8 +43,21 @@ namespace VBF.MiniSharp
         private const int c_SE_MethodAmbiguous = 336;
         private const int c_SE_ThisInStaticMethod = 337;
         private const int c_SE_NotSupported = 390;
+        private Method m_currentMethod;
+        private VariableCollection<Parameter> m_currentMethodParameters;
+        private VariableCollection<VariableInfo> m_currentMethodVariables;
+        private CodeClassType m_currentType;
+        private int m_currentVariableIndex;
 
         private CompilationErrorList m_errorList;
+        private CompilationErrorManager m_errorManager;
+        private TypeCollection m_types;
+
+        public MethodBodyResolver(CompilationErrorManager errorManager, TypeCollection types)
+        {
+            m_errorManager = errorManager;
+            m_types = types;
+        }
 
         public CompilationErrorList ErrorList
         {
@@ -101,12 +122,6 @@ namespace VBF.MiniSharp
 
             m_errorManager.DefineError(c_SE_InvalidIntLiteral, 0, CompilationStage.SemanticAnalysis,
                 "'{0}' is not a valid integer.");
-        }
-
-        public MethodBodyResolver(CompilationErrorManager errorManager, TypeCollection types)
-        {
-            m_errorManager = errorManager;
-            m_types = types;
         }
 
         private VariableInfo ResolveVariable(LexemeValue identifier)
@@ -185,7 +200,7 @@ namespace VBF.MiniSharp
             return resolvedType;
         }
 
-        private TypeBase ResolveTypeNode(Ast.Type typeNode)
+        private TypeBase ResolveTypeNode(Type typeNode)
         {
             Visit(typeNode);
             return typeNode.ResolvedType;

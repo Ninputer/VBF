@@ -1,8 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using VBF.Compilers.Scanners;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 
 namespace VBF.Compilers.Parsers.Combinators
 {
@@ -11,10 +23,6 @@ namespace VBF.Compilers.Parsers.Combinators
         //private int m_trimmingThreshold = Int32.MaxValue;
         //private long m_failedSteps = 0L;
         //private long m_succeedSteps = 0L;
-
-        public CompilationErrorList ErrorList { get; set; }
-        public int InsertionErrorId { get; set; }
-        public int DeletionErrorId { get; set; }
 
         private CompilationErrorManager m_errorManager;
 
@@ -27,6 +35,10 @@ namespace VBF.Compilers.Parsers.Combinators
 
         public ParserContext()
             : this(null, 0, 0) { }
+
+        public CompilationErrorList ErrorList { get; set; }
+        public int InsertionErrorId { get; set; }
+        public int DeletionErrorId { get; set; }
 
         public void DefineDefaultCompilationErrorInfo(int errorLevel)
         {
@@ -101,7 +113,7 @@ namespace VBF.Compilers.Parsers.Combinators
             return ChooseBest(result1, result2, 0);
         }
 
-        private Result<T> ChooseBest<T>(Result<T> result1, Result<T> result2, int correctionDepth)
+        private static Result<T> ChooseBest<T>(Result<T> result1, Result<T> result2, int correctionDepth)
         {
             if (result1.Type == ResultType.Stop)
             {

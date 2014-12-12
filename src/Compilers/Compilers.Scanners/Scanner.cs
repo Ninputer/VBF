@@ -1,39 +1,49 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
 
 namespace VBF.Compilers.Scanners
 {
     public class Scanner
     {
         //consts
-        private const int Skip = 1;
+        private const int c_skip = 1;
 
         //members
-        private ScannerInfo m_scannerInfo;
 
         private FiniteAutomationEngine m_engine;
-        private SourceReader m_source;
+        //private List<Lexeme> m_triviaCache;
+        private List<Lexeme> m_fullHistory;
+        private HistoryList m_historyList;
 
+        private int m_lastNotSkippedLexemeIndex;
         private int m_lastState;
         private SourceLocation m_lastTokenStart;
         private StringBuilder m_lexemeValueBuilder;
-        //private List<Lexeme> m_triviaCache;
-        private List<Lexeme> m_fullHistory;
-        private List<int> m_valuableHistory;
-        private HistoryList m_historyList;
-
-        private int m_valuableCursor;
-
-        private int m_lastNotSkippedLexemeIndex;
+        private ScannerInfo m_scannerInfo;
+        private SourceReader m_source;
 
         private int[] m_tokenAttributes;
-
-        public CompilationErrorList ErrorList { get; set; }
-        public bool RecoverErrors { get; set; }
-        public int LexicalErrorId { get; set; }
+        private int m_valuableCursor;
+        private List<int> m_valuableHistory;
 
         public Scanner(ScannerInfo scannerInfo)
         {
@@ -44,6 +54,31 @@ namespace VBF.Compilers.Scanners
             m_tokenAttributes = new int[scannerInfo.TokenCount];
 
             Initialize();
+        }
+
+        public CompilationErrorList ErrorList { get; set; }
+        public bool RecoverErrors { get; set; }
+        public int LexicalErrorId { get; set; }
+
+        public ScannerInfo ScannerInfo
+        {
+            get { return m_scannerInfo; }
+        }
+
+        public int ReadingIndex
+        {
+            get
+            {
+                return m_valuableCursor;
+            }
+        }        
+
+        public IReadOnlyList<Lexeme> History
+        {
+            get
+            {
+                return m_historyList;
+            }
         }
 
         private void Initialize()
@@ -78,14 +113,9 @@ namespace VBF.Compilers.Scanners
 
                 if (skipIndex >= 0 && skipIndex < m_tokenAttributes.Length)
                 {
-                    m_tokenAttributes[skipIndex] = Skip;
+                    m_tokenAttributes[skipIndex] = c_skip;
                 }
             }
-        }
-
-        public ScannerInfo ScannerInfo
-        {
-            get { return m_scannerInfo; }
         }
 
         public Lexeme Read()
@@ -98,7 +128,6 @@ namespace VBF.Compilers.Scanners
             }
 
             //m_triviaCache.Clear();
-            bool isLastSkipped = false;
 
             while (true)
             {
@@ -117,53 +146,46 @@ namespace VBF.Compilers.Scanners
 
                     break;
                 }
-                else
+                while (true)
                 {
-                    while (true)
+                    int inputCharValue = m_source.PeekChar();
+
+                    if (inputCharValue < 0)
                     {
-                        int inputCharValue = m_source.PeekChar();
-
-                        if (inputCharValue < 0)
-                        {
-                            //end of stream, treat as stopped
-                            break;
-                        }
-
-                        char inputChar = (char)inputCharValue;
-                        m_engine.Input(inputChar);
-
-                        if (m_engine.IsAtStoppedState)
-                        {
-                            //stop immediately at a stopped state
-                            break;
-                        }
-                        else
-                        {
-                            m_lastState = m_engine.CurrentState;
-                        }
-
-                        m_source.ReadChar();
-                        m_lexemeValueBuilder.Append(inputChar);
-                    }
-
-                    //skip tokens that marked with "Skip" attribute
-                    isLastSkipped = IsLastTokenSkippable();
-
-                    if (isLastSkipped)
-                    {
-                        AddHistory(new Lexeme(m_scannerInfo, m_lastState,
-                            new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()), false);
-                    }
-                    else
-                    {
-                        AddHistory(new Lexeme(m_scannerInfo, m_lastState,
-                            new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()));
-
-
+                        //end of stream, treat as stopped
                         break;
                     }
+
+                    char inputChar = (char)inputCharValue;
+                    m_engine.Input(inputChar);
+
+                    if (m_engine.IsAtStoppedState)
+                    {
+                        //stop immediately at a stopped state
+                        break;
+                    }
+                    m_lastState = m_engine.CurrentState;
+
+                    m_source.ReadChar();
+                    m_lexemeValueBuilder.Append(inputChar);
                 }
 
+                //skip tokens that marked with "Skip" attribute
+                bool isLastSkipped = IsLastTokenSkippable();
+
+                if (isLastSkipped)
+                {
+                    AddHistory(new Lexeme(m_scannerInfo, m_lastState,
+                        new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()), false);
+                }
+                else
+                {
+                    AddHistory(new Lexeme(m_scannerInfo, m_lastState,
+                        new SourceSpan(m_lastTokenStart, m_source.Location), m_lexemeValueBuilder.ToString()));
+
+
+                    break;
+                }
             }
 
             int lastTokenfullCursor = m_valuableHistory[m_valuableCursor - 1];
@@ -188,22 +210,6 @@ namespace VBF.Compilers.Scanners
                 {
                     Read();
                 }
-            }
-        }
-
-        public int ReadingIndex
-        {
-            get
-            {
-                return m_valuableCursor;
-            }
-        }        
-
-        public IReadOnlyList<Lexeme> History
-        {
-            get
-            {
-                return m_historyList;
             }
         }
 
@@ -278,7 +284,7 @@ namespace VBF.Compilers.Scanners
                 return true;
             }
 
-            return acceptTokenIndex >= 0 && m_tokenAttributes[acceptTokenIndex] == Skip;
+            return acceptTokenIndex >= 0 && m_tokenAttributes[acceptTokenIndex] == c_skip;
         }
 
         private Lexeme PeekLexeme(int lookAhead)

@@ -1,112 +1,122 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using VBF.Compilers;
-using VBF.Compilers.Scanners;
-using VBF.Compilers.Parsers;
-using RE = VBF.Compilers.Scanners.RegularExpression;
 using System.Globalization;
+using System.Linq;
+using VBF.Compilers;
+using VBF.Compilers.Parsers;
+using VBF.Compilers.Scanners;
 using VBF.MiniSharp.Ast;
+using RE = VBF.Compilers.Scanners.RegularExpression;
+using Type = VBF.MiniSharp.Ast.Type;
+
 namespace VBF.MiniSharp
 {
-    public class MiniSharpParser : ParserBase<Ast.Program>
+    public class MiniSharpParser : ParserBase<Program>
     {
-        public MiniSharpParser(CompilationErrorManager errorManager) : base(errorManager) { }
-
         //keywords
-        private Token K_CLASS;
-        private Token K_PUBLIC;
-        private Token K_STATIC;
-        private Token K_VOID;
-        private Token K_MAIN;
-        private Token K_STRING;
-        private Token K_RETURN;
-        private Token K_INT;
-        private Token K_BOOL;
-        private Token K_IF;
-        private Token K_ELSE;
-        private Token K_WHILE;
-        private Token K_SYSTEM;
-        private Token K_CONSOLE;
-        private Token K_WRITELINE;
-        private Token K_LENGTH;
-        private Token K_TRUE;
-        private Token K_FALSE;
-        private Token K_THIS;
-        private Token K_NEW;
-
-        //id and literals
+        private Token ASSIGN; // =
+        private Token ASTERISK; // *
+        private Token COLON; // :
+        private Token COMMA; // ,
+        private Token COMMENT;
+        private Token DOT; // .
+        private Token EQUAL; // ==
+        private Token GREATER; // >
         private Token ID; //identifier
         private Token INTEGER_LITERAL; //integer literal
-
-        //symbols
-        private Token LOGICAL_AND; // &&
-        private Token LOGICAL_OR; // ||
-        private Token LOGICAL_NOT; // !
-        private Token LESS; // <
-        private Token GREATER; // >
-        private Token EQUAL; // ==
-        private Token ASSIGN; // =
-        private Token PLUS; // +
-        private Token MINUS; // -
-        private Token ASTERISK; // *
-        private Token SLASH; // /
-        private Token LEFT_PH; // (
-        private Token RIGHT_PH; // )
+        private Token K_BOOL;
+        private Token K_CLASS;
+        private Token K_CONSOLE;
+        private Token K_ELSE;
+        private Token K_FALSE;
+        private Token K_IF;
+        private Token K_INT;
+        private Token K_LENGTH;
+        private Token K_MAIN;
+        private Token K_NEW;
+        private Token K_PUBLIC;
+        private Token K_RETURN;
+        private Token K_STATIC;
+        private Token K_STRING;
+        private Token K_SYSTEM;
+        private Token K_THIS;
+        private Token K_TRUE;
+        private Token K_VOID;
+        private Token K_WHILE;
+        private Token K_WRITELINE;
         private Token LEFT_BK; // [
-        private Token RIGHT_BK; // ]
         private Token LEFT_BR; // {
-        private Token RIGHT_BR; // }
-        private Token COMMA; // ,
-        private Token COLON; // :
-        private Token SEMICOLON; // ;
-        private Token DOT; // .
-
-        //skips
-        private Token WHITESPACE;
-        private Token COMMENT;
+        private Token LEFT_PH; // (
+        private Token LESS; // <
         private Token LINE_BREAKER;
+        private Token LOGICAL_AND; // &&
+        private Token LOGICAL_NOT; // !
+        private Token LOGICAL_OR; // ||
+        private Token MINUS; // -
+        private Production<Expression> PAnd = new Production<Expression>();
+        private Production<Statement> PArrayAssignment = new Production<Statement>();
+        private Production<Expression> PArrayLength = new Production<Expression>();
+        private Production<Expression> PArrayLookup = new Production<Expression>();
+        private Production<Statement> PAssignment = new Production<Statement>();
+        private Production<Expression> PBoolLiteral = new Production<Expression>();
+        private Production<Type> PBoolType = new Production<Type>();
+        private Production<Expression> PCall = new Production<Expression>();
 
         //grammar
-        private Production<Program> PProgram = new Production<Program>();
-        private Production<MainClass> PMainClass = new Production<MainClass>();
         private Production<ClassDecl> PClassDecl = new Production<ClassDecl>();
-        private Production<FieldDecl> PFieldDecl = new Production<FieldDecl>();
-        private Production<MethodDecl> PMethodDecl = new Production<MethodDecl>();
-        private Production<Formal[]> PFormalList = new Production<Formal[]>();
-        private Production<Ast.Type> PType = new Production<Ast.Type>();
-        private Production<Ast.Type> PIntArrayType = new Production<Ast.Type>();
-        private Production<Ast.Type> PBoolType = new Production<Ast.Type>();
-        private Production<Ast.Type> PIntType = new Production<Ast.Type>();
-        private Production<Ast.Type> PIdType = new Production<Ast.Type>();
-        private Production<Statement> PStatement = new Production<Statement>();
-        private Production<Statement> PIfElse = new Production<Statement>();
-        private Production<Statement> PWhile = new Production<Statement>();
-        private Production<Statement> PWriteLine = new Production<Statement>();
-        private Production<Statement> PAssignment = new Production<Statement>();
-        private Production<Statement> PArrayAssignment = new Production<Statement>();
-        private Production<Statement> PVarDeclStmt = new Production<Statement>();
-        private Production<Expression> PExp = new Production<Expression>();
-        private Production<Expression> PFactor = new Production<Expression>();
-        private Production<Expression> PTerm = new Production<Expression>();
         private Production<Expression> PComparand = new Production<Expression>();
         private Production<Expression> PComparison = new Production<Expression>();
-        private Production<Expression> PAnd = new Production<Expression>();
-        private Production<Expression> POr = new Production<Expression>();
-        private Production<Expression> PNot = new Production<Expression>();
-        private Production<Expression> PVariable = new Production<Expression>();
-        private Production<Expression> PThis = new Production<Expression>();
-        private Production<Expression> PArrayLookup = new Production<Expression>();
-        private Production<Expression> PArrayLength = new Production<Expression>();
-        private Production<Expression> PCall = new Production<Expression>();
-        private Production<Expression> PNumberLiteral = new Production<Expression>();
-        private Production<Expression> PBoolLiteral = new Production<Expression>();
-        private Production<Expression> PNewObj = new Production<Expression>();
-        private Production<Expression> PNewArray = new Production<Expression>();
+        private Production<Expression> PExp = new Production<Expression>();
         private Production<Expression[]> PExpList = new Production<Expression[]>();
+        private Production<Expression> PFactor = new Production<Expression>();
+        private Production<FieldDecl> PFieldDecl = new Production<FieldDecl>();
+        private Production<Formal[]> PFormalList = new Production<Formal[]>();
+        private Production<Type> PIdType = new Production<Type>();
+        private Production<Statement> PIfElse = new Production<Statement>();
+        private Production<Type> PIntArrayType = new Production<Type>();
+        private Production<Type> PIntType = new Production<Type>();
+        private Token PLUS; // +
+        private Production<MainClass> PMainClass = new Production<MainClass>();
+        private Production<MethodDecl> PMethodDecl = new Production<MethodDecl>();
+        private Production<Expression> PNewArray = new Production<Expression>();
+        private Production<Expression> PNewObj = new Production<Expression>();
+        private Production<Expression> PNot = new Production<Expression>();
+        private Production<Expression> PNumberLiteral = new Production<Expression>();
+        private Production<Expression> POr = new Production<Expression>();
+        private Production<Program> PProgram = new Production<Program>();
+        private Production<Statement> PStatement = new Production<Statement>();
+        private Production<Expression> PTerm = new Production<Expression>();
+        private Production<Expression> PThis = new Production<Expression>();
+        private Production<Type> PType = new Production<Type>();
+        private Production<Statement> PVarDeclStmt = new Production<Statement>();
+        private Production<Expression> PVariable = new Production<Expression>();
+        private Production<Statement> PWhile = new Production<Statement>();
+        private Production<Statement> PWriteLine = new Production<Statement>();
+        private Token RIGHT_BK; // ]
+        private Token RIGHT_BR; // }
+        private Token RIGHT_PH; // )
+        private Token SEMICOLON; // ;
+        private Token SLASH; // /
+        private Token WHITESPACE;
+        public MiniSharpParser(CompilationErrorManager errorManager) : base(errorManager) { }
 
-        protected override void OnDefineLexer(Compilers.Scanners.Lexicon lexicon, ICollection<Token> skippedTokens)
+        protected override void OnDefineLexer(Lexicon lexicon, ICollection<Token> skippedTokens)
         {
             var lettersCategories = new HashSet<UnicodeCategory>()
             { 
@@ -304,19 +314,19 @@ namespace VBF.MiniSharp
                 from _int in K_INT
                 from _lb in LEFT_BK
                 from _rb in RIGHT_BK
-                select (Ast.Type)new IntArrayType();
+                select (Type)new IntArrayType();
 
             PBoolType.Rule = // bool
                 from _bool in K_BOOL
-                select (Ast.Type)new BooleanType();
+                select (Type)new BooleanType();
 
             PIntType.Rule = // int
                 from _int in K_INT
-                select (Ast.Type)new IntegerType();
+                select (Type)new IntegerType();
 
             PIdType.Rule = // id
                 from type in ID
-                select (Ast.Type)new IdentifierType(type.Value);
+                select (Type)new IdentifierType(type.Value);
 
             //statements
 

@@ -1,21 +1,27 @@
-﻿using System;
+﻿// Copyright 2012 Fan Shi
+// 
+// This file is part of the VBF project.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using VBF.Compilers.Scanners;
 using System.Collections.ObjectModel;
+using VBF.Compilers.Scanners;
 
 namespace VBF.MiniSharp.Ast
 {
     public class MethodDecl : AstNode
     {
-        public Method MethodInfo { get; set; }
-        public Type ReturnType { get; private set; }
-        public LexemeValue Name { get; private set; }
-        public ReadOnlyCollection<Formal> Parameters { get; private set; }
-        public ReadOnlyCollection<Statement> Statements { get; private set; }
-        public Expression ReturnExpression { get; private set; }
-
         public MethodDecl(LexemeValue name, Type retType, IList<Formal> parameters, IList<Statement> stmts, Expression retExp)
         {
             Name = name;
@@ -24,6 +30,13 @@ namespace VBF.MiniSharp.Ast
             Statements = stmts == null ? null : new ReadOnlyCollection<Statement>(stmts);
             ReturnExpression = retExp;
         }
+
+        public Method MethodInfo { get; set; }
+        public Type ReturnType { get; private set; }
+        public LexemeValue Name { get; private set; }
+        public ReadOnlyCollection<Formal> Parameters { get; private set; }
+        public ReadOnlyCollection<Statement> Statements { get; private set; }
+        public Expression ReturnExpression { get; private set; }
 
         public override T Accept<T>(IAstVisitor<T> visitor)
         {
