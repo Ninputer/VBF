@@ -23,7 +23,7 @@ namespace VBF.Compilers
 {
     public class SourceReader
     {
-        public const int DefaultTabSize = 4;
+        public const int DefaultTabSize = 1;
 
         //reverting service
         private StringBuilderReader m_backupReader;
