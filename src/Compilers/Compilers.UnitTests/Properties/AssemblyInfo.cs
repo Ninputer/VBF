@@ -24,8 +24,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ninputer")]
-[assembly: AssemblyProduct("Compilers.UnitTests")]
-[assembly: AssemblyCopyright("Copyright © Ninputer 2011")]
+[assembly: AssemblyProduct("VBF.Compilers")]
+[assembly: AssemblyCopyright("Copyright © 2012 Fan Shi")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
