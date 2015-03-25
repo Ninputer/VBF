@@ -31,7 +31,7 @@ namespace VBF.Compilers.Scanners
             Symbol = symbol;
         }
 
-        public char Symbol { get; private set; }
+        public new char Symbol { get; private set; }
 
         public override string ToString()
         {
