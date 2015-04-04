@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VBF.Compilers.Intermediate</RootNamespace>
-    <AssemblyName>Compilers.Intermediate</AssemblyName>
+    <AssemblyName>VBF.Compilers.Intermediate</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

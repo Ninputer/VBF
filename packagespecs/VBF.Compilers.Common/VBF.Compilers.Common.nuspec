@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>VBF.Compilers.Common</id>
+        <version>1.0.1</version>
+        <title>VBF Compilers Common Components</title>
+        <authors>Fan Shi</authors>
+        <owners>Fan Shi</owners>
+        <licenseUrl>https://raw.githubusercontent.com/Ninputer/VBF/master/LICENSE.txt</licenseUrl>
+        <projectUrl>https://github.com/Ninputer/VBF</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>The common components for VBF.Compilers libraries</description>
+        <releaseNotes />
+        <copyright>Copyright (c) 2012 Fan Shi</copyright>
+        <tags>VBF Compiler</tags>
+        <dependencies>
+            <group targetFramework=".NETFramework4.5" />
+        </dependencies>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.0" />
+        </frameworkAssemblies>
+    </metadata>
+</package>

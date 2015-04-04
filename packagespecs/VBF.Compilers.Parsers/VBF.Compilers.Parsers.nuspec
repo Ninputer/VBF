@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>VBF.Compilers.Parsers</id>
+        <version>1.0.1</version>
+        <title>VBF Compilers Library for Parsers</title>
+        <authors>Fan Shi</authors>
+        <owners>Fan Shi</owners>
+        <licenseUrl>https://raw.githubusercontent.com/Ninputer/VBF/master/LICENSE.txt</licenseUrl>
+        <projectUrl>https://github.com/Ninputer/VBF</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>VBF.Compilers.Parsers is a GLR parser generator library. Compose grammars using Linq clauses, parsers with automatic error recovery can then be generated at runtime. Any context free grammar is supported, grammars with ambiguities can still be used by providing resolution rules.</description>
+        <releaseNotes />
+        <copyright>Copyright (c) 2012 Fan Shi</copyright>
+        <tags>VBF Compiler parser yacc antlr LR GLR</tags>
+        <dependencies>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="VBF.Compilers.Common" version="1.0.1" />
+                <dependency id="VBF.Compilers.Scanners" version="1.0.1" />
+            </group>
+        </dependencies>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.0" />
+        </frameworkAssemblies>
+    </metadata>
+</package>

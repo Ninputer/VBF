@@ -20,12 +20,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Compilers.Common")]
+[assembly: AssemblyTitle("VBF.Compilers.Common")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ninputer")]
-[assembly: AssemblyProduct("Compilers.Common")]
-[assembly: AssemblyCopyright("Copyright © Ninputer 2011")]
+[assembly: AssemblyProduct("VBF.Compilers")]
+[assembly: AssemblyCopyright("Copyright © 2012 Fan Shi")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

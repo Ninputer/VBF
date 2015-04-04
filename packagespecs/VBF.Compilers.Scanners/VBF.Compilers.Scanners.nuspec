@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>VBF.Compilers.Scanners</id>
+        <version>1.0.1</version>
+        <title>VBF Compilers Library for Scanners</title>
+        <authors>Fan Shi</authors>
+        <owners>Fan Shi</owners>
+        <licenseUrl>https://raw.githubusercontent.com/Ninputer/VBF/master/LICENSE.txt</licenseUrl>
+        <projectUrl>https://github.com/Ninputer/VBF</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>VBF.Compilers.Scanners is a scanner builder. It contains a regular expression to DFA engine, can generate high performance scanners for unicode source text.</description>
+        <releaseNotes />
+        <copyright>Copyright (c) 2012 Fan Shi</copyright>
+        <tags>VBF Compiler scanner lexer lex tokenizer</tags>
+        <dependencies>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="VBF.Compilers.Common" version="1.0.1" />
+            </group>
+        </dependencies>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.0" />
+        </frameworkAssemblies>
+    </metadata>
+</package>
