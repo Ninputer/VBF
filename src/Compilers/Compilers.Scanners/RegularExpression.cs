@@ -157,5 +157,11 @@ namespace VBF.Compilers.Scanners
         {
             return new ConcatenationExpression(left, right);
         }
+
+        [SpecialName]
+        public static RegularExpression op_Concatenate(RegularExpression left, RegularExpression right)
+        {
+            return new ConcatenationExpression(left, right);
+        }
     }
 }
