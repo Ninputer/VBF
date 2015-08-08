@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>VBF.Compilers.Common</id>
-        <version>1.0.1</version>
+        <version>1.0.3</version>
         <title>VBF Compilers Common Components</title>
         <authors>Fan Shi</authors>
         <owners>Fan Shi</owners>
@@ -20,4 +20,8 @@
             <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.0" />
         </frameworkAssemblies>
     </metadata>
+    <files>
+      <file src="..\..\bin\VBF.Compilers.Common.dll" target="lib\Net45" />
+      <file src="..\..\bin\VBF.Compilers.Common.XML" target="lib\Net45" />
+    </files>
 </package>
