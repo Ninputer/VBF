@@ -14,6 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -211,7 +212,7 @@ namespace VBF.Compilers.Parsers
             return false;
         }
 
-        public IProduction PanicRecover(TransitionTable transitions, SourceSpan lastLocation, bool isEos)
+        public IEnumerable<Tuple<ParserHead,IProduction>> PanicRecover(TransitionTable transitions, SourceSpan lastLocation, bool isEos)
         {
             while(true)
             {
@@ -235,20 +236,26 @@ namespace VBF.Compilers.Parsers
                             }
                         }
 
-                        m_topStack = m_topStack.PrevNode;
+                        //m_topStack = m_topStack.PrevNode;
 
-                        var newNode = new StackNode(gotoState, m_topStack, null);
-                        IncreaseErrorRecoverLevel();
-                        AddError(new ErrorRecord(null, lastLocation));
-                        m_topStack = newNode;
+                        var newNode = new StackNode(gotoState, m_topStack, 
+                            recoverNT.Accept(DefaultValueOfProductionVisitor.Instance, false));
 
-                        return recoverNT;
+                        var newHead = Clone();
+                        newHead.m_topStack = newNode;
+
+                        newHead.IncreaseErrorRecoverLevel();
+                        newHead.AddError(new ErrorRecord(null, lastLocation));
+                        
+
+                        yield return Tuple.Create(newHead, recoverNT);
                     }
                 }
 
                 if (m_topStack.PrevNode == null)
                 {
-                    throw new ParsingFailureException("There's no way to recover from parser error");
+                    yield break;
+                    //throw new ParsingFailureException("There's no way to recover from parser error");
                 }
 
                 m_topStack = m_topStack.PrevNode;

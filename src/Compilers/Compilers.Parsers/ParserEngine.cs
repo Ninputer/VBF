@@ -317,16 +317,24 @@ namespace VBF.Compilers.Parsers
             ParserHead errorHead1 = m_errorCandidates[0];
             m_errorCandidates.Clear();
 
-            IProduction p = errorHead1.PanicRecover(m_transitions, z.Value.Span, z.IsEndOfStream);
+            var candidates = errorHead1.PanicRecover(m_transitions, z.Value.Span, z.IsEndOfStream);
 
-            ProductionBase productionBase = p as ProductionBase;
-            if (productionBase != null)
+            ISet<IProduction> follows = new HashSet<IProduction>();
+
+            foreach (var candidate in candidates)
             {
-                var follow = productionBase.Info.Follow;
+                ProductionBase p = candidate.Item2 as ProductionBase;
+                follows.UnionWith(p.Info.Follow);
 
-                m_heads.Add(errorHead1);
-
-                throw new PanicRecoverException(follow);
+                m_heads.Add(candidate.Item1);
+            }
+            if (m_heads.Count > 0)
+            {
+                throw new PanicRecoverException(follows);
+            }
+            else
+            {
+                throw new ParsingFailureException("There's no way to recover from parser error");
             }
         }
 
