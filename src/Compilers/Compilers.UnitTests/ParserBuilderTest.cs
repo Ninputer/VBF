@@ -690,7 +690,7 @@ namespace Compilers.UnitTests
 
             var errList = em.CreateErrorList();
 
-            var result = parser.Parse("1+3((((((((((((((((((((((((", errList);
+            var result = parser.Parse("1+3(+(+(+(+(+(+(+(+(+(+(+2+3+3+3+3)*", errList);
 
             Assert.Greater(errList.Count, 0);
         }

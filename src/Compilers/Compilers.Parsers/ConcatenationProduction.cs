@@ -28,12 +28,27 @@ namespace VBF.Compilers.Parsers
 
             ProductionLeft = productionLeft;
             ProductionRight = productionRightSelector(default(T1));
-            Selector = selector;
+            m_selector = selector;
+
+            Selector = SafeSelector;
         }
 
         public ProductionBase<T1> ProductionLeft { get; private set; }
         public ProductionBase<T2> ProductionRight { get; private set; }
         public Func<T1, T2, TR> Selector { get; private set; }
+
+        private Func<T1, T2, TR> m_selector;
+        private TR SafeSelector(T1 left, T2 right)
+        {
+            try
+            {
+                return m_selector(left, right);
+            }
+            catch (NullReferenceException)
+            {
+                return DefaultValueContainer<TR>.DefaultValue;
+            }
+        }
 
         public override string DebugName
         {

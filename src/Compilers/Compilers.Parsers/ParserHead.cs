@@ -238,8 +238,7 @@ namespace VBF.Compilers.Parsers
 
                         //m_topStack = m_topStack.PrevNode;
 
-                        var newNode = new StackNode(gotoState, m_topStack, 
-                            recoverNT.Accept(DefaultValueOfProductionVisitor.Instance, false));
+                        var newNode = new StackNode(gotoState, m_topStack, ((ProductionBase)recoverNT).GetDefaultResult());
 
                         var newHead = Clone();
                         newHead.m_topStack = newNode;

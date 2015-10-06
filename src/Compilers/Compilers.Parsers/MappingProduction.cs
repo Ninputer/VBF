@@ -26,7 +26,8 @@ namespace VBF.Compilers.Parsers
             CodeContract.RequiresArgumentNotNull(selector, "selector");
 
             SourceProduction = sourceProduction;
-            Selector = selector;
+            m_selector = selector;
+            Selector = SafeSelector;
             ValidationRule = validationRule;
             ValidationErrorId = errorId;
             PositionGetter = positionGetter;
@@ -38,6 +39,19 @@ namespace VBF.Compilers.Parsers
         public Func<TReturn, bool> ValidationRule { get; private set; }
         public int? ValidationErrorId { get; private set; }
         public Func<TReturn, SourceSpan> PositionGetter { get; private set; }
+
+        private Func<TSource, TReturn> m_selector;
+        private TReturn SafeSelector(TSource source)
+        {
+            try
+            {
+                return m_selector(source);
+            }
+            catch (NullReferenceException)
+            {
+                return DefaultValueContainer<TReturn>.DefaultValue;
+            }
+        }
 
         public override string DebugName
         {

@@ -26,7 +26,7 @@ namespace VBF.MiniSharp.Ast
 
         public BooleanLiteral(LexemeValue literal)
         {
-            Value = Boolean.Parse(literal.Content);
+            Value = literal.Content == null ? false : Boolean.Parse(literal.Content);
             m_literalSpan = literal.Span;
         }
 

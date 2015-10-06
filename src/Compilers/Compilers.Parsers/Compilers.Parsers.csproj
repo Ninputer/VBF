@@ -52,7 +52,7 @@
       <Link>CodeContract.cs</Link>
     </Compile>
     <Compile Include="AlternationProduction.cs" />
-    <Compile Include="DefaultValueOfProductionVisitor.cs" />
+    <Compile Include="DefaultValueContainer.cs" />
     <Compile Include="Generator\ClosureVisitor.cs" />
     <Compile Include="PanicRecoverException.cs" />
     <Compile Include="ParserHeadCleaner.cs" />

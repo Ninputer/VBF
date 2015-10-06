@@ -65,6 +65,7 @@ namespace VBF.Compilers.Parsers
 
         public abstract bool AggregatesAmbiguities { get; }
         internal abstract AmbiguityAggregator CreateAggregator();
+        internal abstract object GetDefaultResult();
     }
 
     public abstract class ProductionBase<T> : ProductionBase
@@ -89,6 +90,11 @@ namespace VBF.Compilers.Parsers
         internal sealed override AmbiguityAggregator CreateAggregator()
         {
             return new AmbiguityAggregator<T>(Info.NonTerminalIndex, AmbiguityAggregator);
+        }
+
+        internal override object GetDefaultResult()
+        {
+            return DefaultValueContainer<T>.DefaultValue;
         }
     }
 }

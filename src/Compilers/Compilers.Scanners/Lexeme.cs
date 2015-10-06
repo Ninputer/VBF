@@ -43,6 +43,10 @@ namespace VBF.Compilers.Scanners
         {
             get
             {
+                if (m_scannerInfo == null)
+                {
+                    throw new InvalidOperationException("This lexeme is not initialized");
+                }
                 return m_scannerInfo.GetTokenIndex(m_stateIndex);
             }
         }
@@ -59,6 +63,10 @@ namespace VBF.Compilers.Scanners
         {
             get
             {
+                if (m_scannerInfo == null)
+                {
+                    throw new InvalidOperationException("This lexeme is not initialized");
+                }
                 return m_stateIndex == m_scannerInfo.EndOfStreamState;
             }
         }
@@ -70,15 +78,30 @@ namespace VBF.Compilers.Scanners
 
         public int GetTokenIndex(int lexerState)
         {
+            if (m_scannerInfo == null)
+            {
+                throw new InvalidOperationException("This lexeme is not initialized");
+            }
             return m_scannerInfo.GetTokenIndex(m_stateIndex, lexerState);
         }
 
         public Lexeme GetErrorCorrectionLexeme(int expectedTokenIndex, string expectedValue)
         {
+            if (m_scannerInfo == null)
+            {
+                throw new InvalidOperationException("This lexeme is not initialized");
+            }
             int state = m_scannerInfo.GetStateIndex(expectedTokenIndex);
             if (state < 0) throw new ArgumentException("Expected token index is invalid", "expectedTokenIndex");
 
             return new Lexeme(m_scannerInfo, state, new SourceSpan(Value.Span.StartLocation, Value.Span.StartLocation), expectedValue);
+        }
+
+        public static Lexeme CreateEmptyLexeme()
+        {
+            return new Lexeme(null, 0,
+                new SourceSpan(new SourceLocation(), new SourceLocation()),
+                null);
         }
     }
 }
