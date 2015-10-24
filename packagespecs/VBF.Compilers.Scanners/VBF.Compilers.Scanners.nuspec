@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>VBF.Compilers.Scanners</id>
-        <version>1.0.3</version>
+        <version>1.0.5</version>
         <title>VBF Compilers Library for Scanners</title>
         <authors>Fan Shi</authors>
         <owners>Fan Shi</owners>
@@ -15,7 +15,7 @@
         <tags>VBF Compiler scanner lexer lex tokenizer</tags>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
-                <dependency id="VBF.Compilers.Common" version="1.0.3" />
+                <dependency id="VBF.Compilers.Common" version="1.0.5" />
             </group>
         </dependencies>
         <frameworkAssemblies>

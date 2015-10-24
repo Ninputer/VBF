@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>VBF.Compilers.Common</id>
-        <version>1.0.3</version>
+        <version>1.0.5</version>
         <title>VBF Compilers Common Components</title>
         <authors>Fan Shi</authors>
         <owners>Fan Shi</owners>

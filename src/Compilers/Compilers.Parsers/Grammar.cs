@@ -220,6 +220,11 @@ namespace VBF.Compilers.Parsers
             return new MappingProduction<TResult, TResult>(production, x => x, finalRule.Compile(), errorId, positionGetter != null ? positionGetter.Compile() : null);
         }
 
+        public static ProductionBase<Lexeme> Where(this Token token, Expression<Func<Lexeme, bool>> predicate)
+        {
+            return token.AsTerminal().Where(predicate);
+        }
+
         public static bool Check(bool condition, int errorId, SourceSpan position)
         {
             throw new InvalidOperationException("This method is only used in the 'where' clause of parser Linq expressions");

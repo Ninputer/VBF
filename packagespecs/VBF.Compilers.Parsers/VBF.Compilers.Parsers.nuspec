@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>VBF.Compilers.Parsers</id>
-        <version>1.0.4</version>
+        <version>1.0.5</version>
         <title>VBF Compilers Library for Parsers</title>
         <authors>Fan Shi</authors>
         <owners>Fan Shi</owners>
@@ -15,8 +15,8 @@
         <tags>VBF Compiler parser yacc antlr LR GLR</tags>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
-                <dependency id="VBF.Compilers.Common" version="1.0.3" />
-                <dependency id="VBF.Compilers.Scanners" version="1.0.3" />
+                <dependency id="VBF.Compilers.Common" version="1.0.5" />
+                <dependency id="VBF.Compilers.Scanners" version="1.0.5" />
             </group>
         </dependencies>
         <frameworkAssemblies>
