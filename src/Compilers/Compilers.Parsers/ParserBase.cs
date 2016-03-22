@@ -160,7 +160,7 @@ namespace VBF.Compilers.Parsers
 
         public T Parse(SourceReader source, CompilationErrorList errorList)
         {
-            return Parse(source, errorList, Task.Factory.CancellationToken);
+            return Parse(source, errorList, CancellationToken.None);
         }
 
         public T Parse(SourceReader source, CompilationErrorList errorList, CancellationToken ctoken)
