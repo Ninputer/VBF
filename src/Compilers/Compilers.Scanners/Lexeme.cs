@@ -37,7 +37,30 @@ namespace VBF.Compilers.Scanners
             m_trivia = s_emptyTrivia;
         }
 
+        /// <summary>
+        /// Gets a copiable object which contains the content and span of this lexeme.
+        /// </summary>
         public LexemeValue Value { get; private set; }
+
+        /// <summary>
+        /// Gets a <see cref="SourceSpan"/> object which represents the span of this lexeme in the source.
+        /// </summary>
+        public SourceSpan Span
+        {
+            get
+            {
+                return Value.Span;
+            }
+        }
+
+        /// <summary>
+        /// Generates the content string of this lexeme.
+        /// </summary>
+        /// <returns>The content string</returns>
+        public string ToContentString()
+        {
+            return Value.ToString();
+        }
 
         public int TokenIndex
         {
