@@ -4,11 +4,12 @@ VBF
 VBF is a set of tools/libraries for compilers. It has seperated libraries for scanners and parsers. One can easily use one component as well as use them all together.
 
 #### How to build:
-1. Install Visual Studio 2012 with .Net Framework 4.5
+1. Install Visual Studio 2015 with .Net Framework 4.5
 2. Open Options dialog, go to "Package Manager" and then check "Allow NuGet to download missing packages during build"
 3. Open Project VBF/src/Compilers/Compilers.sln
 4. Build
 5. Binaries will be placed in VBF/bin folder
+6. Note that by default, all the binaries are delay signed. You can either disable code signing or use 'sn -Vr' command to bypass assembly validation and then test the binaries. 
 
 #### Components:
 * VBF.Compilers.Common
@@ -21,11 +22,11 @@ VBF is a set of tools/libraries for compilers. It has seperated libraries for sc
 
 * VBF.Compilers.Parsers
 
-	Provides LR based, auto error recovery parser generator. To start, inherit ParserBase<T> class and build your own parser. It is recommended for most parsers.
+	Provides powerful GLR based, auto error recovery parser generator. To start, inherit ParserBase<T> class and build your own parser. It is recommended for most parsers.
 
 * VBF.Compilers.Parsers.Combinators
 
-	Similar to Compilers.Parsers but it's an LL based parser combinator library. To start, inherit ParserFrame<T> class and build your own parser. It is used to study LL grammars.
+	Similar to Compilers.Parsers but it's an GLL based parser combinator library. The grammar supported by this library is relatively less powerfull compared to VBF.Compilers.Parsers, and it also parses slower. It is mainly used to study LL grammars.
 
 #### Samples:
 * MiniSharp: VBF\src\Samples\MiniSharp
