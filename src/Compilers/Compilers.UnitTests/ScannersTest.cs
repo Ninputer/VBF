@@ -491,7 +491,7 @@ namespace Compilers.UnitTests
             Assert.AreEqual(IF.Index, l4.TokenIndex);
             Assert.AreEqual("if", l4.Value.Content);
             Assert.AreEqual(3, l4.PrefixTrivia.Count);
-            
+
 
             int p1 = scanner.Peek();
             Assert.AreEqual(ID.Index, p1);
@@ -512,6 +512,55 @@ namespace Compilers.UnitTests
             Assert.AreEqual(info.EndOfStreamTokenIndex, leof.TokenIndex);
             Assert.AreEqual(leof.Value.Span.StartLocation.CharIndex, leof.Value.Span.EndLocation.CharIndex);
             Assert.AreEqual(source.Length, leof.Value.Span.StartLocation.CharIndex);
+        }
+
+        [Test]
+        public void ThrowNoExceptionAtEosTest()
+        {
+            Lexicon lexicon = new Lexicon();
+            Lexer global = lexicon.Lexer;
+
+            var ID = global.DefineToken(RE.Range('a', 'z').Concat(
+                (RE.Range('a', 'z') | RE.Range('0', '9')).Many()));
+            var NUM = global.DefineToken(RE.Range('0', '9').Many1());
+            var WHITESPACE = global.DefineToken(RE.Symbol(' ').Many());
+            var ERROR = global.DefineToken(RE.Range(Char.MinValue, (char)255));
+
+
+            ScannerInfo info = lexicon.CreateScannerInfo();
+            Scanner scanner = new Scanner(info);
+
+            string source = "aaa bbb ccc";
+            StringReader sr = new StringReader(source);
+
+            scanner.SetSource(new SourceReader(sr));
+            scanner.SetTriviaTokens(WHITESPACE.Index, ERROR.Index);
+
+            Lexeme l1 = scanner.Read();
+            Assert.AreEqual(ID.Index, l1.TokenIndex);
+            Assert.AreEqual("aaa", l1.ToContentString());
+            Assert.AreEqual(0, l1.PrefixTrivia.Count);
+
+            Lexeme l2 = scanner.Read();
+            Assert.AreEqual(ID.Index, l2.TokenIndex);
+            Assert.AreEqual("bbb", l2.ToContentString());
+            Assert.AreEqual(1, l2.PrefixTrivia.Count);
+
+            Lexeme l3 = scanner.Read();
+            Assert.AreEqual(ID.Index, l3.TokenIndex);
+            Assert.AreEqual("ccc", l3.ToContentString());
+            Assert.AreEqual(1, l3.PrefixTrivia.Count);
+
+            Lexeme leof = scanner.Read();
+            Assert.AreEqual(info.EndOfStreamTokenIndex, leof.TokenIndex);
+            Assert.AreEqual(leof.Span.StartLocation.CharIndex, leof.Span.EndLocation.CharIndex);
+            Assert.AreEqual(source.Length, leof.Span.StartLocation.CharIndex);
+
+            Lexeme leof2 = scanner.Read();
+            Assert.AreEqual(info.EndOfStreamTokenIndex, leof2.TokenIndex);
+            Assert.AreEqual(leof2.Span.StartLocation.CharIndex, leof2.Span.EndLocation.CharIndex);
+            Assert.AreEqual(source.Length, leof2.Span.StartLocation.CharIndex);
+
         }
 
         [Test]
