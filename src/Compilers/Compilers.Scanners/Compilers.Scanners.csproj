@@ -83,6 +83,7 @@
     <Compile Include="RegularExpression.cs" />
     <Compile Include="RegularExpressionConverter.cs" />
     <Compile Include="Scanner.cs" />
+    <Compile Include="ScannerException.cs" />
     <Compile Include="ScannerInfo.cs" />
     <Compile Include="StringLiteralExpression.cs" />
     <Compile Include="SymbolExpression.cs" />

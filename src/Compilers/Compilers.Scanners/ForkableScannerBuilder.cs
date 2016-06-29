@@ -36,6 +36,8 @@ namespace VBF.Compilers.Scanners
 
         public int LexicalErrorId { get; set; }
 
+        public bool ThrowAtReadingAfterEndOfStream { get; set; }
+
         public ScannerInfo ScannerInfo
         {
             get
@@ -64,6 +66,7 @@ namespace VBF.Compilers.Scanners
             masterScanner.ErrorList = ErrorList;
             masterScanner.RecoverErrors = RecoverErrors;
             masterScanner.LexicalErrorId = LexicalErrorId;
+            masterScanner.ThrowAtReadingAfterEndOfStream = ThrowAtReadingAfterEndOfStream;
 
             return ForkableScanner.Create(masterScanner);
         }

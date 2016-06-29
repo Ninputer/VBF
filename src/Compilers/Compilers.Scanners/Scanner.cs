@@ -71,7 +71,7 @@ namespace VBF.Compilers.Scanners
             {
                 return m_valuableCursor;
             }
-        }        
+        }
 
         public IReadOnlyList<Lexeme> History
         {
@@ -80,6 +80,8 @@ namespace VBF.Compilers.Scanners
                 return m_historyList;
             }
         }
+
+        public bool ThrowAtReadingAfterEndOfStream { get; set; }
 
         private void Initialize()
         {
@@ -140,6 +142,10 @@ namespace VBF.Compilers.Scanners
 
                 if (m_source.PeekChar() < 0)
                 {
+                    if (ThrowAtReadingAfterEndOfStream && HasReachedEndOfStream())
+                    {
+                        throw new ScannerException("The scanner has reached the end of stream.");
+                    }
                     //return End Of Stream token
                     AddHistory(new Lexeme(m_scannerInfo, m_scannerInfo.EndOfStreamState,
                         new SourceSpan(m_lastTokenStart, m_lastTokenStart), null));
@@ -267,6 +273,17 @@ namespace VBF.Compilers.Scanners
 
         }
 
+        private bool HasReachedEndOfStream()
+        {
+            if (m_fullHistory.Count == 0)
+            {
+                return false;
+            }
+
+            Lexeme lastLexeme = m_fullHistory[m_fullHistory.Count - 1];
+            return lastLexeme.IsEndOfStream;
+        }
+
         private bool IsLastTokenSkippable()
         {
             int acceptTokenIndex = m_scannerInfo.GetTokenIndex(m_lastState);
@@ -303,6 +320,6 @@ namespace VBF.Compilers.Scanners
             m_valuableCursor = currentCursor;
 
             return lookAheadLexeme;
-        }     
+        }
     }
 }

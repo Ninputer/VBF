@@ -76,6 +76,18 @@ namespace VBF.Compilers.Scanners
             }
         }
 
+        public bool ThrowAtReadingAfterEndOfStream
+        {
+            get
+            {
+                return m_masterScanner.ThrowAtReadingAfterEndOfStream;
+            }
+            set
+            {
+                m_masterScanner.ThrowAtReadingAfterEndOfStream = value;
+            }
+        }
+
         public int Peek()
         {
             return Peek(1);
