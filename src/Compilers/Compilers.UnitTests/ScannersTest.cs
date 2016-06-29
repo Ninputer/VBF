@@ -614,7 +614,7 @@ namespace Compilers.UnitTests
             }
             catch(ScannerException)
             {
-
+                Assert.True(true);
             }
 
         }
